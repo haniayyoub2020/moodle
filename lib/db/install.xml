@@ -1131,9 +1131,11 @@
         <FIELD NAME="path" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="depth" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this context and its children are locked"/>
+        <FIELD NAME="disguiseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user disguise"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="context-disguiseid" TYPE="foreign" FIELDS="disguiseid" REFTABLE="disguises" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="contextlevel-instanceid" UNIQUE="true" FIELDS="contextlevel, instanceid"/>
@@ -1147,6 +1149,7 @@
         <FIELD NAME="path" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="depth" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this context and its children are locked"/>
+        <FIELD NAME="disguiseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user disguise"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -3998,6 +4001,21 @@
       <INDEXES>
         <INDEX NAME="uniqueuserfavouriteitem" UNIQUE="true" FIELDS="component, itemtype, itemid, contextid, userid"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="disguises" COMMENT="User Disguises">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="type" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="lockdisguise" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="showrealidentity" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="disabledisguisefrom" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="loganonymously" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="mode" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="configdata" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
     </TABLE>
   </TABLES>
 </XMLDB>
