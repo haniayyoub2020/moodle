@@ -1761,6 +1761,9 @@ class core_plugin_manager {
                 'unoconv', 'googledrive'
             ),
 
+            'disguise' => array(
+            ),
+
             'editor' => array(
                 'atto', 'textarea', 'tinymce'
             ),
