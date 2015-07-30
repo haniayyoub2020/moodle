@@ -1197,14 +1197,22 @@ class core_course_renderer extends plugin_renderer_base {
         // Display course contacts. See core_course_list_element::get_course_contacts().
         if ($course->has_course_contacts()) {
             $content .= html_writer::start_tag('ul', array('class' => 'teachers'));
-            foreach ($course->get_course_contacts() as $coursecontact) {
+            foreach ($course->get_course_contacts() as $userid => $coursecontact) {
                 $rolenames = array_map(function ($role) {
                     return $role->displayname;
                 }, $coursecontact['roles']);
-                $name = implode(", ", $rolenames).': '.
-                        html_writer::link(new moodle_url('/user/view.php',
-                                array('id' => $coursecontact['user']->id, 'course' => SITEID)),
-                            $coursecontact['username']);
+
+                $profileurl = \core_user::profile_url($coursecontact['user'], context_course::instance($course->id), [], SITEID);
+                if ($profileurl) {
+                    $profileurlname = html_writer::link($profileurl, $coursecontact['username']);
+                } else {
+                    $profileurlname = $coursecontact['username'];
+                }
+                $name = sprintf("%s: %s",
+                    implode(', ', $rolenames),
+                    $profileurlname
+                );
+
                 $content .= html_writer::tag('li', $name);
             }
             $content .= html_writer::end_tag('ul'); // .teachers
