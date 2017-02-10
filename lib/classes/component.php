@@ -503,6 +503,7 @@ $cache = '.var_export($cache, true).';
             'message'       => $CFG->dirroot.'/message/output',
             'block'         => $CFG->dirroot.'/blocks',
             'media'         => $CFG->dirroot.'/media/player',
+            'filestore'     => $CFG->dirroot.'/files/store',
             'filter'        => $CFG->dirroot.'/filter',
             'editor'        => $CFG->dirroot.'/lib/editor',
             'format'        => $CFG->dirroot.'/course/format',

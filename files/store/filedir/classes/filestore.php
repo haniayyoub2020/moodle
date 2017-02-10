@@ -15,24 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Core file system class definition.
+ * Standard filedir file store for Moodle.
  *
- * @package   core_files
+ * @package   filestore_filedir
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace filestore_filedir;
+
 defined('MOODLE_INTERNAL') || die();
 
+use stored_file;
+use file_exception;
+use file_pool_content_exception;
+
 /**
- * File system class used for low level access to real files in filedir.
+ * File store class used for low level access to real files in filedir.
  *
- * @package   core_files
+ * @package   filestore_filedir
  * @category  files
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class file_system_filedir extends file_system {
+class filestore extends \file_store {
 
     /**
      * @var string The path to the local copy of the filedir.
@@ -56,7 +62,7 @@ class file_system_filedir extends file_system {
 
 
     /**
-     * Perform any custom setup for this type of file_system.
+     * Perform any custom setup for this type of filestore.
      */
     public function setup_instance() {
         global $CFG;

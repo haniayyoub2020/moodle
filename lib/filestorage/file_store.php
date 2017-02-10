@@ -25,14 +25,14 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * File system class used for low level access to real files in filedir.
+ * File system class used for low level access to files.
  *
  * @package   core_files
  * @category  files
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class file_system {
+abstract class file_store {
 
     /**
      * @var file_storage The reference to the file storage instance.
@@ -40,7 +40,7 @@ abstract class file_system {
     protected $fs = null;
 
     /**
-     * Constructor for the file_system.
+     * Constructor for the file_store.
      *
      * @param file_storage $fs The instance of file_storage to instantiate the class with.
      */
@@ -51,7 +51,7 @@ abstract class file_system {
     }
 
     /**
-     * Perform any custom setup for this type of file_system.
+     * Perform any custom setup for this type of file_store.
      */
     abstract protected function setup_instance();
 

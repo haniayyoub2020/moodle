@@ -302,6 +302,15 @@ if ($hassiteconfig) {
         );
     }
 
+    // Filestore plugins.
+    $ADMIN->add('modules', new admin_category('filestoresettings', new lang_string('filestores', 'admin')));
+    $plugins = core_plugin_manager::instance()->get_plugins_of_type('filestore');
+    core_collator::asort_objects_by_property($plugins, 'displayname');
+    foreach ($plugins as $plugin) {
+        /* @var \core\plugininfo\antivirus $plugin */
+        $plugin->load_settings($ADMIN, 'filestoresettings', $hassiteconfig);
+    }
+
     // repository setting
     require_once("$CFG->dirroot/repository/lib.php");
     $catname =new lang_string('repositories', 'repository');

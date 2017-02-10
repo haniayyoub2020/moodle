@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/filestorage/file_progress.php');
-require_once($CFG->dirroot . '/lib/filestorage/file_system.php');
+require_once($CFG->dirroot . '/lib/filestorage/file_store.php');
 
 /**
  * Class representing local files stored in a sha1 file pool.
@@ -47,8 +47,8 @@ class stored_file {
     private $file_record;
     /** @var repository repository plugin instance */
     private $repository;
-    /** @var file_system filesystem instance */
-    private $filesystem;
+    /** @var file_store filestore instance */
+    private $filestore;
 
     /**
      * @var int Indicates a file handle of the type returned by fopen.
@@ -90,7 +90,7 @@ class stored_file {
             }
         }
 
-        $this->filesystem = $fs->get_file_system();
+        $this->filestore = $fs->get_file_store();
     }
 
     /**
@@ -181,7 +181,7 @@ class stored_file {
             }
         }
         // Validate mimetype field
-        $mimetype = $this->filesystem->mimetype_from_storedfile($this);
+        $mimetype = $this->filestore->mimetype_from_storedfile($this);
         $this->file_record->mimetype = $mimetype;
 
         $DB->update_record('files', $this->file_record);
@@ -249,7 +249,7 @@ class stored_file {
         }
 
         $filerecord = new stdClass;
-        if ($this->filesystem->is_file_readable_remotely_by_storedfile($newfile)) {
+        if ($this->filestore->is_file_readable_remotely_by_storedfile($newfile)) {
             $contenthash = $newfile->get_contenthash();
             $filerecord->contenthash = $contenthash;
         } else {
@@ -351,7 +351,7 @@ class stored_file {
         }
 
         // Move pool file to trash if content not needed any more.
-        $this->filesystem->remove_file($this->file_record->contenthash);
+        $this->filestore->remove_file($this->file_record->contenthash);
         return true; // BC only
     }
 
@@ -363,7 +363,7 @@ class stored_file {
     * @return void
     */
     public function add_to_curl_request(&$curlrequest, $key) {
-        return $this->filesystem->add_to_curl_request($this, $curlrequest, $key);
+        return $this->filestore->add_to_curl_request($this, $curlrequest, $key);
     }
 
     /**
@@ -375,14 +375,14 @@ class stored_file {
      * @return resource file handle
      */
     public function get_content_file_handle($type = self::FILE_HANDLE_FOPEN) {
-        return $this->filesystem->get_content_file_handle($this, $type);
+        return $this->filestore->get_content_file_handle($this, $type);
     }
 
     /**
      * Dumps file content to page.
      */
     public function readfile() {
-        return $this->filesystem->readfile($this);
+        return $this->filestore->readfile($this);
     }
 
     /**
@@ -391,7 +391,7 @@ class stored_file {
      * @return string content
      */
     public function get_content() {
-        return $this->filesystem->get_content($this);
+        return $this->filestore->get_content($this);
     }
 
     /**
@@ -401,7 +401,7 @@ class stored_file {
      * @return bool success
      */
     public function copy_content_to($pathname) {
-        return $this->filesystem->copy_content_from_storedfile($this, $pathname);
+        return $this->filestore->copy_content_from_storedfile($this, $pathname);
     }
 
     /**
@@ -434,11 +434,11 @@ class stored_file {
      * @return array of file infos
      */
     public function list_files(file_packer $packer) {
-        return $this->filesystem->list_files($this, $packer);
+        return $this->filestore->list_files($this, $packer);
     }
 
     /**
-     * Extract file to given file path (real OS filesystem), existing files are overwritten.
+     * Extract file to given file path (real OS filestore), existing files are overwritten.
      *
      * @param file_packer $packer file packer instance
      * @param string $pathname target directory
@@ -447,11 +447,11 @@ class stored_file {
      */
     public function extract_to_pathname(file_packer $packer, $pathname,
             file_progress $progress = null) {
-        return $this->filesystem->extract_to_pathname($this, $packer, $pathname, $progress);
+        return $this->filestore->extract_to_pathname($this, $packer, $pathname, $progress);
     }
 
     /**
-     * Extract file to given file path (real OS filesystem), existing files are overwritten.
+     * Extract file to given file path (real OS filestore), existing files are overwritten.
      *
      * @param file_packer $packer file packer instance
      * @param int $contextid context ID
@@ -467,7 +467,7 @@ class stored_file {
             $component, $filearea, $itemid, $pathbase, $userid = null, file_progress $progress = null) {
         $args = func_get_args();
         array_unshift($args, $this);
-        return call_user_func_array(array($this->filesystem, 'extract_to_storage'), $args);
+        return call_user_func_array(array($this->filestore, 'extract_to_storage'), $args);
     }
 
     /**
@@ -478,7 +478,7 @@ class stored_file {
      * @return bool success
      */
     public function archive_file(file_archive $filearch, $archivepath) {
-        return $this->filesystem->add_storedfile_to_archive($this, $filearch, $archivepath);
+        return $this->filestore->add_storedfile_to_archive($this, $filearch, $archivepath);
     }
 
     /**
@@ -488,7 +488,7 @@ class stored_file {
      * @return mixed array with width, height and mimetype; false if not an image
      */
     public function get_imageinfo() {
-        return $this->filesystem->get_imageinfo($this);
+        return $this->filestore->get_imageinfo($this);
     }
 
     /**
@@ -881,7 +881,7 @@ class stored_file {
         $this->file_record->status = $status;
         $this->file_record->referencelastsync = $now;
         if (isset($oldcontenthash)) {
-            $this->filesystem->remove_file($oldcontenthash);
+            $this->filestore->remove_file($oldcontenthash);
         }
     }
 

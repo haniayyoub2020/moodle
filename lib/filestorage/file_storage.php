@@ -47,8 +47,8 @@ class file_storage {
     /** @var string tempdir */
     private $tempdir;
 
-    /** @var file_system filesystem */
-    private $filesystem;
+    /** @var file_store filestore */
+    private $filestore;
 
     /** @var array List of formats supported by unoconv */
     private $unoconvformats;
@@ -76,41 +76,35 @@ class file_storage {
      */
     public function __construct() {
         // The tempdir must always remain on disk, but shared between all ndoes in a cluster. Its content is not subject
-        // to the file_system abstraction.
+        // to the file_store abstraction.
         $this->tempdir = make_temp_directory('filestorage');
 
-        $this->setup_file_system();
+        $this->setup_file_store();
     }
 
     /**
-     * Complete setup procedure for the file_system component.
+     * Complete setup procedure for the file_store component.
      *
-     * @return file_system
+     * @return file_store
      */
-    public function setup_file_system() {
+    public function setup_file_store() {
         global $CFG;
-        if ($this->filesystem === null) {
-            require_once($CFG->libdir . '/filestorage/file_system.php');
-            if (!empty($CFG->filesystem_handler_class)) {
-                $class = $CFG->filesystem_handler_class;
-            } else {
-                // The default file_system is the filedir.
-                require_once($CFG->libdir . '/filestorage/file_system_filedir.php');
-                $class = file_system_filedir::class;
-            }
-            $this->filesystem = new $class($this);
+        if ($this->filestore === null) {
+            require_once($CFG->libdir . '/filestorage/file_store.php');
+            $classname = "\\filestore_{$CFG->filestore_plugin}\\filestore";
+            $this->filestore = new $classname($this);
         }
 
-        return $this->filesystem;
+        return $this->filestore;
     }
 
     /**
      * Return the file system instance.
      *
-     * @return file_system
+     * @return file_store
      */
-    public function get_file_system() {
-        return $this->filesystem;
+    public function get_file_store() {
+        return $this->filestore;
     }
 
     /**
@@ -1610,7 +1604,7 @@ class file_storage {
 
         list($newrecord->contenthash, $newrecord->filesize, $newfile) = $this->add_string_to_pool($content);
         if (empty($filerecord->mimetype)) {
-            $newrecord->mimetype = $this->filesystem->mimetype_from_hash($newrecord->contenthash, $newrecord->filename);
+            $newrecord->mimetype = $this->filestore->mimetype_from_hash($newrecord->contenthash, $newrecord->filename);
         } else {
             $newrecord->mimetype = $filerecord->mimetype;
         }
@@ -1939,7 +1933,7 @@ class file_storage {
      * @return array (contenthash, filesize, newfile)
      */
     public function add_file_to_pool($pathname, $contenthash = NULL) {
-        return $this->filesystem->add_file_from_path($pathname, $contenthash);
+        return $this->filestore->add_file_from_path($pathname, $contenthash);
     }
 
     /**
@@ -1949,7 +1943,7 @@ class file_storage {
      * @return array (contenthash, filesize, newfile)
      */
     public function add_string_to_pool($content) {
-        return $this->filesystem->add_file_from_string($content);
+        return $this->filestore->add_file_from_string($content);
     }
 
     /**
@@ -1961,7 +1955,7 @@ class file_storage {
      * @return bool success
      */
     public function xsendfile($contenthash) {
-        return $this->filesystem->xsendfile($contenthash);
+        return $this->filestore->xsendfile($contenthash);
     }
 
     /**
@@ -2390,9 +2384,9 @@ class file_storage {
             $rs->close();
             mtrace('done.');
 
-            mtrace('Call filesystem cron tasks.', '');
+            mtrace('Call filestore cron tasks.', '');
             cron_trace_time_and_memory();
-            $this->filesystem->cron();
+            $this->filestore->cron();
             mtrace('done.');
         }
     }

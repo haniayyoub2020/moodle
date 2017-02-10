@@ -1778,6 +1778,10 @@ class core_plugin_manager {
                 'paypal', 'self'
             ),
 
+            'filestore' => array(
+                'filedir',
+            ),
+
             'filter' => array(
                 'activitynames', 'algebra', 'censor', 'emailprotect',
                 'emoticon', 'mathjaxloader', 'mediaplugin', 'multilang', 'tex', 'tidy',

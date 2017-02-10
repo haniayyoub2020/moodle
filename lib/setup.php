@@ -59,6 +59,12 @@ if (!isset($CFG)) {
 // it can not be anything else, there is no point in having this in config.php
 $CFG->dirroot = dirname(__DIR__);
 
+// Unless otherwise specified, use the filedir.
+// Note: This setting is required early on, and must not be database controlled.
+if (!isset($CFG->filestore_plugin)) {
+    $CFG->filestore_plugin = 'filedir';
+}
+
 // File permissions on created directories in the $CFG->dataroot
 if (!isset($CFG->directorypermissions)) {
     $CFG->directorypermissions = 02777;      // Must be octal (that's why it's here)

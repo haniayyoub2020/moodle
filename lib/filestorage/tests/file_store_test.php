@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for file_system.
+ * Unit tests for file_store.
  *
  * @package   core_files
  * @category  phpunit
@@ -26,17 +26,17 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->libdir . '/filestorage/file_system.php');
+require_once($CFG->libdir . '/filestorage/file_store.php');
 
 /**
- * Unit tests for file_system.
+ * Unit tests for file_store.
  *
  * @package   core_files
  * @category  phpunit
  * @copyright 2017 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core_files_file_system_testcase extends advanced_testcase {
+class core_files_file_store_testcase extends advanced_testcase {
 
     public function setUp() {
         get_file_storage(true);
@@ -91,14 +91,14 @@ class core_files_file_system_testcase extends advanced_testcase {
     }
 
     /**
-     * Get a testable mock of the abstract file_system class.
+     * Get a testable mock of the abstract file_store class.
      *
      * @param   array   $mockedmethods A list of methods you intend to override
      *                  If no methods are specified, only abstract functions are mocked.
-     * @return file_system
+     * @return file_store
      */
     protected function get_testable_mock($mockedmethods = []) {
-        $fs = $this->getMockBuilder(file_system::class)
+        $fs = $this->getMockBuilder(file_store::class)
             ->setMethods($mockedmethods)
             ->setConstructorArgs([get_file_storage()])
             ->getMockForAbstractClass();
@@ -110,44 +110,44 @@ class core_files_file_system_testcase extends advanced_testcase {
      * Ensure that the file system is not clonable.
      */
     public function test_not_cloneable() {
-        $reflection = new ReflectionClass('file_system');
+        $reflection = new ReflectionClass('file_store');
         $this->assertFalse($reflection->isCloneable());
     }
 
     /**
-     * Ensure that the filedir file_system extension is used by default.
+     * Ensure that the filedir file_store extension is used by default.
      */
     public function test_default_class() {
         $this->resetAfterTest();
 
-        // Ensure that the filesystem_handler_class is null.
+        // Ensure that the filestore_handler is null.
         global $CFG;
-        $CFG->filesystem_handler_class = null;
+        $CFG->filestore_handler = null;
 
         $storage = get_file_storage();
-        $fs = $storage->get_file_system();
-        $this->assertInstanceOf(file_system::class, $fs);
-        $this->assertEquals(file_system_filedir::class, get_class($fs));
+        $fs = $storage->get_file_store();
+        $this->assertInstanceOf(file_store::class, $fs);
+        $this->assertEquals(\filestore_filedir\filedir::class, get_class($fs));
     }
 
     /**
-     * Ensure that the specified file_system extension class is used.
+     * Ensure that the specified file_store extension class is used.
      */
     public function test_supplied_class() {
         global $CFG;
         $this->resetAfterTest();
 
-        // Mock the file_system.
+        // Mock the file_store.
         // Mocks create a new child of the mocked class which is perfect for this test.
-        $filesystem = $this->getMockBuilder('file_system')
+        $filestore = $this->getMockBuilder('file_store')
             ->disableOriginalConstructor()
             ->getMock();
-        $CFG->filesystem_handler_class = get_class($filesystem);
+        $CFG->filestore_handler = get_class($filestore);
 
         $storage = get_file_storage();
-        $fs = $storage->get_file_system();
-        $this->assertInstanceOf(file_system::class, $fs);
-        $this->assertEquals(get_class($filesystem), get_class($fs));
+        $fs = $storage->get_file_store();
+        $this->assertInstanceOf(file_store::class, $fs);
+        $this->assertEquals(get_class($filestore), get_class($fs));
     }
 
     /**
@@ -156,20 +156,20 @@ class core_files_file_system_testcase extends advanced_testcase {
     public function test_readfile() {
         global $CFG;
 
-        // Mock the filesystem.
+        // Mock the filestore.
         $filecontent = 'example content';
         $vfileroot = $this->setup_vfile_root(['sourcefile' => $filecontent]);
         $filepath = \org\bovigo\vfs\vfsStream::url('root/sourcefile');
 
         $file = $this->get_stored_file($filecontent);
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         // We need to override the get_remote_path_from_storedfile function.
         $fs = $this->get_testable_mock(['get_remote_path_from_storedfile']);
         $fs->method('get_remote_path_from_storedfile')->willReturn($filepath);
 
         // Note: It is currently not possible to mock readfile_allow_large
-        // because file_system is in the global namespace.
+        // because file_store is in the global namespace.
         // We must therefore check for expected output. This is not ideal.
         $this->expectOutputString($filecontent);
         $fs->readfile($file);
@@ -187,7 +187,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $filepath = '/path/to/file';
         $filecontent = 'example content';
 
-        // Get the filesystem mock.
+        // Get the filestore mock.
         $fs = $this->get_testable_mock([
             'get_local_path_from_hash',
         ]);
@@ -198,7 +198,7 @@ class core_files_file_system_testcase extends advanced_testcase {
 
         $file = $this->get_stored_file($filecontent);
 
-        $method = new ReflectionMethod(file_system::class, 'get_local_path_from_storedfile');
+        $method = new ReflectionMethod(file_store::class, 'get_local_path_from_storedfile');
         $method->setAccessible(true);
         $result = $method->invokeArgs($fs, array_merge([$file], $args));
 
@@ -225,7 +225,7 @@ class core_files_file_system_testcase extends advanced_testcase {
 
         $file = $this->get_stored_file($filecontent);
 
-        $method = new ReflectionMethod(file_system::class, 'get_remote_path_from_storedfile');
+        $method = new ReflectionMethod(file_store::class, 'get_remote_path_from_storedfile');
         $method->setAccessible(true);
         $result = $method->invokeArgs($fs, [$file]);
 
@@ -427,7 +427,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $filecontent = '';
         $contenthash = sha1($filecontent);
 
-        $method = new ReflectionMethod(file_system::class, 'is_file_removable');
+        $method = new ReflectionMethod(file_store::class, 'is_file_removable');
         $method->setAccessible(true);
         $result = $method->invokeArgs(null, [$contenthash]);
         $this->assertFalse($result);
@@ -448,7 +448,7 @@ class core_files_file_system_testcase extends advanced_testcase {
             ->getMockForAbstractClass();
         $DB->method('record_exists')->willReturn(true);
 
-        $method = new ReflectionMethod(file_system::class, 'is_file_removable');
+        $method = new ReflectionMethod(file_store::class, 'is_file_removable');
         $method->setAccessible(true);
         $result = $method->invokeArgs(null, [$contenthash]);
 
@@ -470,7 +470,7 @@ class core_files_file_system_testcase extends advanced_testcase {
             ->getMockForAbstractClass();
         $DB->method('record_exists')->willReturn(false);
 
-        $method = new ReflectionMethod(file_system::class, 'is_file_removable');
+        $method = new ReflectionMethod(file_store::class, 'is_file_removable');
         $method->setAccessible(true);
         $result = $method->invokeArgs(null, [$contenthash]);
 
@@ -483,14 +483,14 @@ class core_files_file_system_testcase extends advanced_testcase {
     public function test_get_content() {
         global $CFG;
 
-        // Mock the filesystem.
+        // Mock the filestore.
         $filecontent = 'example content';
         $vfileroot = $this->setup_vfile_root(['sourcefile' => $filecontent]);
         $filepath = \org\bovigo\vfs\vfsStream::url('root/sourcefile');
 
         $file = $this->get_stored_file($filecontent);
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         // We need to override the get_remote_path_from_storedfile function.
         $fs = $this->get_testable_mock(['get_remote_path_from_storedfile']);
         $fs->method('get_remote_path_from_storedfile')->willReturn($filepath);
@@ -509,7 +509,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $filecontent = '';
         $file = $this->get_stored_file($filecontent);
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         // We need to override the get_remote_path_from_storedfile function.
         $fs = $this->get_testable_mock(['get_remote_path_from_storedfile']);
         $fs->expects($this->never())
@@ -530,7 +530,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $filepath = __FILE__;
         $expectedresult = (object) [];
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         $fs = $this->get_testable_mock(['get_local_path_from_storedfile']);
         $fs->method('get_local_path_from_storedfile')
             ->with($this->equalTo($file), $this->equalTo(true))
@@ -561,7 +561,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $expectedresult = (object) [];
         $outputpath = '/path/to/output';
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         $fs = $this->get_testable_mock(['get_local_path_from_storedfile']);
         $fs->method('get_local_path_from_storedfile')
             ->with($this->equalTo($file), $this->equalTo(true))
@@ -592,7 +592,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $expectedresult = (object) [];
         $outputpath = '/path/to/output';
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         $fs = $this->get_testable_mock(['get_local_path_from_storedfile']);
         $fs->method('get_local_path_from_storedfile')
             ->with($this->equalTo($file), $this->equalTo(true))
@@ -630,7 +630,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $archivepath = 'example';
         $expectedresult = (object) [];
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         $fs = $this->get_testable_mock(['get_local_path_from_storedfile']);
         $fs->method('get_local_path_from_storedfile')
             ->with($this->equalTo($file), $this->equalTo(true))
@@ -666,7 +666,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $archivepath = 'example';
         $expectedresult = (object) [];
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         $fs = $this->get_testable_mock(['get_local_path_from_storedfile']);
         $fs->method('get_local_path_from_storedfile')
             ->with($this->equalTo($file), $this->equalTo(true))
@@ -705,7 +705,7 @@ class core_files_file_system_testcase extends advanced_testcase {
         $archivepath = 'example';
         $key = 'myfile';
 
-        // Mock the file_system class.
+        // Mock the file_store class.
         $fs = $this->get_testable_mock(['get_local_path_from_storedfile']);
         $fs->method('get_local_path_from_storedfile')
             ->with($this->equalTo($file), $this->equalTo(true))
@@ -813,10 +813,10 @@ class core_files_file_system_testcase extends advanced_testcase {
     public function test_get_imageinfo_from_path() {
         $filepath = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'testimage.jpg';
 
-        // Get the filesystem mock.
+        // Get the filestore mock.
         $fs = $this->get_testable_mock();
 
-        $method = new ReflectionMethod(file_system::class, 'get_imageinfo_from_path');
+        $method = new ReflectionMethod(file_store::class, 'get_imageinfo_from_path');
         $method->setAccessible(true);
         $result = $method->invokeArgs($fs, [$filepath]);
 
@@ -833,10 +833,10 @@ class core_files_file_system_testcase extends advanced_testcase {
     public function test_get_imageinfo_from_path_no_image() {
         $filepath = __FILE__;
 
-        // Get the filesystem mock.
+        // Get the filestore mock.
         $fs = $this->get_testable_mock();
 
-        $method = new ReflectionMethod(file_system::class, 'get_imageinfo_from_path');
+        $method = new ReflectionMethod(file_store::class, 'get_imageinfo_from_path');
         $method->setAccessible(true);
         $result = $method->invokeArgs($fs, [$filepath]);
 

@@ -532,6 +532,7 @@ $string['fatalsessionautostart'] = '<p>Serious configuration error detected, ple
 $string['filecreated'] = 'New file created';
 $string['filestoredin'] = 'Save file into folder :';
 $string['filestoredinhelp'] = 'Where the file will be stored';
+$string['filestores'] = 'File stores';
 $string['filterall'] = 'Filter all strings';
 $string['filtermatchoneperpage'] = 'Filter match once per page';
 $string['filtermatchonepertext'] = 'Filter match once per text';
