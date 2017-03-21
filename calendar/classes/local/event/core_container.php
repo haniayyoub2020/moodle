@@ -203,8 +203,9 @@ class core_container {
                 },
                 'visibility' => function (event_interface $event) {
                     $mapper = self::$eventmapper;
+                    $coursemodule = $event->get_course_module();
                     $eventvisible = component_callback(
-                        'mod_' . $event->get_course_module()->get('modname'),
+                        'mod_' . $coursemodule->get('modname'),
                         'core_calendar_is_event_visible',
                         [
                             $mapper->from_event_to_legacy_event($event)
@@ -214,6 +215,18 @@ class core_container {
                     // Do not display the event if there is nothing to action.
                     if ($event instanceof action_event_interface && $event->get_action()->get_item_count() === 0) {
                         return false;
+                    }
+
+                    $course = $event->get_course()->get_proxied_instance();
+                    $completioninfo = new \completion_info($course);
+                    $cm = $coursemodule->get_proxied_instance();
+                    if ($completioninfo->is_enabled($cm)) {
+                        $completiondata = $completioninfo->get_data($cm, true);
+
+                        // The module is complete. Do not show complete activities.
+                        if ($completiondata->completiondata !== COMPLETION_INCOMPLETE) {
+                            return false;
+                        }
                     }
 
                     // Module does not implement the callback, event should be visible.
