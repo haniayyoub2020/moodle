@@ -1425,11 +1425,21 @@ function mod_chat_core_calendar_provide_event_action(\core_calendar\event $event
     }
 
     $chattime = $DB->get_field('chat', 'chattime', array('id' => $event->instance));
+    $chattimemidnight = usergetmidnight($chattime);
+    $todaymidnight = usergetmidnight(time());
 
-    return $factory->create_instance(
-        get_string('enterchat', 'chat'),
-        new \moodle_url('/mod/chat/view.php', array('id' => $cm->id)),
-        1,
-        time() >= $chattime
-    );
+    if ($chattime < $todaymidnight) {
+        // The chat is before today. Do not show at all.
+        return null;
+    } else {
+        // The chat is actionable if it is at some point today.
+        $actionable = $chattimemidnight == $todaymidnight;
+
+        return $factory->create_instance(
+            get_string('enterchat', 'chat'),
+            new \moodle_url('/mod/chat/view.php', array('id' => $cm->id)),
+            1,
+            $actionable
+        );
+    }
 }
