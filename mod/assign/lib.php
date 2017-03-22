@@ -1709,27 +1709,6 @@ function assign_check_updates_since(cm_info $cm, $from, $filter = array()) {
 }
 
 /**
- * Is the event visible?
- *
- * @param \core_calendar\event $event
- * @return bool Returns true if the event is visible to the current user, false otherwise.
- */
-function mod_assign_core_calendar_is_event_visible(\core_calendar\event $event) {
-    global $USER;
-
-    $cm = get_fast_modinfo($event->courseid)->instances['assign'][$event->instance];
-    $context = context_module::instance($cm->id);
-
-    $assign = new assign($context, $cm, null);
-
-    if ($event->eventtype == ASSIGN_EVENT_TYPE_GRADINGDUE) {
-        return $assign->can_grade();
-    } else {
-        return !$assign->can_grade() && $assign->can_view_submission($USER->id);
-    }
-}
-
-/**
  * Handles creating actions for events.
  *
  * @param \core_calendar\event $event
@@ -1749,29 +1728,47 @@ function mod_assign_core_calendar_provide_event_action(\core_calendar\event $eve
     $assign = new assign($context, $cm, null);
 
     if ($event->eventtype == ASSIGN_EVENT_TYPE_GRADINGDUE) {
-        $name = get_string('grade');
+        if (!$assign->can_grade()) {
+            // This user cannot grade at all.
+            return null;
+        }
+
         $url = new \moodle_url('/mod/assign/view.php', [
             'id' => $cm->id,
             'action' => 'grader'
         ]);
-        $itemcount = $assign->count_submissions_need_grading();
-        $actionable = $assign->can_grade() && (time() >= $assign->get_instance()->allowsubmissionsfromdate);
+
+        return $factory->create_instance(
+            get_string('grade'),
+            $url,
+            $assign->count_submissions_need_grading(),
+            $assign->can_grade() && (time() >= $assign->get_instance()->allowsubmissionsfromdate)
+        );
     } else {
-        $name = get_string('addsubmission', 'assign');
+        if (!$assign->can_view_submission($USER->id)) {
+            // The user can't view the submission at all.
+            return null;
+        }
+
+        if ($assign->can_grade()) {
+            // The user can grade the assignment and this is not a grading event.
+            // Do not show.
+            return null;
+        }
+
+        // The user has not yet submitted anything. Show the addsubmission link.
         $url = new \moodle_url('/mod/assign/view.php', [
             'id' => $cm->id,
             'action' => 'editsubmission'
         ]);
-        $itemcount = 1;
-        $actionable = $assign->is_any_submission_plugin_enabled() && $assign->can_edit_submission($USER->id);
-    }
 
-    return $factory->create_instance(
-        $name,
-        $url,
-        $itemcount,
-        $actionable
-    );
+        return $factory->create_instance(
+            get_string('addsubmission', 'assign'),
+            $url,
+            1,
+            $assign->is_any_submission_plugin_enabled() && $assign->can_edit_submission($USER->id)
+        );
+    }
 }
 
 /**
