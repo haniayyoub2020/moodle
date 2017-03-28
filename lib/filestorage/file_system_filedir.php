@@ -235,6 +235,20 @@ class file_system_filedir extends file_system {
     }
 
     /**
+     * Output the content of the specified stored file.
+     *
+     * Note, this is different to get_content() as it uses the built-in php
+     * readfile function which is more efficient.
+     *
+     * @param stored_file $file The file to serve.
+     * @return void
+     */
+    public function readfile(stored_file $file) {
+        $path = $this->get_local_path_from_storedfile($file, true);
+        readfile_allow_large($path, $file->get_filesize());
+    }
+
+    /**
      * Tries to recover missing content of file from trash.
      *
      * @param stored_file $file stored_file instance
