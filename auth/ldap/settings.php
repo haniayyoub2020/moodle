@@ -113,13 +113,15 @@ if ($ADMIN->fulltree) {
             new lang_string('auth_ldap_search_sub', 'auth_ldap'), 0 , $yesno));
 
     // Dereference aliases.
+    // We cannot use the LDAP_DEREF constants as they are not guaranteed to exist if PHP is compiled without LDAP.
+    // LDAP_DEREF_NEVER = 0; LDAP_DEREF_ALWAYS = 3.
     $optderef = array();
-    $optderef[LDAP_DEREF_NEVER] = get_string('no');
-    $optderef[LDAP_DEREF_ALWAYS] = get_string('yes');
+    $optderef[0] = get_string('no');
+    $optderef[3] = get_string('yes');
 
     $settings->add(new admin_setting_configselect('auth_ldap/opt_deref',
             new lang_string('auth_ldap_opt_deref_key', 'auth_ldap'),
-            new lang_string('auth_ldap_opt_deref', 'auth_ldap'), LDAP_DEREF_NEVER , $optderef));
+            new lang_string('auth_ldap_opt_deref', 'auth_ldap'), 0 , $optderef));
 
     // User attribute.
     $settings->add(new auth_ldap_admin_setting_special_lowercase_configtext('auth_ldap/user_attribute',
