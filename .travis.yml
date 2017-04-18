@@ -19,9 +19,7 @@ php:
 
 services:
     - redis-server
-
-addons:
-  mariadb: '10.0'
+    - mysql
 
 env:
     # Although we want to run these jobs and see failures as quickly as possible, we also want to get the slowest job to
