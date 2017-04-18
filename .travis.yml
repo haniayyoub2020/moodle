@@ -20,6 +20,9 @@ php:
 services:
     - redis-server
 
+addons:
+  mariadb: '10.0'
+
 env:
     # Although we want to run these jobs and see failures as quickly as possible, we also want to get the slowest job to
     # start first so that the total run time is not too high.
