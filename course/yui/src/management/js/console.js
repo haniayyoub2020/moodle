@@ -32,6 +32,7 @@ Console.ATTRS = {
             if (typeof node === 'string') {
                 node = Y.one('#' + node);
             }
+
             return node;
         }
     },

@@ -34,6 +34,7 @@ Console.ATTRS = {
             if (typeof node === 'string') {
                 node = Y.one('#' + node);
             }
+
             return node;
         }
     },
@@ -659,6 +660,10 @@ DragDrop.prototype = {
         if (!courseul) {
             // No course listings found.
             return false;
+        }
+
+        while (contstraint.get('scrollHeight') === 0 && !contstraint.compareTo(window.document.body)) {
+            contstraint = contstraint.get('parentNode');
         }
 
         courseul.all('> li').each(function(li) {
