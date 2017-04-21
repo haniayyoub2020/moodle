@@ -637,6 +637,9 @@ abstract class portfolio_plugin_base {
      * @return array|string|int|boolean value of the field
      */
     public final function get($field) {
+        if ($field === 'file') {
+            return $this->get_file();
+        }
         if (property_exists($this, $field)) {
             return $this->{$field};
         }
@@ -654,6 +657,9 @@ abstract class portfolio_plugin_base {
      * @return bool
      */
     public final function set($field, $value) {
+        if ($field === 'file') {
+            return $this->set_file($value);
+        }
         if (property_exists($this, $field)) {
             $this->{$field} =& $value;
             $this->dirty = true;
@@ -825,6 +831,23 @@ abstract class portfolio_plugin_pull_base extends portfolio_plugin_base {
         // don't die(); afterwards, so we can clean up.
         send_stored_file($file, 0, 0, true, array('dontdie' => true));
         $this->get('exporter')->log_transfer();
+    }
+
+    protected function set_file($file) {
+        if (is_a($file, \stored_file::class)) {
+            $this->file = $file->get_id();
+        } else {
+            $this->file = null;
+        }
+    }
+
+    protected function get_file() {
+        if ($this->file) {
+            $fs = get_file_storage();
+            return $fs->get_file_by_id($this->file);
+        } else {
+            return null;
+        }
     }
 
 }
