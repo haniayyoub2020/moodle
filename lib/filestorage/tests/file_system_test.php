@@ -951,6 +951,10 @@ class core_files_file_system_testcase extends advanced_testcase {
      * a locally available file whose filename does not suggest mimetype.
      */
     public function test_mimetype_from_hash_using_file_content() {
+        if (!class_exists('finfo')) {
+            $this->markTestSkipped('finfo extension unavailable');
+        }
+
         $filepath = '/path/to/file/not/currently/on/disk';
         $filecontent = 'example content';
         $contenthash = file_storage::hash_from_string($filecontent);
@@ -969,6 +973,10 @@ class core_files_file_system_testcase extends advanced_testcase {
      * a remotely available file whose filename does not suggest mimetype.
      */
     public function test_mimetype_from_hash_using_file_content_remote() {
+        if (!class_exists('finfo')) {
+            $this->markTestSkipped('finfo extension unavailable');
+        }
+
         $filepath = '/path/to/file/not/currently/on/disk';
         $filecontent = 'example content';
         $contenthash = file_storage::hash_from_string($filecontent);
@@ -1022,6 +1030,10 @@ class core_files_file_system_testcase extends advanced_testcase {
      * a locally available file whose filename does not suggest mimetype.
      */
     public function test_mimetype_from_storedfile_using_file_content() {
+        if (!class_exists('finfo')) {
+            $this->markTestSkipped('finfo extension unavailable');
+        }
+
         $filepath = __DIR__ . "/fixtures/testimage.jpg";
         $fs = $this->get_testable_mock(['get_remote_path_from_storedfile']);
         $fs->method('get_remote_path_from_storedfile')->willReturn($filepath);
@@ -1037,6 +1049,10 @@ class core_files_file_system_testcase extends advanced_testcase {
      * a remotely available file whose filename does not suggest mimetype.
      */
     public function test_mimetype_from_storedfile_using_file_content_remote() {
+        if (!class_exists('finfo')) {
+            $this->markTestSkipped('finfo extension unavailable');
+        }
+
         $filepath = __DIR__ . "/fixtures/testimage.jpg";
 
         $fs = $this->get_testable_mock([

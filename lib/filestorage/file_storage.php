@@ -2100,7 +2100,7 @@ class file_storage {
      * @return string The mimetype
      */
     public static function mimetype_from_file($fullpath) {
-        if (file_exists($fullpath)) {
+        if (file_exists($fullpath) && class_exists('finfo')) {
             // The type is unknown. Attempt to look up the file type now.
             $finfo = new finfo(FILEINFO_MIME_TYPE);
             return mimeinfo_from_type('type', $finfo->file($fullpath));

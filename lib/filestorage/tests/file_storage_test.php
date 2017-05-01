@@ -1859,20 +1859,6 @@ class core_files_file_storage_testcase extends advanced_testcase {
     }
 
     /**
-     * Test that mimetype_from_file returns appropriate output for a known
-     * file.
-     *
-     * Note: this is not intended to check that functions outside of this
-     * file works. It is intended to validate the codepath contains no
-     * errors and behaves as expected.
-     */
-    public function test_mimetype_known() {
-        $filepath = __DIR__ . '/fixtures/testimage.jpg';
-        $mimetype = file_storage::mimetype_from_file($filepath);
-        $this->assertEquals('image/jpeg', $mimetype);
-    }
-
-    /**
      * Test that mimetype_from_file returns appropriate output when the
      * file could not be found.
      */
@@ -1890,6 +1876,10 @@ class core_files_file_storage_testcase extends advanced_testcase {
      * errors and behaves as expected.
      */
     public function test_mimetype_from_file_known() {
+        if (!class_exists('finfo')) {
+            $this->markTestSkipped('finfo extension unavailable');
+        }
+
         $filepath = __DIR__ . '/fixtures/testimage.jpg';
         $mimetype = file_storage::mimetype_from_file($filepath);
         $this->assertEquals('image/jpeg', $mimetype);
