@@ -2078,6 +2078,11 @@
           <ON_CHECK message="incompleteunicodesupport" />
         </FEEDBACK>
       </CUSTOM_CHECK>
+      <CUSTOM_CHECK file="lib/upgradelib.php" function="check_finfo" level="optional">
+        <FEEDBACK>
+          <ON_CHECK message="finforecommended" />
+        </FEEDBACK>
+      </CUSTOM_CHECK>
     </CUSTOM_CHECKS>
   </MOODLE>
 </COMPATIBILITY_MATRIX>
