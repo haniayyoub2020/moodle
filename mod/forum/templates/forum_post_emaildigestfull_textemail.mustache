@@ -36,7 +36,6 @@
     * forumindexlink
 }}
 
-{{ discussionlink }}
 {{{ subject }}} ({{{ permalink }}})
 {{# str }} bynameondate, forum, {
         "name": {{# quote }}{{{ authorfullname }}}{{/ quote }},
@@ -44,7 +43,8 @@
     } {{/ str }}
 ---------------------------------------------------------------------
 {{{ message }}}
-
+{{# attachments }}
 {{{ attachments }}}
+{{/ attachments }}
 ---------------------------------------------------------------------
 {{# str }} digestmailpostlink, forum, {{{ forumindexlink }}} {{/ str }}

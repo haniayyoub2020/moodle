@@ -493,7 +493,7 @@ function forum_cron() {
     // with mail from the past few weeks or months
     $timenow   = time();
     $endtime   = $timenow - $CFG->maxeditingtime;
-    $starttime = $endtime - 48 * 3600;   // Two days earlier
+    $starttime = $endtime - (14 * WEEKSECS);
 
     // Get the list of forum subscriptions for per-user per-forum maildigest settings.
     $digestsset = $DB->get_recordset('forum_digests', null, '', 'id, userid, forum, maildigest');
@@ -516,10 +516,10 @@ function forum_cron() {
         // but since mail isn't crucial, we can accept this risk.  Doing it now
         // prevents the risk of duplicated mails, which is a worse problem.
 
-        if (!forum_mark_old_posts_as_mailed($endtime)) {
-            mtrace('Errors occurred while trying to mark some posts as being mailed.');
-            return false;  // Don't continue trying to mail them, in case we are in a cron loop
-        }
+        //if (!forum_mark_old_posts_as_mailed($endtime)) {
+            //mtrace('Errors occurred while trying to mark some posts as being mailed.');
+            //return false;  // Don't continue trying to mail them, in case we are in a cron loop
+        //}
 
         // checking post validity, and adding users to loop through later
         foreach ($posts as $pid => $post) {
@@ -605,6 +605,7 @@ function forum_cron() {
     if ($users && $posts) {
 
         foreach ($users as $userto) {
+
             // Terminate if processing of any account takes longer than 2 minutes.
             core_php_time_limit::raise(120);
 
@@ -889,13 +890,14 @@ function forum_cron() {
                     }
                 }
 
-                mtrace('post ' . $post->id . ': ' . $post->subject);
+                //mtrace('post ' . $post->id . ': ' . $post->subject . " to {$userto->id}");
+                mtrace("post {$post->id}: to {$userto->id}");
             }
 
             // Mark processed posts as read.
-            if (get_user_preferences('forum_markasreadonnotification', 1, $userto->id) == 1) {
-                forum_tp_mark_posts_read($userto, $userto->markposts);
-            }
+            //if (get_user_preferences('forum_markasreadonnotification', 1, $userto->id) == 1) {
+                //forum_tp_mark_posts_read($userto, $userto->markposts);
+            //}
 
             unset($userto);
         }
@@ -934,7 +936,7 @@ function forum_cron() {
 
     // Delete any really old ones (normally there shouldn't be any)
     $weekago = $timenow - (7 * 24 * 3600);
-    $DB->delete_records_select('forum_queue', "timemodified < ?", array($weekago));
+    //$DB->delete_records_select('forum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
     if ($CFG->digestmailtimelast < $digesttime and $timenow > $digesttime) {
@@ -1008,7 +1010,7 @@ function forum_cron() {
                 mtrace(get_string('processingdigest', 'forum', $userid), '... ');
 
                 // First of all delete all the queue entries for this user
-                $DB->delete_records_select('forum_queue', "userid = ? AND timemodified < ?", array($userid, $digesttime));
+                //$DB->delete_records_select('forum_queue', "userid = ? AND timemodified < ?", array($userid, $digesttime));
 
                 // Init user caches - we keep the cache for one cycle only,
                 // otherwise it would unnecessarily consume memory.
@@ -1211,9 +1213,9 @@ function forum_cron() {
                     $usermailcount++;
 
                     // Mark post as read if forum_usermarksread is set off
-                    if (get_user_preferences('forum_markasreadonnotification', 1, $userto->id) == 1) {
-                        forum_tp_mark_posts_read($userto, $userto->markposts);
-                    }
+                    //if (get_user_preferences('forum_markasreadonnotification', 1, $userto->id) == 1) {
+                        //forum_tp_mark_posts_read($userto, $userto->markposts);
+                    //}
                 }
             }
         }
@@ -1232,7 +1234,7 @@ function forum_cron() {
         if ($CFG->forum_lastreadclean + (24*3600) < $timenow) {
             set_config('forum_lastreadclean', $timenow);
             mtrace('Removing old forum read tracking info...');
-            forum_tp_clean_read_records();
+            //forum_tp_clean_read_records();
         }
     } else {
         set_config('forum_lastreadclean', time());
