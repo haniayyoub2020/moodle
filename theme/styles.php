@@ -120,10 +120,8 @@ $theme->set_rtl_mode($type === 'all-rtl' ? true : false);
 
 $themerev = theme_get_revision();
 
-$cache = true;
 if ($themerev <= 0 or $themerev != $rev) {
     $rev = $themerev;
-    $cache = false;
 
     $candidatedir = "$CFG->localcachedir/theme/$rev/$themename/css";
     $etag = "$rev/$themename/$type";
@@ -149,22 +147,18 @@ if ($type === 'editor') {
     css_store_css($theme, "$candidatedir/editor.css", $csscontent, false);
 
 } else {
-
-    $lock = null;
     // Lock system to prevent concurrent requests to compile LESS/SCSS, which is really slow and CPU intensive.
     // Each client should wait for one to finish the compilation before starting a new compiling process.
     // We only do this when the file will be cached...
-    if ($cache) {
-        $lockfactory = \core\lock\lock_config::get_lock_factory('core_theme_get_css_content');
-        // We wait for the lock to be acquired, the timeout does not need to be strict here.
-        $lock = $lockfactory->get_lock($themename, rand(90, 120));
-        if (file_exists($candidatesheet)) {
-            // The file was built while we waited for the lock, we release the lock and serve the file.
-            if ($lock) {
-                $lock->release();
-            }
-            css_send_cached_css($candidatesheet, $etag);
+    $lockfactory = \core\lock\lock_config::get_lock_factory('core_theme_get_css_content');
+    // We wait for the lock to be acquired, the timeout does not need to be strict here.
+    $lock = $lockfactory->get_lock($themename, rand(90, 120));
+    if (file_exists($candidatesheet)) {
+        // The file was built while we waited for the lock, we release the lock and serve the file.
+        if ($lock) {
+            $lock->release();
         }
+        css_send_cached_css($candidatesheet, $etag);
     }
 
     // Older IEs require smaller chunks.
@@ -193,12 +187,7 @@ if ($type === 'editor') {
     }
 }
 
-if (!$cache) {
-    // Do not pollute browser caches if invalid revision requested,
-    // let's ignore legacy IE breakage here too.
-    css_send_uncached_css($csscontent);
-
-} else if ($chunk !== null and file_exists($candidatesheet)) {
+if ($chunk !== null and file_exists($candidatesheet)) {
     // Greetings stupid legacy IEs!
     css_send_cached_css($candidatesheet, $etag);
 
