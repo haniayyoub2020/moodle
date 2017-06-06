@@ -63,10 +63,13 @@ if ($slashargument = min_get_slash_argument()) {
     $usesvg    = (bool)min_optional_param('svg', '1', 'INT');
 }
 
+// Check that type fits into the expected values.
 if ($type === 'editor') {
     // The editor CSS is never chunked.
     $chunk = null;
 } else if ($type === 'all' || $type === 'all-rtl') {
+    // We're fine.
+} else if ($type === 'fallback' || $type === 'fallback-rtl') {
     // We're fine.
 } else {
     css_send_css_not_found();
@@ -116,11 +119,38 @@ define('NO_UPGRADE_CHECK', true);  // Ignore upgrade check.
 
 require("$CFG->dirroot/lib/setup.php");
 
+$isrtl = strpos($type, '-rtl') !== false;
 $theme = theme_config::load($themename);
 $theme->force_svg_use($usesvg);
-$theme->set_rtl_mode($type === 'all-rtl' ? true : false);
-
+$theme->set_rtl_mode($isrtl);
 $themerev = theme_get_revision();
+
+if ($type === 'fallback' || $type === 'fallback-rtl') {
+    if ($fallbacksheet = $theme->get_fallback_css_file($chunk)) {
+        // The fallback is returned along with the Content-Length.
+        // Do not end when the content is returned so that the new content can be written without causing the client to wait.
+        $css = file_get_contents($fallbacksheet);
+        header('Content-Length: ' . strlen($css));
+        css_send_uncached_css($css, false);
+
+        // Now that the fallback has been sent, generate the content.
+        // Use a very low lock time because there's no point in waiting for the lock if another thread is generating it.
+        if ($lock = theme_styles_get_lock($themename, 1)) {
+            theme_styles_generate_and_store($theme, $themerev, $candidatedir);
+
+            // Release the lock without printing the content.
+            $lock->release();
+        }
+
+        // We must actively exit here because we prevented the die earlier.
+        die;
+    } else {
+        // No valid fallback found - continue the script here as normal and generate the content.
+        // Reset the $type to the target type and recalculate paths.
+        $type = $isrtl ? 'all-rtl' : 'all';
+        $rev = -1;
+    }
+}
 
 $cache = true;
 if ($themerev <= 0 or $themerev != $rev) {
@@ -155,8 +185,7 @@ if ($type === 'editor') {
 } else {
     // Fetch a lock whilst the CSS is fetched as this can be slow and CPU intensive.
     // Each client should wait for one to finish the compilation before starting the compiler.
-    $lockfactory = \core\lock\lock_config::get_lock_factory('core_theme_get_css_content');
-    $lock = $lockfactory->get_lock($themename, rand(90, 120));
+    $lock = theme_styles_get_lock($themename, rand(90, 120));
 
     if (file_exists($chunkedcandidatesheet)) {
         // The file was built while we waited for the lock, we release the lock and serve the file.
@@ -173,27 +202,7 @@ if ($type === 'editor') {
 
     // The lock is still held, and the sheet still does not exist.
     // Compile the CSS content.
-    if (!$csscontent = $theme->get_css_cached_content()) {
-        $csscontent = $theme->get_css_content();
-        $theme->set_css_content_cache($csscontent);
-    }
-
-    $relroot = preg_replace('|^http.?://[^/]+|', '', $CFG->wwwroot);
-    if (!empty($slashargument)) {
-        if ($usesvg) {
-            $chunkurl = "{$relroot}/theme/styles.php/{$themename}/{$rev}/$type";
-        } else {
-            $chunkurl = "{$relroot}/theme/styles.php/_s/{$themename}/{$rev}/$type";
-        }
-    } else {
-        if ($usesvg) {
-            $chunkurl = "{$relroot}/theme/styles.php?theme={$themename}&rev={$rev}&type=$type";
-        } else {
-            $chunkurl = "{$relroot}/theme/styles.php?theme={$themename}&rev={$rev}&type=$type&svg=0";
-        }
-    }
-
-    css_store_css($theme, $candidatesheet, $csscontent, true, $chunkurl);
+    $candidatesheet = theme_styles_generate_and_store($theme, $rev, $candidatedir);
 
     if ($lock) {
         // Now that the CSS has been generated and/or stored, release the lock.
@@ -205,7 +214,7 @@ if ($type === 'editor') {
 if (!$cache) {
     // Do not pollute browser caches if invalid revision requested,
     // let's ignore legacy IE breakage here too.
-    css_send_uncached_css($csscontent);
+    css_send_uncached_css(file_get_contents($candidatesheet));
 
 } else if ($chunk !== null and file_exists($chunkedcandidatesheet)) {
     // Greetings stupid legacy IEs!
@@ -213,5 +222,70 @@ if (!$cache) {
 
 } else {
     // Real browsers - this is the expected result!
-    css_send_cached_css_content($csscontent, $etag);
+    css_send_cached_css($candidatesheet, $etag);
+}
+
+/**
+ * Get the lock for the theme build.
+ *
+ * @param   string  $themename The name of the theme
+ * @param   int     $timeout The lock timeout
+ * @return  lock|false The generated lock, or false if the fetch timed out
+ */
+function theme_styles_get_lock($themename, $timeout) {
+    $lockfactory = \core\lock\lock_config::get_lock_factory('core_theme_get_css_content');
+    return $lockfactory->get_lock($themename, $timeout);
+}
+
+/**
+ * Generate the theme CSS and store it.
+ *
+ * @param   theme_config    $theme The theme to be generated
+ * @param   int             $rev The theme revision
+ * @param   string          $candidatedir The directory that it should be stored in
+ * @return  string          The path that the primary (non-chunked) CSS was written to
+ */
+function theme_styles_generate_and_store($theme, $rev, $candidatedir) {
+    global $CFG;
+
+    // Generate the content first.
+    if (!$csscontent = $theme->get_css_cached_content()) {
+        $csscontent = $theme->get_css_content();
+        $theme->set_css_content_cache($csscontent);
+    }
+
+    if ($theme->get_rtl_mode()) {
+        $type = "all-rtl";
+    } else {
+        $type = "all";
+    }
+
+    // Determine the candidatesheet path.
+    $candidatesheet = "{$candidatedir}/{$type}";
+    if (!$theme->use_svg_icons()) {
+        $candidatesheet .= '-nosvg';
+    }
+    $candidatesheet .= ".css";
+
+    // Determine the chunking URL.
+    // Note, this will be removed when support for IE9 is removed.
+    $relroot = preg_replace('|^http.?://[^/]+|', '', $CFG->wwwroot);
+    if (!empty(min_get_slash_argument())) {
+        if ($theme->use_svg_icons()) {
+            $chunkurl = "{$relroot}/theme/styles.php/{$theme->name}/{$rev}/$type";
+        } else {
+            $chunkurl = "{$relroot}/theme/styles.php/_s/{$theme->name}/{$rev}/$type";
+        }
+    } else {
+        if ($theme->use_svg_icons()) {
+            $chunkurl = "{$relroot}/theme/styles.php?theme={$theme->name}&rev={$rev}&type=$type";
+        } else {
+            $chunkurl = "{$relroot}/theme/styles.php?theme={$theme->name}&rev={$rev}&type=$type&svg=0";
+        }
+    }
+
+    // Store the CSS.
+    css_store_css($theme, $candidatesheet, $csscontent, true, $chunkurl);
+
+    return $candidatesheet;
 }

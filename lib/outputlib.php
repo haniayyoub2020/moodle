@@ -786,16 +786,12 @@ class theme_config {
             $filename = right_to_left() ? 'all-rtl' : 'all';
             $url = new moodle_url("$CFG->httpswwwroot/theme/styles.php");
             if (!empty($CFG->slasharguments)) {
-                $slashargs = '';
-                if (!$svg) {
-                    // We add a simple /_s to the start of the path.
-                    // The underscore is used to ensure that it isn't a valid theme name.
-                    $slashargs .= '/_s'.$slashargs;
-                }
-                $slashargs .= '/'.$this->name.'/'.$rev.'/'.$filename;
-                if ($separate) {
-                    $slashargs .= '/chunk0';
-                }
+                // We add a simple /_s to the start of the path.
+                // The underscore is used to ensure that it isn't a valid theme name.
+                $svgargs = $svg ? '' : '/_s';
+                $chunkargs = $separate ? '/chunk0' : '';
+
+                $slashargs = "{$svgargs}/{$this->name}/{$rev}/{$filename}{$chunkargs}";
                 $url->set_slashargument($slashargs, 'noparam', true);
             } else {
                 $params = array('theme' => $this->name, 'rev' => $rev, 'type' => $filename);
@@ -809,7 +805,23 @@ class theme_config {
                 }
                 $url->params($params);
             }
-            $urls[] = $url;
+
+            if ($this->get_fallback_css_file() && !$this->is_theme_compiled($rev, $filename)) {
+                // The theme has not been compiled yet, and a fallback is available.
+                // Use the fallback version instead.
+                // The arguments are the same, but the filename needs to change from all to fallback.
+                $alturl = new moodle_url($url);
+                $altfilename = str_replace('all', 'fallback', $filename);
+                if (!empty($CFG->slasharguments)) {
+                    $altslashargs = "{$svgargs}/{$this->name}/{$rev}/{$altfilename}{$chunkargs}";
+                    $alturl->set_slashargument($altslashargs, 'noparam', true);
+                } else {
+                    $alturl->param('type', $altfilename);
+                }
+                $urls[] = $alturl;
+            } else {
+                $urls[] = $url;
+            }
 
         } else {
             $baseurl = new moodle_url($CFG->httpswwwroot.'/theme/styles_debug.php');
@@ -941,6 +953,35 @@ class theme_config {
         $rtlmode = ($this->rtlmode == true) ? 'rtl' : 'ltr';
 
         return $nosvg . $this->name . '_' . $rtlmode;
+    }
+
+    /**
+     * Determine whether the theme CSS has been compiled.
+     *
+     * @param null $rev
+     * @param string $type
+     * @return bool
+     */
+    public function is_theme_compiled($rev = null, $type = 'all') {
+        global $CFG;
+
+        if ($rev <= 0) {
+            // We are in Theme Designer mode. We never have a pre-compiled version.
+            return true;
+        }
+
+        if ($this->use_svg_icons()) {
+            $type .= '-nosvg';
+        }
+
+        // Check whether the file exists in localcache. This is cheaper than going to MUC.
+        $file = "{$CFG->localcachedir}/theme/{$rev}/{$this->name}/css/{$type}.css";
+        if (file_exists($file)) {
+            return true;
+        }
+
+        // Check whether the compiled version exists in MUC.
+        return cache::make('core', 'postprocessedcss')->has($this->get_css_cache_key());
     }
 
     /**
@@ -1160,6 +1201,42 @@ class theme_config {
             $cache->set($cachekey, $files);
         }
         return $cssfiles;
+    }
+
+    /**
+     * Get the location of the fallback CSS file for this theme.
+     *
+     * @param   int $chunk The chunk number if chunking is required
+     * @return  string
+     */
+    public function get_fallback_css_file($chunk = null) {
+        global $CFG;
+
+        $filename = 'all';
+        if ($this->rtlmode) {
+            $filename .= '-rtl';
+        }
+
+        if (!$this->use_svg_icons()) {
+            $filename .= '-nosvg';
+        }
+
+        if ($chunk !== null) {
+            $filename .= ".{$chunk}";
+        }
+
+        // The list of locations to check in order.
+        $checkfiles = [
+            "{$CFG->tempdir}/theme/{$this->name}/{$filename}.css",
+        ];
+
+        foreach ($checkfiles as $fallbackfile) {
+            if (file_exists($fallbackfile)) {
+                return $fallbackfile;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -1995,6 +2072,15 @@ class theme_config {
      */
     public function set_rtl_mode($inrtl = true) {
         $this->rtlmode = $inrtl;
+    }
+
+    /**
+     * Whether the theme is being served in RTL mode.
+     *
+     * @return bool True when in RTL mode.
+     */
+    public function get_rtl_mode() {
+        return $this->rtlmode;
     }
 
     /**
