@@ -24,7 +24,7 @@
 
 // Disable moodle specific debug messages and any errors in output,
 // comment out when debugging or better look into error log!
-define('NO_DEBUG_DISPLAY', true);
+//define('NO_DEBUG_DISPLAY', true);
 
 define('ABORT_AFTER_CONFIG', true);
 require('../config.php');
@@ -66,7 +66,7 @@ if ($slashargument = min_get_slash_argument()) {
 if ($type === 'editor') {
     // The editor CSS is never chunked.
     $chunk = null;
-} else if ($type === 'all' || $type === 'all-rtl') {
+} else if ($type === 'all' || $type === 'all-rtl' || $type === 'fallback' || $type === 'fallback-rtl') {
     // We're fine.
 } else {
     css_send_css_not_found();
@@ -106,6 +106,14 @@ if (file_exists($candidatesheet)) {
     css_send_cached_css($candidatesheet, $etag);
 }
 
+if ($type === 'fallback' || $type === 'fallback-rtl') {
+    $candidatedir = "{$CFG->tempdir}/theme_{$themename}";
+    $candidatesheet =  "{$candidatedir}/{$candidatename}.css";
+    if (file_exists($candidatesheet)) {
+        css_send_uncached_css(file_get_contents($candidatesheet));
+    }
+}
+
 // Ok, now we need to start normal moodle script, we need to load all libs and $DB.
 define('ABORT_AFTER_CONFIG_CANCEL', true);
 
@@ -118,6 +126,19 @@ $theme = theme_config::load($themename);
 $theme->force_svg_use($usesvg);
 $theme->set_rtl_mode($type === 'all-rtl' ? true : false);
 
+if ($type === 'fallback' || $type === 'fallback-rtl') {
+    $fallbacks = $theme->get_fallback_css_files();
+    $csscontent = '';
+    foreach ($fallbacks as $candidatesheet) {
+        $csscontent .= file_get_contents($candidatesheet);
+    }
+    if (!empty($csscontent)) {
+        css_send_uncached_css($csscontent);
+    }
+
+    // We have no CSS to return.
+    css_send_css_not_found();
+}
 $themerev = theme_get_revision();
 
 $cache = true;
@@ -149,6 +170,9 @@ if ($type === 'editor') {
     css_store_css($theme, "$candidatedir/editor.css", $csscontent, false);
 
 } else {
+    if ($type === 'fallback' || $type === 'fallback-rtl') {
+        $cache = false;
+    }
 
     $lock = null;
     // Lock system to prevent concurrent requests to compile LESS/SCSS, which is really slow and CPU intensive.

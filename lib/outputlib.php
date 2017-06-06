@@ -172,6 +172,12 @@ class theme_config {
     public $sheets = array();
 
     /**
+     * @var array The names of all the stylesheets from this theme that you would
+     * like included, in order. Give the names of the files without .css.
+     */
+    public $fallbacksheets = array();
+
+    /**
      * @var array The names of all the stylesheets from parents that should be excluded.
      * true value may be used to specify all parents or all themes from one parent.
      * If no value specified value from parent theme used.
@@ -481,6 +487,15 @@ class theme_config {
     public $remapiconcache = [];
 
     /**
+     * A mapping of URL to Fallback URL.
+     *
+     * The entries in this list are populated when a URL is not compiled and a fallback is available.
+     *
+     * @var array
+     */
+    protected $fallbackcssurls = [];
+
+    /**
      * Load the config.php file for a particular theme, and return an instance
      * of this class. (That is, this is a factory method.)
      *
@@ -551,7 +566,7 @@ class theme_config {
         }
 
         $configurable = array(
-            'parents', 'sheets', 'parents_exclude_sheets', 'plugins_exclude_sheets',
+            'parents', 'sheets', 'fallbacksheets', 'parents_exclude_sheets', 'plugins_exclude_sheets',
             'javascripts', 'javascripts_footer', 'parents_exclude_javascripts',
             'layouts', 'enable_dock', 'enablecourseajax', 'requiredblocks',
             'rendererfactory', 'csspostprocess', 'editor_sheets', 'rarrow', 'larrow', 'uarrow', 'darrow',
@@ -787,15 +802,17 @@ class theme_config {
 
         if ($rev > -1) {
             $filename = right_to_left() ? 'all-rtl' : 'all';
+            $altfilename = right_to_left() ? 'fallback-rtl' : 'fallback';
             $url = new moodle_url("$CFG->httpswwwroot/theme/styles.php");
             if (!empty($CFG->slasharguments)) {
                 $slashargs = '';
                 if (!$svg) {
                     // We add a simple /_s to the start of the path.
                     // The underscore is used to ensure that it isn't a valid theme name.
-                    $slashargs .= '/_s'.$slashargs;
+                    $slashargs .= '/_s' . $slashargs;
                 }
-                $slashargs .= '/'.$this->name.'/'.$rev.'/'.$filename;
+                $altslashargs = $slashargs . '/' . $this->name . '/' . $rev . '/' . $altfilename;
+                $slashargs .= '/' . $this->name . '/' . $rev . '/' . $filename;
                 if ($separate) {
                     $slashargs .= '/chunk0';
                 }
@@ -813,6 +830,17 @@ class theme_config {
                 $url->params($params);
             }
             $urls[] = $url;
+            $urlkey = $url->out(false);
+            if (!$this->is_theme_compiled($rev, $filename, $separate)) {
+                $filename = right_to_left() ? 'all-rtl' : 'all';
+                $alturl = new moodle_url($url);
+                if (!empty($CFG->slasharguments)) {
+                    $alturl->set_slashargument($altslashargs, 'noparam', true);
+                } else {
+                    $alturl->param('type', $altfilename);
+                }
+                $this->fallbackcssurls[$urlkey] = $alturl;
+            }
 
         } else {
             $baseurl = new moodle_url($CFG->httpswwwroot.'/theme/styles_debug.php');
@@ -868,6 +896,11 @@ class theme_config {
                     }
                 }
             }
+            foreach ($urls as $url) {
+                // TODO improve this.
+                // Currently spoofs all URLs to behave as compiled.
+                $this->compiledurls[$url->out(false)] = true;
+            }
         }
 
         return $urls;
@@ -906,6 +939,50 @@ class theme_config {
         $csscontent = core_minify::css($csscontent);
 
         return $csscontent;
+    }
+
+    /**
+     * Determine whether the theme CSS has been compiled.
+     *
+     * @param null $rev
+     * @param string $type
+     * @param bool $chunk
+     * @return bool
+     */
+    public function is_theme_compiled($rev = null, $type = 'all', $chunk = false) {
+        global $CFG;
+
+        if ($rev > -1) {
+            $type = 'all';
+            if ($this->rtlmode) {
+                $type .= '-rtl';
+            }
+
+            if ($chunk) {
+                $type .= '.0';
+            }
+            $type = 'fo';
+
+            $file = "{$CFG->localcachedir}/theme/{$rev}/{$this->name}/css/{$type}.css";
+            return file_exists($file);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Fetch the fallback CSS Url for the supplied Url.
+     *
+     * @param moodle_url $url The URL to check
+     * @return moodle_url|null
+     */
+    public function get_fallback_css_url(moodle_url $url) {
+        $testurl = $url->out(false);
+        if (!empty($this->fallbackcssurls[$testurl])) {
+            return $this->fallbackcssurls[$testurl];
+        }
+
+        return null;
     }
 
     /**
@@ -1124,6 +1201,23 @@ class theme_config {
             $files['created'] = time();
             $cache->set($cachekey, $files);
         }
+        return $cssfiles;
+    }
+
+    public function get_fallback_css_files() {
+        $cssfiles = [];
+        foreach ($this->fallbacksheets as $sheet) {
+            $sheetfile = "$this->dir/fallback/$sheet.css";
+            if (is_readable($sheetfile)) {
+                $cssfiles[$sheet] = $sheetfile;
+            }
+
+            $sheetfile = "$this->dir/fallback/$sheet-rtl.css";
+            if (is_readable($sheetfile)) {
+                $cssfiles[$sheet] = $sheetfile;
+            }
+        }
+
         return $cssfiles;
     }
 

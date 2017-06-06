@@ -629,8 +629,17 @@ class core_renderer extends renderer_base {
         // Get the theme stylesheet - this has to be always first CSS, this loads also styles.css from all plugins;
         // any other custom CSS can not be overridden via themes and is highly discouraged
         $urls = $this->page->theme->css_urls($this->page);
+
         foreach ($urls as $url) {
-            $this->page->requires->css_theme($url);
+            if ($fallback = $this->page->theme->get_fallback_css_url($url)) {
+                // The theme is not fully compiled and an alternative is available.
+                // Load the alternative now, and queue a lazy-loading of the URL.
+                $this->page->requires->css_theme($fallback);
+                $this->page->requires->js_call_amd('core/themeloader', 'queueCssUrl', [$url->out()]);
+            } else {
+                // The theme is already compiled, or default URL was not found.
+                $this->page->requires->css_theme($url);
+            }
         }
 
         // Get the theme javascript head and footer
