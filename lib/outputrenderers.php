@@ -601,6 +601,12 @@ class core_renderer extends renderer_base {
             $this->page->requires->css_theme($url);
         }
 
+        // Get any CSS URLs which have been queued for a lazy load.
+        $urls = $this->page->theme->queued_css_urls($this->page);
+        foreach ($urls as $url) {
+            $this->page->requires->js_call_amd('core/themeloader', 'queueCssUrl', [$url->out(false)]);
+        }
+
         // Get the theme javascript head and footer
         if ($jsurl = $this->page->theme->javascript_url(true)) {
             $this->page->requires->js($jsurl, true);

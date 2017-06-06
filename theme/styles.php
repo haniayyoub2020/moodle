@@ -63,13 +63,20 @@ if ($slashargument = min_get_slash_argument()) {
     $usesvg    = (bool)min_optional_param('svg', '1', 'INT');
 }
 
-if ($type === 'editor') {
-    // The editor CSS is never chunked.
-    $chunk = null;
-} else if ($type === 'all' || $type === 'all-rtl') {
-    // We're fine.
-} else {
-    css_send_css_not_found();
+// Check that type fits into the expected values.
+switch ($type) {
+    case 'editor':
+        // The editor CSS is never chunked.
+        $chunk = null;
+        break;
+    case 'all':
+    case 'all-rtl':
+    case 'fallback':
+    case 'fallback-rtl':
+        // Chunking is allowed.
+        break;
+    default:
+        css_send_css_not_found();
 }
 
 if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
@@ -119,6 +126,16 @@ require("$CFG->dirroot/lib/setup.php");
 $theme = theme_config::load($themename);
 $theme->force_svg_use($usesvg);
 $theme->set_rtl_mode($type === 'all-rtl' ? true : false);
+
+if ($type === 'fallback' || $type === 'fallback-rtl') {
+    if ($fallbacksheet = $theme->get_fallback_css_file($chunk)) {
+        // A valid fallback was found. Return it.
+        css_send_uncached_css(file_get_contents($fallbacksheet));
+    } else {
+        // No valid fallback found.
+        css_send_css_not_found();
+    }
+}
 
 $themerev = theme_get_revision();
 
