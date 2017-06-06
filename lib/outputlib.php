@@ -194,6 +194,12 @@ class theme_config {
     public $editor_sheets = array();
 
     /**
+     * @var bool Whether a fallback version of the stylesheet will be used
+     * whilst the final version is generated.
+     */
+    public $usefallback = false;
+
+    /**
      * @var array The names of all the javascript files this theme that you would
      * like included from head, in order. Give the names of the files without .js.
      */
@@ -554,7 +560,7 @@ class theme_config {
         }
 
         $configurable = array(
-            'parents', 'sheets', 'parents_exclude_sheets', 'plugins_exclude_sheets',
+            'parents', 'sheets', 'parents_exclude_sheets', 'plugins_exclude_sheets', 'usefallback',
             'javascripts', 'javascripts_footer', 'parents_exclude_javascripts',
             'layouts', 'enable_dock', 'enablecourseajax', 'requiredblocks',
             'rendererfactory', 'csspostprocess', 'editor_sheets', 'rarrow', 'larrow', 'uarrow', 'darrow',
@@ -792,16 +798,12 @@ class theme_config {
             $filename = right_to_left() ? 'all-rtl' : 'all';
             $url = new moodle_url("$CFG->httpswwwroot/theme/styles.php");
             if (!empty($CFG->slasharguments)) {
-                $slashargs = '';
-                if (!$svg) {
-                    // We add a simple /_s to the start of the path.
-                    // The underscore is used to ensure that it isn't a valid theme name.
-                    $slashargs .= '/_s'.$slashargs;
-                }
-                $slashargs .= '/'.$this->name.'/'.$rev.'/'.$filename;
-                if ($separate) {
-                    $slashargs .= '/chunk0';
-                }
+                // We add a simple /_s to the start of the path.
+                // The underscore is used to ensure that it isn't a valid theme name.
+                $svgargs = $svg ? '' : '/_s';
+                $chunkargs = $separate ? '/chunk0' : '';
+
+                $slashargs = "{$svgargs}/{$this->name}/{$rev}/{$filename}{$chunkargs}";
                 $url->set_slashargument($slashargs, 'noparam', true);
             } else {
                 $params = array('theme' => $this->name, 'rev' => $rev, 'type' => $filename);
@@ -815,6 +817,7 @@ class theme_config {
                 }
                 $url->params($params);
             }
+
             $urls[] = $url;
 
         } else {
@@ -922,6 +925,19 @@ class theme_config {
         $key = $this->get_css_cache_key();
 
         return $cache->set($key, $csscontent);
+    }
+
+    /**
+     * Return whether the post processed CSS content has been cached.
+     *
+     * @return bool Whether the post-processed CSS is available in the cache.
+     */
+    public function has_css_cached_content() {
+
+        $key = $this->get_css_cache_key();
+        $cache = cache::make('core', 'postprocessedcss');
+
+        return $cache->has($key);
     }
 
     /**
@@ -2038,6 +2054,15 @@ class theme_config {
      */
     public function set_rtl_mode($inrtl = true) {
         $this->rtlmode = $inrtl;
+    }
+
+    /**
+     * Whether the theme is being served in RTL mode.
+     *
+     * @return bool True when in RTL mode.
+     */
+    public function get_rtl_mode() {
+        return $this->rtlmode;
     }
 
     /**
