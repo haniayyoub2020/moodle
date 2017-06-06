@@ -341,7 +341,7 @@ function css_send_cached_css_content($csscontent, $etag) {
  *
  * @param string $css
  */
-function css_send_uncached_css($css) {
+function css_send_uncached_css($css, $die = true) {
     header('Content-Disposition: inline; filename="styles_debug.php"');
     header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
     header('Expires: '. gmdate('D, d M Y H:i:s', time() + THEME_DESIGNER_CACHE_LIFETIME) .' GMT');
@@ -353,7 +353,10 @@ function css_send_uncached_css($css) {
         $css = implode("\n\n", $css);
     }
     echo $css;
-    die;
+
+    if ($die) {
+        die;
+    }
 }
 
 /**
