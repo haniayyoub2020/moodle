@@ -154,10 +154,10 @@ if ($type === 'editor') {
     // Lock system to prevent concurrent requests to compile LESS/SCSS, which is really slow and CPU intensive.
     // Each client should wait for one to finish the compilation before starting a new compiling process.
     // We only do this when the file will be cached...
-    if (in_array($type, ['less', 'scss']) && $cache) {
+    if ($cache) {
         $lockfactory = \core\lock\lock_config::get_lock_factory('core_theme_get_css_content');
         // We wait for the lock to be acquired, the timeout does not need to be strict here.
-        $lock = $lockfactory->get_lock($themename, rand(15, 30));
+        $lock = $lockfactory->get_lock($themename, rand(90, 120));
         if (file_exists($candidatesheet)) {
             // The file was built while we waited for the lock, we release the lock and serve the file.
             if ($lock) {
