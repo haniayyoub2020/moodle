@@ -122,8 +122,12 @@ $themerev = theme_get_revision();
 
 $cache = true;
 if ($themerev <= 0 or $themerev != $rev) {
+    if ($rev > $themerev || $rev < 0) {
+        // The requested revision is greater than the theme revision, or is -1.
+        // Do not cache. Caching here would create stale records in the browser cache.
+        $cache = false;
+    }
     $rev = $themerev;
-    $cache = false;
 
     $candidatedir = "$CFG->localcachedir/theme/$rev/$themename/css";
     $etag = "$rev/$themename/$type";
