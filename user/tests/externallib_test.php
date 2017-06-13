@@ -1148,6 +1148,45 @@ class core_user_externallib_testcase extends externallib_advanced_testcase {
         } catch (Exception $e) {
             $this->fail('Expecting \'usernotfullysetup\' moodle_exception to be thrown.');
         }
+    }
 
+    /**
+     * Test get_private_files_info
+     */
+    public function test_get_private_files_info() {
+
+        $this->resetAfterTest(true);
+        $user = self::getDataGenerator()->create_user();
+        $this->setUser($user);
+        $usercontext = context_user::instance($user->id);
+
+        $filerecord = array(
+            'contextid' => $usercontext->id,
+            'component' => 'user',
+            'filearea'  => 'private',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename'  => 'thefile',
+        );
+
+        $fs = get_file_storage();
+        $file = $fs->create_file_from_string($filerecord, 'abc');
+
+        // Get my private files information.
+        $result = core_user_external::get_private_files_info();
+        $result = external_api::clean_returnvalue(core_user_external::get_private_files_info_returns(), $result);
+        $this->assertEquals(1, $result['filecount']);
+        $this->assertEquals($file->get_filesize(), $result['filesize']);
+        $this->assertEquals(1, $result['foldercount']);   // Base directory.
+        $this->assertEquals($file->get_filesize(), $result['filesizewithoutreferences']);
+
+        // As admin, get user information.
+        $this->setAdminUser();
+        $result = core_user_external::get_private_files_info($user->id);
+        $result = external_api::clean_returnvalue(core_user_external::get_private_files_info_returns(), $result);
+        $this->assertEquals(1, $result['filecount']);
+        $this->assertEquals($file->get_filesize(), $result['filesize']);
+        $this->assertEquals(1, $result['foldercount']);   // Base directory.
+        $this->assertEquals($file->get_filesize(), $result['filesizewithoutreferences']);
     }
 }
