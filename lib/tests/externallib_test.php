@@ -32,6 +32,92 @@ require_once($CFG->libdir . '/externallib.php');
 class core_externallib_testcase extends advanced_testcase {
     protected $DB;
 
+    public function test_my_stuff() {
+        global $USER, $CFG, $DB;
+        $this->preventResetByRollback(true);
+        echo "Running...\n";
+        ob_flush();
+        $this->resetAfterTest(true);
+
+        $environment = (object) [
+            'values' => [
+                [
+                    'key' => 'pathtomoodle',
+                    'value' => 'http://' . WEB_SERVER_HOST . ':' . WEB_SERVER_PORT,
+                ],
+            ]
+        ];
+
+        set_config('enablemobilewebservice', true);
+
+        // Add a web service and token.
+        $webservice = new stdClass();
+        $webservice->name = 'Test web service';
+        $webservice->enabled = true;
+        $webservice->restrictedusers = false;
+        $webservice->component = 'moodle';
+        $webservice->timecreated = time();
+        $webservice->downloadfiles = true;
+        $webservice->uploadfiles = true;
+        $externalserviceid = $DB->insert_record('external_services', $webservice);
+
+        // Add a function to the service
+        $DB->insert_record('external_services_functions', array('externalserviceid' => $externalserviceid,
+            'functionname' => 'core_user_get_private_files_info'));
+
+        $this->setAdminUser();
+        $externaltoken = new stdClass();
+        $externaltoken->token = 'admintoken';
+        $externaltoken->tokentype = 0;
+        $externaltoken->userid = $USER->id;
+        $externaltoken->externalserviceid = $externalserviceid;
+        $externaltoken->contextid = 1;
+        $externaltoken->creatorid = $USER->id;
+        $externaltoken->timecreated = time();
+        $DB->insert_record('external_tokens', $externaltoken);
+        $environment->values[] = [
+            'key' => 'admintoken',
+            'value' => $externaltoken->token,
+        ];
+        $environment->values[] = [
+            'key' => 'adminid',
+            'value' => $USER->id
+        ];
+
+
+        $u1 = $this->getDataGenerator()->create_user();
+        $externaltoken = new stdClass();
+        $externaltoken->token = 'usertoken';
+        $externaltoken->tokentype = 0;
+        $externaltoken->userid = $u1->id;
+        $externaltoken->externalserviceid = $externalserviceid;
+        $externaltoken->contextid = 1;
+        $externaltoken->creatorid = $u1->id;
+        $externaltoken->timecreated = time();
+        $DB->insert_record('external_tokens', $externaltoken);
+
+        $environment->values[] = [
+            'key' => 'usertoken',
+            'value' => $externaltoken->token,
+        ];
+        $environment->values[] = [
+            'key' => 'userid',
+            'value' => $u1->id
+        ];
+
+        $envdir = make_request_directory();
+        $envpath = $envdir . "/environment.json";
+        file_put_contents($envpath, json_encode($environment));
+
+        $testpath = $CFG->dirroot . '/lib/tests/fixtures/core_get_private_files_info.json';
+        $output = [];
+        $return = 0;
+        exec("newman run -e {$envpath} {$testpath}", $output, $return);
+        if ($return !== 0) {
+            $this->fail(implode("\n", $output));
+        }
+    }
+
     public function setUp() {
         $this->DB = null;
     }

@@ -1,0 +1,152 @@
+{
+	"variables": [],
+	"info": {
+		"name": "core_user_get_private_files_info",
+		"_postman_id": "bae73aa6-095c-8703-ea98-6e0a263fdf0a",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Fetch other user as admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "{{pathtomoodle}}/webservice/rest/server.php",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "moodlewsrestformat",
+							"value": "json",
+							"type": "text"
+						},
+						{
+							"key": "wstoken",
+							"value": "{{admintoken}}",
+							"type": "text"
+						},
+						{
+							"key": "wsfunction",
+							"value": "core_user_get_private_files_info",
+							"type": "text"
+						},
+						{
+							"key": "userid",
+							"value": "{{userid}}",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch other user as other user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "{{pathtomoodle}}/webservice/rest/server.php",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "moodlewsrestformat",
+							"value": "json",
+							"type": "text"
+						},
+						{
+							"key": "wstoken",
+							"value": "{{usertoken}}",
+							"type": "text"
+						},
+						{
+							"key": "wsfunction",
+							"value": "core_user_get_private_files_info",
+							"type": "text"
+						},
+						{
+							"key": "userid",
+							"value": "{{userid}}",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch admin as other user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "{{pathtomoodle}}/webservice/rest/server.php",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "moodlewsrestformat",
+							"value": "json",
+							"type": "text"
+						},
+						{
+							"key": "wstoken",
+							"value": "{{usertoken}}",
+							"type": "text"
+						},
+						{
+							"key": "wsfunction",
+							"value": "core_user_get_private_files_info",
+							"type": "text"
+						},
+						{
+							"key": "userid",
+							"value": "{{adminid}}",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

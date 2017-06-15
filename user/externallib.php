@@ -1895,12 +1895,18 @@ class core_user_external extends external_api {
 
         if (empty($params['userid']) || $params['userid'] == $USER->id) {
             $usercontext = context_user::instance($USER->id);
-            require_capability('moodle/user:manageownfiles', $usercontext);
+            if (!has_capability('moodle/user:manageownfiles', $usercontext)) {
+                header('HTTP/1.0 403 Forbidden');
+                die;
+            }
         } else {
             $user = core_user::get_user($params['userid'], '*', MUST_EXIST);
             core_user::require_active_user($user);
             // Only admins can retrieve other users information.
-            require_capability('moodle/site:config', $context);
+            if (!has_capability('moodle/site:config', $context)) {
+                header('HTTP/1.0 403 Forbidden');
+                die;
+            }
             $usercontext = context_user::instance($user->id);
         }
 
