@@ -62,6 +62,7 @@ $string['logininthebrowser'] = 'Via a browser window (for SSO plugins)';
 $string['loginintheembeddedbrowser'] = 'Via an embedded browser (for SSO plugins)';
 $string['mainmenu'] = 'Main menu';
 $string['mobileapp'] = 'Mobile app';
+$string['mobileappconnected'] = 'Mobile app connected';
 $string['mobileappenabled'] = 'This moodle site has mobile app access enabled. You can use moodle mobile app to access the content of your courses and much more. Click <a href="{$a}">here</a> for more information';
 $string['mobileappearance'] = 'Mobile appearance';
 $string['mobileauthentication'] = 'Mobile authentication';

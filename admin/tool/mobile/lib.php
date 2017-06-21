@@ -50,3 +50,74 @@ function tool_mobile_before_standard_html_head() {
     }
     return $output;
 }
+
+/**
+ * Generate the app download url to promote moodle mobile.
+ *
+ * @return moodle_url|void App download moodle_url object or return if setuplink is not set.
+ */
+function tool_mobile_create_app_download_url() {
+    global $CFG;
+
+    $mobilesettings = get_config('tool_mobile');
+
+    if (empty($mobilesettings->setuplink)) {
+        return;
+    }
+
+    $downloadurl = new moodle_url($mobilesettings->setuplink);
+    $downloadurl->param('version', $CFG->version);
+    $downloadurl->param('lang', current_language());
+
+    if (!empty($mobilesettings->iosappid)) {
+        $downloadurl->param('iosappid', $mobilesettings->iosappid);
+    }
+
+    if (!empty($mobilesettings->androidappid)) {
+        $downloadurl->param('androidappid', $mobilesettings->androidappid);
+    }
+
+    return $downloadurl;
+}
+
+/**
+ * User profile page callback.
+ *
+ * Used add a section about the moodle mobile app.
+ *
+ * @param \core_user\output\myprofile\tree $tree My profile tree where the setting will be added.
+ * @param stdClass $user The user object.
+ * @param bool $iscurrentuser Is this the current user viewing
+ * @return void Return if the mobile web services setting is disabled or if not the current user.
+ */
+function tool_mobile_myprofile_navigation(\core_user\output\myprofile\tree $tree, $user, $iscurrentuser) {
+    global $CFG, $DB;
+
+    if (empty($CFG->enablemobilewebservice)) {
+        return;
+    }
+
+    if (!$iscurrentuser) {
+        return;
+    }
+
+    if (!$url = tool_mobile_create_app_download_url()) {
+        return;
+    }
+
+    $userhastoken = $DB->record_exists_select('external_tokens', 'userid = :userid AND lastaccess IS NULL',
+            ['userid' => $user->id]);
+
+    $mobilecategory = new core_user\output\myprofile\category('mobile', get_string('mobileapp', 'tool_mobile'),
+            'loginactivity');
+    $tree->add_category($mobilecategory);
+
+    if ($userhastoken) {
+        $mobilestr = get_string('mobileappenabled', 'tool_mobile', $url->out());
+    } else {
+        $mobilestr = get_string('mobileappconnected', 'tool_mobile');
+    }
+
+    $node = new  core_user\output\myprofile\node('mobile', 'mobileappnode', $mobilestr, null);
+    $tree->add_node($node);
+}
