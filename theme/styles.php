@@ -135,7 +135,7 @@ if ($type === 'editor') {
 
 }
 
-if ($fallbacksheet = theme_server_fallback_content($theme, $rev) && !$theme->has_css_cached_content()) {
+if (($fallbacksheet = theme_server_fallback_content($theme, $rev)) && !$theme->has_css_cached_content()) {
     // The theme is not yet available and a fallback is available.
     // Return the fallback immediately, specifying the Content-Length, then generate in the background.
     $css = file_get_contents($fallbacksheet);
