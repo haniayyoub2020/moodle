@@ -94,10 +94,10 @@ install:
         then
             sudo mkdir /mnt/ramdisk
             sudo mount -t tmpfs -o size=1024m tmpfs /mnt/ramdisk
-            sudo stop postgresql
+            sudo /etc/init.d/postgresql stop
             sudo mv /var/lib/postgresql /mnt/ramdisk
             sudo ln -s /mnt/ramdisk/postgresql /var/lib/postgresql
-            sudo start postgresql
+            sudo /etc/init.d/postgresql start
         fi
     - >
         if [ "$TASK" = 'PHPUNIT' ];
