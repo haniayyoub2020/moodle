@@ -87,6 +87,8 @@ abstract class exporter {
                 if (array_key_exists($key, $related) && is_array($related[$key])) {
                     foreach ($related[$key] as $index => $value) {
                         if (!$value instanceof $classname) {
+                            print_object($classname);
+                            print_object($value);
                             throw new coding_exception($missingdataerr . $key . ' => ' . $classname . '[]');
                         }
                     }
@@ -142,7 +144,7 @@ abstract class exporter {
                 continue;
             } else if (!property_exists($record, $property)) {
                 // Whoops, we got something that wasn't defined.
-                throw new coding_exception('Unexpected property ' . $property);
+                throw new coding_exception('Required property is empty ' . $property);
             }
 
             $data->$property = $record->$property;

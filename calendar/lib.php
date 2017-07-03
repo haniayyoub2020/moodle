@@ -2148,20 +2148,7 @@ function calendar_get_link_href($linkbase, $d, $m, $y, $time = 0) {
         $linkbase = new \moodle_url($linkbase);
     }
 
-    // If a day, month and year were passed then convert it to a timestamp. If these were passed
-    // then we can assume the day, month and year are passed as Gregorian, as no where in core
-    // should we be passing these values rather than the time.
-    if (!empty($d) && !empty($m) && !empty($y)) {
-        if (checkdate($m, $d, $y)) {
-            $time = make_timestamp($y, $m, $d);
-        } else {
-            $time = time();
-        }
-    } else if (empty($time)) {
-        $time = time();
-    }
-
-    $linkbase->param('time', $time);
+    $linkbase->param('time', calendar_get_timestamp($d, $m, $y, $time));
 
     return $linkbase;
 }
@@ -2186,7 +2173,11 @@ function calendar_get_link_previous($text, $linkbase, $d, $m, $y, $accesshide = 
         return $text;
     }
 
-    return link_arrow_left($text, (string)$href, $accesshide, 'previous');
+    $attrs = [
+        'data-time' => calendar_get_timestamp($d, $m, $y, $time),
+    ];
+
+    return link_arrow_left($text, $href->out(false), $accesshide, 'previous', $attrs);
 }
 
 /**
@@ -2209,7 +2200,11 @@ function calendar_get_link_next($text, $linkbase, $d, $m, $y, $accesshide = fals
         return $text;
     }
 
-    return link_arrow_right($text, (string)$href, $accesshide, 'next');
+    $attrs = [
+        'data-time' => calendar_get_timestamp($d, $m, $y, $time),
+    ];
+
+    return link_arrow_right($text, $href->out(false), $accesshide, 'next', $attrs);
 }
 
 /**
@@ -2337,12 +2332,12 @@ function calendar_events_by_day($events, $month, $year, &$eventsbyday, &$duratio
                 $typesbyday[$i]['durationglobal'] = true;
             } else if ($event->courseid != 0 && $event->courseid != SITEID && $event->groupid == 0) {
                 $typesbyday[$i]['durationcourse'] = true;
-            } else if ($event->groupid) {
-                $typesbyday[$i]['durationgroup'] = true;
             } else if ($event->userid) {
                 $typesbyday[$i]['durationuser'] = true;
             }
         }
+
+        $typesbyday[$upperbound]['duration_finish'] = true;
 
     }
     return;
@@ -3338,4 +3333,148 @@ function calendar_get_legacy_events($tstart, $tend, $users, $groups, $courses, $
     return array_reduce($events, function($carry, $event) use ($mapper) {
         return $carry + [$event->get_id() => $mapper->from_event_to_stdclass($event)];
     }, []);
+}
+
+
+/**
+ * Get theh calendar view output.
+ *
+ * @param   \calendar_information $calendar The calendar being represented
+ * @param   string      $view The type of calendar to have displayed
+ * @return  string
+ */
+function calendar_get_view(\calendar_information $calendar, $view) {
+    global $PAGE, $DB, $OUTPUT;
+
+    $renderer = $PAGE->get_renderer('core_calendar');
+    $type = \core_calendar\type_factory::get_calendar_instance();
+
+    // Calculate the bounds of the month.
+    $date = $type->timestamp_to_date_array($calendar->time);
+    $tstart = $type->convert_to_timestamp($date['year'], $date['mon'], 1);
+
+    if ($view === 'day') {
+        $tend = $tstart + DAYSECS - 1;
+        $selectortitle = get_string('dayviewfor', 'calendar');
+    } else if ($view === 'upcoming') {
+        $defaultlookahead = isset($CFG->calendar_lookahead) ? intval($CFG->calendar_lookahead) : CALENDAR_DEFAULT_UPCOMING_LOOKAHEAD;
+        $tend = $tstart + get_user_preferences('calendar_lookahead', $defaultlookahead);
+        $selectortitle = get_string('upcomingeventsfor', 'calendar');
+    } else {
+        $monthdays = $type->get_num_days_in_month($date['year'], $date['mon']);
+        $tend = $tstart + ($monthdays * DAYSECS) - 1;
+        $selectortitle = get_string('detailedmonthviewfor', 'calendar');
+    }
+
+    list($userparam, $groupparam, $courseparam) = array_map(function($param) {
+        // If parameter is true, return null.
+        if ($param === true) {
+            return null;
+        }
+
+        // If parameter is false, return an empty array.
+        if ($param === false) {
+            return [];
+        }
+
+        // If the parameter is a scalar value, enclose it in an array.
+        if (!is_array($param)) {
+            return [$param];
+        }
+
+        // No normalisation required.
+        return $param;
+    }, [$calendar->users, $calendar->groups, $calendar->courses]);
+
+    $events = \core_calendar\local\api::get_events(
+        $tstart,
+        $tend,
+        null,
+        null,
+        null,
+        null,
+        40,
+        null,
+        $userparam,
+        $groupparam,
+        $courseparam,
+        true,
+        true,
+        function ($event) {
+            if ($proxy = $event->get_course_module()) {
+                $cminfo = $proxy->get_proxied_instance();
+                return $cminfo->uservisible;
+
+            }
+
+            return true;
+        }
+    );
+
+    $related = [
+        'events' => $events,
+        'cache' => new \core_calendar\external\events_related_objects_cache($events),
+    ];
+
+    if ($view === 'day') {
+        //$content .= $renderer->show_day($calendar);
+    } else if ($view === 'upcoming') {
+        $defaultlookahead = CALENDAR_DEFAULT_UPCOMING_LOOKAHEAD;
+        if (isset($CFG->calendar_lookahead)) {
+            $defaultlookahead = intval($CFG->calendar_lookahead);
+        }
+        $lookahead = get_user_preferences('calendar_lookahead', $defaultlookahead);
+
+        $defaultmaxevents = CALENDAR_DEFAULT_UPCOMING_MAXEVENTS;
+        if (isset($CFG->calendar_maxevents)) {
+            $defaultmaxevents = intval($CFG->calendar_maxevents);
+        }
+        $maxevents = get_user_preferences('calendar_maxevents', $defaultmaxevents);
+    } else {
+        $month = new \core_calendar\external\month_exporter($calendar, $type, $related);
+        $data = $month->export($renderer);
+        $template = 'core_calendar/month_detailed';
+    }
+
+    /*
+     * Need to move this to the exporter
+    // Link to calendar export page.
+    $content .= $OUTPUT->container_start('bottom');
+    if (!empty($CFG->enablecalendarexport)) {
+        $content .= $OUTPUT->single_button(new moodle_url('export.php', array('course'=>$calendar->course->id)), get_string('exportcalendar', 'calendar'));
+        if (calendar_user_can_add_event($calendar->course)) {
+            $content .= $OUTPUT->single_button(new moodle_url('/calendar/managesubscriptions.php', array('course'=>$calendar->course->id)), get_string('managesubscriptions', 'calendar'));
+        }
+        if (isloggedin()) {
+            $authtoken = sha1($USER->id . $DB->get_field('user', 'password', array('id' => $USER->id)) . $CFG->calendar_exportsalt);
+            $link = new moodle_url(
+                '/calendar/export_execute.php',
+                array('preset_what'=>'all', 'preset_time' => 'recentupcoming', 'userid' => $USER->id, 'authtoken'=>$authtoken)
+            );
+            $content .= html_writer::tag('a', 'iCal',
+                array('href' => $link, 'title' => get_string('quickdownloadcalendar', 'calendar'), 'class' => 'ical-link m-l-1'));
+        }
+    }
+
+    $content .= $OUTPUT->container_end();
+     */
+
+    return [$data, $template];
+}
+
+function calendar_get_timestamp($d, $m, $y, $time = 0) {
+    // If a day, month and year were passed then convert it to a timestamp. If these were passed
+    // then we can assume the day, month and year are passed as Gregorian, as no where in core
+    // should we be passing these values rather than the time.
+    if (!empty($d) && !empty($m) && !empty($y)) {
+        if (checkdate($m, $d, $y)) {
+            $time = make_timestamp($y, $m, $d);
+        } else {
+            $time = time();
+        }
+    } else if (empty($time)) {
+        $time = time();
+    }
+
+    return $time;
 }

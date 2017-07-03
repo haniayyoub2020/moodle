@@ -730,7 +730,7 @@ class core_calendar_external extends external_api {
      *
      * @return external_description
      */
-    public static function  get_calendar_event_by_id_returns() {
+    public static function get_calendar_event_by_id_returns() {
 
         return new external_single_structure(array(
             'event' => new external_single_structure(
@@ -760,5 +760,59 @@ class core_calendar_external extends external_api {
             'warnings' => new external_warnings()
             )
         );
+    }
+
+    public static function get_calendar_monthly_view($time, $courseid, $url) {
+        global $CFG, $DB, $USER, $PAGE;
+        require_once($CFG->dirroot."/calendar/lib.php");
+
+        $warnings = [];
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_calendar_monthly_view_parameters(), [
+                'time' => $time,
+                'courseid' => $courseid,
+                'url' => $url,
+            ]);
+
+        if ($courseid != SITEID && !empty($courseid)) {
+            // Course ID must be valid and existing.
+            $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+            $courses = [$course->id => $course];
+        } else {
+            $course = get_site();
+            $courses = calendar_get_default_courses();
+        }
+
+        // TODO: Copy what we do in calendar/view.php.
+        $context = \context_user::instance($USER->id);
+        self::validate_context($context);
+
+        $calendar = new calendar_information(0, 0, 0, $time);
+        $calendar->prepare_for_view($course, $courses);
+
+        list($data, $template) = calendar_get_view($calendar, 'month');
+
+        return $data;
+        //print_object($data);die;
+
+        return [
+            'content' => $data,
+            'warnings' => $warnings,
+        ];
+    }
+
+    public static function get_calendar_monthly_view_parameters() {
+        return new external_function_parameters(
+            [
+                'time' => new external_value(PARAM_INT, 'Time to be viewed', VALUE_REQUIRED, '', NULL_NOT_ALLOWED),
+                'courseid' => new external_value(PARAM_INT, 'Course being viewed', VALUE_DEFAULT, SITEID, NULL_ALLOWED),
+                'url' => new external_value(PARAM_RAW, 'URL Of the calendar being viewed', VALUE_REQUIRED, '', NULL_NOT_ALLOWED),
+            ]
+        );
+    }
+
+    public static function get_calendar_monthly_view_returns() {
+        return \core_calendar\external\month_exporter::get_read_structure();
     }
 }

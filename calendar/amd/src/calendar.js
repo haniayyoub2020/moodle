@@ -22,8 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery', 'core/ajax', 'core/str', 'core/templates', 'core/notification', 'core/custom_interaction_events',
-        'core/modal_factory', 'core_calendar/summary_modal', 'core_calendar/calendar_repository'],
-    function($, Ajax, Str, Templates, Notification, CustomEvents, ModalFactory, SummaryModal, CalendarRepository) {
+        'core/modal_factory', 'core_calendar/summary_modal', 'core_calendar/calendar_repository',
+        'core_calendar/calendar_view_manager'],
+    function($, Ajax, Str, Templates, Notification, CustomEvents, ModalFactory, SummaryModal, CalendarRepository,
+        CalendarViewManager) {
 
         var SELECTORS = {
             ROOT: "[data-region='calendar']",
@@ -110,7 +112,9 @@ define(['jquery', 'core/ajax', 'core/str', 'core/templates', 'core/notification'
                     type: SummaryModal.TYPE
                 });
 
+                CalendarViewManager.init();
                 registerEventListeners(SELECTORS.ROOT);
+
             }
         };
     });

@@ -65,8 +65,23 @@ define(['jquery', 'core/ajax'], function($, Ajax) {
         return Ajax.call([request])[0];
     };
 
+    var getCalendarMonthData = function (time, courseid) {
+        var request = {
+            methodname: 'core_calendar_get_calendar_monthly_view',
+            args: {
+                time: time,
+                courseid: courseid,
+                // TODO Is this needed and can it be improved?
+                url: window.location.href
+            }
+        };
+
+        return Ajax.call([request])[0];
+    };
+
     return {
         getEventById: getEventById,
+        getCalendarMonthData: getCalendarMonthData,
         deleteEvent: deleteEvent
     };
 });
