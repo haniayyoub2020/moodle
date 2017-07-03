@@ -217,4 +217,15 @@ abstract class type_base {
      * @return string locale
      */
     public abstract function locale_win_charset();
+
+    public function convert_to_timestamp($year, $month, $day, $hour = 0, $minute = 0) {
+        $gregorianinfo = $this->convert_to_gregorian($year, $month, $day, $hour, $minute);
+        return make_timestamp(
+            $gregorianinfo['year'],
+            $gregorianinfo['month'],
+            $gregorianinfo['day'],
+            $gregorianinfo['hour'],
+            $gregorianinfo['minute'],
+            0);
+    }
 }

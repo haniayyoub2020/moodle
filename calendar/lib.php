@@ -2337,12 +2337,12 @@ function calendar_events_by_day($events, $month, $year, &$eventsbyday, &$duratio
                 $typesbyday[$i]['durationglobal'] = true;
             } else if ($event->courseid != 0 && $event->courseid != SITEID && $event->groupid == 0) {
                 $typesbyday[$i]['durationcourse'] = true;
-            } else if ($event->groupid) {
-                $typesbyday[$i]['durationgroup'] = true;
             } else if ($event->userid) {
                 $typesbyday[$i]['durationuser'] = true;
             }
         }
+
+        $typesbyday[$upperbound]['duration_finish'] = true;
 
     }
     return;
@@ -3338,4 +3338,101 @@ function calendar_get_legacy_events($tstart, $tend, $users, $groups, $courses, $
     return array_reduce($events, function($carry, $event) use ($mapper) {
         return $carry + [$event->get_id() => $mapper->from_event_to_stdclass($event)];
     }, []);
+}
+
+/**
+ * Process the supplied events and extract relevant metadata for those
+ * events on the supplied month, and day.
+ *
+ * A mapping of day to events is returned, along with a list of the
+ * duration events on each day (start, stop, duration), and a list of the
+ * different event types on each day.
+ *
+ * @param   event[] $events The list of all events
+ * @param   int     $month The month to extract for
+ * @param   int     $year The year to extract for
+ * @return  array[[day[event]], [[day[duration]], [day[type]]]
+ */
+function calendar_events_to_days($events, $month, $year) {
+    $calendartype = \core_calendar\type_factory::get_calendar_instance();
+
+    $eventsbyday = [];
+    $durationevents = [];
+    $typesbyday = [];
+
+    if ($events === false) {
+        return [$eventsbyday, $typesbyday, $durationevents];
+    }
+
+    foreach ($events as $event) {
+        $timestart = $event->timestart;
+        $startdate = $calendartype->timestamp_to_date_array($event->timestart);
+        if ($event->timeduration) {
+            $timeend = $event->timestart + $event->timeduration - 1;
+            $enddate = $calendartype->timestamp_to_date_array($timeend);
+        } else {
+            $timeend = $event->timestart;
+            $enddate = $startdate;
+        }
+
+        // Simple arithmetic: $year * 13 + $month is a distinct integer for each distinct ($year, $month) pair.
+        if (!($startdate['year'] * 13 + $startdate['mon'] <= $year * 13 + $month) &&
+            ($enddate['year'] * 13 + $enddate['mon'] >= $year * 13 + $month)) {
+            continue;
+        }
+
+        $eventdaystart = intval($startdate['mday']);
+        $eventdayend = $eventdaystart + DAYSECS - 1;
+
+        if ($event->courseid == SITEID && $event->groupid == 0) {
+            $type = 'global';
+        } else if ($event->courseid != 0 && $event->courseid != SITEID && $event->groupid == 0) {
+            $type = 'course';
+        } else if ($event->groupid) {
+            $type = 'group';
+        } else if ($event->userid) {
+            $type = 'user';
+        }
+
+        if ($startdate['mon'] == $month && $startdate['year'] == $year) {
+            // Give the event to its day.
+            $eventsbyday[$eventdaystart][] = $event;
+            $types[$eventdaystart][] = $type;
+        }
+
+        if ($event->timeduration == 0) {
+            // Event has no duration.
+            continue;
+        }
+
+        if ($timeend < $enddate[0]) {
+            // Event starts and ends on the same day.
+            continue;
+        }
+
+        // Calculate the upper and lower bounds.
+        if ($startdate['mon'] == $month && $startdate['year'] == $year) {
+            // The event starts in the same month and year.k
+            $lowerbound = intval($startdate['mday']);
+            $durationevents[$lowerbound][] = 'start';
+        } else {
+            $lowerbound = 0;
+        }
+
+        if ($enddate['mon'] == $month && $enddate['year'] == $year) {
+            // The event ends in the same month year.
+            $upperbound = intval($enddate['mday']);
+            $durationevents[$upperbound][] = 'finish';
+        } else {
+            $upperbound = calendar_days_in_month($month, $year);
+        }
+
+        // Mark all days between $lowerbound and $upperbound (inclusive) as duration.
+        for ($day = $lowerbound + 1; $day <= $upperbound; ++$day) {
+            $eventsbyday[$day][] = $event;
+            $durationevents[$day][] = 'middle';
+        }
+    }
+
+    return [$eventsbyday, $durationevents, $types];
 }
