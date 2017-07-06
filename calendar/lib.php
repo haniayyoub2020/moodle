@@ -3436,3 +3436,157 @@ function calendar_events_to_days($events, $month, $year) {
 
     return [$eventsbyday, $durationevents, $types];
 }
+
+function calendar_get_view($calendar, $view, $url) {
+    global $PAGE, $DB, $OUTPUT;
+
+    $renderer = $PAGE->get_renderer('core_calendar');
+
+    $content = '';
+
+    $content .= $OUTPUT->heading(get_string('calendar', 'calendar'));
+
+    switch($view) {
+    case 'day':
+        $content .= $renderer->show_day($calendar);
+        break;
+    case 'month':
+        $content .= $renderer->show_month_detailed($calendar, $url);
+        break;
+    case 'upcoming':
+        $defaultlookahead = CALENDAR_DEFAULT_UPCOMING_LOOKAHEAD;
+        if (isset($CFG->calendar_lookahead)) {
+            $defaultlookahead = intval($CFG->calendar_lookahead);
+        }
+        $lookahead = get_user_preferences('calendar_lookahead', $defaultlookahead);
+
+        $defaultmaxevents = CALENDAR_DEFAULT_UPCOMING_MAXEVENTS;
+        if (isset($CFG->calendar_maxevents)) {
+            $defaultmaxevents = intval($CFG->calendar_maxevents);
+        }
+        $maxevents = get_user_preferences('calendar_maxevents', $defaultmaxevents);
+        $content .= $renderer->show_upcoming_events($calendar, $lookahead, $maxevents);
+        break;
+    }
+
+    //Link to calendar export page.
+    $content .= $OUTPUT->container_start('bottom');
+    if (!empty($CFG->enablecalendarexport)) {
+        $content .= $OUTPUT->single_button(new moodle_url('export.php', array('course'=>$calendar->course->id)), get_string('exportcalendar', 'calendar'));
+        if (calendar_user_can_add_event($calendar->course)) {
+            $content .= $OUTPUT->single_button(new moodle_url('/calendar/managesubscriptions.php', array('course'=>$calendar->course->id)), get_string('managesubscriptions', 'calendar'));
+        }
+        if (isloggedin()) {
+            $authtoken = sha1($USER->id . $DB->get_field('user', 'password', array('id' => $USER->id)) . $CFG->calendar_exportsalt);
+            $link = new moodle_url(
+                '/calendar/export_execute.php',
+                array('preset_what'=>'all', 'preset_time' => 'recentupcoming', 'userid' => $USER->id, 'authtoken'=>$authtoken)
+            );
+            $content .= html_writer::tag('a', 'iCal',
+                array('href' => $link, 'title' => get_string('quickdownloadcalendar', 'calendar'), 'class' => 'ical-link m-l-1'));
+        }
+    }
+
+    $content .= $OUTPUT->container_end();
+
+    return $content;
+}
+
+/**
+ * Generate a month view.
+ *
+ * TODO - decide where this actually belongs!
+ *
+ * @param   calendar_information $calendar
+ * @param   moodle_url $returnurl the url to return to
+ * @return  string
+ */
+function calendar_get_monthly_data(\renderer_base $renderer, calendar_information $calendar, moodle_url $returnurl) {
+    global $CFG, $USER;
+
+    // Reset to the start of the day.
+    $calendar->time = usergetmidnight($calendar->time);
+
+    // Fetch the calendar type.
+    $calendartype = \core_calendar\type_factory::get_calendar_instance();
+
+    // Calculate the bounds of the month.
+    $date = $calendartype->timestamp_to_date_array($calendar->time);
+    $monthstart = $calendartype->convert_to_timestamp($date['year'], $date['mon'], 1);
+    $monthdays = $calendartype->get_num_days_in_month($date['year'], $date['mon']);
+    $monthend = $monthstart + ($monthdays * DAYSECS) - 1;
+
+    // Determine if we're in the current month.
+    $thisdate = $calendartype->timestamp_to_date_array(time());
+    $thismonth = false;
+    if ($date['mon'] == $thisdate['mon'] && $date['year'] == $thisdate['year']) {
+        $thismonth = true;
+    }
+
+    // Setup the month templatable with base information.
+    $month = new \core_calendar\output\month($calendartype);
+
+    // Fetch the events.
+    $events = calendar_get_legacy_events($monthstart, $monthend, $calendar->users, $calendar->groups, $calendar->courses);
+    $eventsbyday = $durationnotes = [];
+    if (!empty($events)) {
+        foreach($events as $eventid => $event) {
+            $event = new calendar_event($event);
+            if (!empty($event->modulename)) {
+                $instances = get_fast_modinfo($event->courseid)->get_instances_of($event->modulename);
+                if (empty($instances[$event->instance]->uservisible)) {
+                    unset($events[$eventid]);
+                }
+            }
+        }
+        list($eventsbyday, $durationevents, $eventtypesbyday) = calendar_events_to_days($events, $date['mon'], $date['year']);
+    }
+
+    $baseurl = new moodle_url('view.php', [
+            'view' => 'day',
+            'course' => $calendar->courseid,
+        ]);
+
+    // Add the days to the calendar.
+    for ($dayno = 1; $dayno <= $monthdays; $dayno++) {
+        // Get the gregorian representation of the day.
+        $timestamp = $calendartype->convert_to_timestamp($date['year'], $date['mon'], $dayno);
+
+        $dateinfo = $calendartype->timestamp_to_date_array($timestamp);
+        $day = new \core_calendar\output\day($timestamp, $dateinfo);
+        $day->set_istoday($thismonth && $dayno == $date['mday']);
+        $day->set_viewdaylink(new \moodle_url($baseurl, ['time' => $timestamp]));
+
+        if (!empty($eventsbyday[$dayno])) {
+            foreach ($eventsbyday[$dayno] as $event) {
+                $dayevent = new \core_calendar\output\event($event);
+                $dayevent->set_link(new \moodle_url($baseurl, ['time' => $timestamp], "event_{$event->id}"));
+
+                $day->add_event($dayevent);
+            }
+        }
+
+        if (!empty($durationevents[$dayno])) {
+            $day->set_duration_events($durationevents[$dayno]);
+        }
+
+        if (!empty($eventtypesbyday[$dayno])) {
+            $day->set_event_types($eventtypesbyday[$dayno]);
+        }
+
+        $month->add_day($day);
+    }
+
+    $data = $month->export_for_template($renderer);
+
+    // TODO These should be rehomed.
+    $data['filter_selector'] = $this->course_filter_selector($returnurl, get_string('detailedmonthviewfor', 'calendar'));
+    if (calendar_user_can_add_event($calendar->course)) {
+        $data['filter_selector'] .= $this->add_event_button($calendar->course->id, 0, 0, 0, $calendar->time);
+    }
+
+    // Controls
+    $data['controls'] = calendar_top_controls('month', ['id' => $calendar->courseid, 'time' => $calendar->time]);
+
+    return $data;
+}

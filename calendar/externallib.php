@@ -687,4 +687,60 @@ class core_calendar_external extends external_api {
                     )
             );
     }
+
+    public static function get_calendar_view($view, $time, $courseid, $url) {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot."/calendar/lib.php");
+
+        $warnings = [];
+
+        // Parameter validation.
+        $params = self::validate_parameters(self::get_calendar_view_parameters(), [
+                'view' => $view,
+                'time' => $time,
+                'courseid' => $courseid,
+                'url' => $url,
+            ]);
+
+        if ($courseid != SITEID && !empty($courseid)) {
+            // Course ID must be valid and existing.
+            $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+            $courses = [$course->id => $course];
+        } else {
+            $course = get_site();
+            $courses = calendar_get_default_courses();
+        }
+
+        $calendar = new calendar_information(0, 0, 0, $time);
+        $calendar->prepare_for_view($course, $courses);
+
+        $renderer = $PAGE->get_renderer('core_calendar');
+        $content = calendar_get_monthly_data($renderer, $calendar, $view, $url);
+
+        return array('content' => $content, 'warnings' => $warnings);
+    }
+
+    public static function get_calendar_view_parameters() {
+        return new external_function_parameters(
+            [
+                'view' => new external_value(PARAM_ALPHA, 'Type of view', VALUE_REQUIRED, '', NULL_NOT_ALLOWED),
+                'time' => new external_value(PARAM_INT, 'Time to be viewed', VALUE_REQUIRED, '', NULL_NOT_ALLOWED),
+                'courseid' => new external_value(PARAM_INT, 'Course being viewed', VALUE_DEFAULT, SITEID, NULL_ALLOWED),
+                'url' => new external_value(PARAM_RAW, 'URL Of the calendar being viewed', VALUE_REQUIRED, '', NULL_NOT_ALLOWED),
+            ]
+        );
+    }
+
+    public static function get_calendar_view_returns() {
+        // TODO Convert this into:
+        //  external_calendar_structure
+        //      external_calendar_day[]
+        //          external_calendar_day_event[]
+        return new external_single_structure(
+            [
+                'content' => new external_value(PARAM_TEXT, 'View'),
+                'warnings' => new external_warnings()
+            ]
+        );
+    }
 }

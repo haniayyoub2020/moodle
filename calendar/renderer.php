@@ -325,17 +325,27 @@ class core_calendar_renderer extends plugin_renderer_base {
      * @return string
      */
     public function show_month_detailed(calendar_information $calendar, moodle_url $returnurl = null) {
-        return $this->get_monthly_view($calendar, $returnurl);
+        //$data = $this->get_monthly_view($calendar, $returnurl);
+
+        if (empty($returnurl)) {
+            $returnurl = $this->page->url;
+        }
+
+        $data = calendar_get_monthly_data($this, $calendar, $returnurl);
+
+        return $this->render_from_template('core_calendar/month_detailed', $data);
     }
 
     /**
      * Generate a month view.
      *
+     * TODO - decide where this actually belongs!
+     *
      * @param   calendar_information $calendar
      * @param   moodle_url $returnurl the url to return to
      * @return  string
      */
-    public function get_monthly_view(calendar_information $calendar, moodle_url $returnurl = null) {
+    public function get_monthly_data(calendar_information $calendar, moodle_url $returnurl = null) {
         global $CFG, $USER;
 
         if (empty($returnurl)) {
@@ -426,7 +436,7 @@ class core_calendar_renderer extends plugin_renderer_base {
         // Controls
         $data['controls'] = calendar_top_controls('month', ['id' => $calendar->courseid, 'time' => $calendar->time]);
 
-        return $this->render_from_template('core_calendar/month_detailed', $data);
+        return $data;
     }
 
     /**
