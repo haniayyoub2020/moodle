@@ -39,7 +39,7 @@ use \renderer_base;
  * @copyright 2017 Ryan Wyllie <ryan@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class event_exporter extends event_exporter_base {
+class calendar_event_exporter extends event_exporter_base {
 
     /**
      * Return the list of additional properties.
@@ -47,15 +47,16 @@ class event_exporter extends event_exporter_base {
      * @return array
      */
     protected static function define_other_properties() {
-        $values = parent::define_other_properties();
-
-        $values['url'] = ['type' => PARAM_URL];
-        $values['action'] = [
-            'type' => event_action_exporter::read_properties_definition(),
-            'optional' => true,
+        return [
+            'url' => ['type' => PARAM_URL],
+            'icon' => [
+                'type' => event_icon_exporter::read_properties_definition(),
+            ],
+            'course' => [
+                'type' => course_summary_exporter::read_properties_definition(),
+                'optional' => true,
+            ]
         ];
-
-        return $values;
     }
 
     /**
@@ -67,31 +68,21 @@ class event_exporter extends event_exporter_base {
     protected function get_other_values(renderer_base $output) {
         $values = parent::get_other_values($output);
 
-        $event = $this->event;
-        $context = $this->related['context'];
-
-        if ($moduleproxy = $event->get_course_module()) {
-            $modulename = $moduleproxy->get('modname');
-            $moduleid = $moduleproxy->get('id');
-            $url = new \moodle_url(sprintf('/mod/%s/view.php', $modulename), ['id' => $moduleid]);
-        } else {
-            // TODO MDL-58866 We do not have any way to find urls for events outside of course modules.
-            global $CFG;
-            require_once($CFG->dirroot.'/course/lib.php');
-            $url = \course_get_url($this->related['course'] ?: SITEID);
-        }
-
+        $url = new \moodle_url($this->related['daylink'], [], 'event_' . $this->event->get_id());
         $values['url'] = $url->out(false);
 
-        if ($event instanceof action_event_interface) {
-            $actionrelated = [
-                'context' => $context,
-                'event' => $event
-            ];
-            $actionexporter = new event_action_exporter($event->get_action(), $actionrelated);
-            $values['action'] = $actionexporter->export($output);
-        }
-
         return $values;
+    }
+
+    /**
+     * Returns a list of objects that are related.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        $related = parent::define_related();
+        $related['daylink'] = \moodle_url::class;
+
+        return $related;
     }
 }

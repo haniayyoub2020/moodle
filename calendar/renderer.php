@@ -128,7 +128,7 @@ class core_calendar_renderer extends plugin_renderer_base {
      *     $month and $year are kept for backwards compatibility.
      * @return string
      */
-    protected function add_event_button($courseid, $day = null, $month = null, $year = null, $time = null) {
+    public function add_event_button($courseid, $day = null, $month = null, $year = null, $time = null) {
         // If a day, month and year were passed then convert it to a timestamp. If these were passed
         // then we can assume the day, month and year are passed as Gregorian, as no where in core
         // should we be passing these values rather than the time. This is done for BC.
@@ -318,25 +318,6 @@ class core_calendar_renderer extends plugin_renderer_base {
     }
 
     /**
-     * Displays a month in detail.
-     *
-     * @param calendar_information $calendar
-     * @param moodle_url $returnurl the url to return to
-     * @return string
-     */
-    public function show_month_detailed(calendar_information $calendar, moodle_url $returnurl = null) {
-        //$data = $this->get_monthly_view($calendar, $returnurl);
-
-        if (empty($returnurl)) {
-            $returnurl = $this->page->url;
-        }
-
-        $data = calendar_get_monthly_data($this, $calendar, $returnurl);
-
-        return $this->render_from_template('core_calendar/month_detailed', $data);
-    }
-
-    /**
      * Generate a month view.
      *
      * TODO - decide where this actually belongs!
@@ -486,7 +467,7 @@ class core_calendar_renderer extends plugin_renderer_base {
      * @param string $label The label to use for the course select.
      * @return string
      */
-    protected function course_filter_selector(moodle_url $returnurl, $label=null) {
+    public function course_filter_selector(moodle_url $returnurl, $label=null) {
         global $USER, $SESSION, $CFG;
 
         if (!isloggedin() or isguestuser()) {

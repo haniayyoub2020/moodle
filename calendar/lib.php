@@ -3445,28 +3445,86 @@ function calendar_get_view($calendar, $view, $url) {
     $content = '';
 
     $content .= $OUTPUT->heading(get_string('calendar', 'calendar'));
+    $renderer = $PAGE->get_renderer('core_calendar');
+    $type = \core_calendar\type_factory::get_calendar_instance();
+
+    // Calculate the bounds of the month.
+    $date = $type->timestamp_to_date_array($calendar->time);
+    $tstart = $type->convert_to_timestamp($date['year'], $date['mon'], 1);
 
     switch($view) {
-    case 'day':
-        $content .= $renderer->show_day($calendar);
-        break;
-    case 'month':
-        $content .= $renderer->show_month_detailed($calendar, $url);
-        break;
-    case 'upcoming':
-        $defaultlookahead = CALENDAR_DEFAULT_UPCOMING_LOOKAHEAD;
-        if (isset($CFG->calendar_lookahead)) {
-            $defaultlookahead = intval($CFG->calendar_lookahead);
-        }
-        $lookahead = get_user_preferences('calendar_lookahead', $defaultlookahead);
+        case 'day':
+            $tend = $tstart + DAYSECS - 1;
+            break;
+        case 'month':
+            $monthdays = $type->get_num_days_in_month($date['year'], $date['mon']);
+            $tend = $tstart + ($monthdays * DAYSECS) - 1;
+            break;
+        case 'upcoming':
+            $defaultlookahead = CALENDAR_DEFAULT_UPCOMING_LOOKAHEAD;
+            if (isset($CFG->calendar_lookahead)) {
+                $defaultlookahead = intval($CFG->calendar_lookahead);
+            }
+            $lookahead = get_user_preferences('calendar_lookahead', $defaultlookahead);
+            $tend = $start + $lookahead;
+            break;
+    }
 
-        $defaultmaxevents = CALENDAR_DEFAULT_UPCOMING_MAXEVENTS;
-        if (isset($CFG->calendar_maxevents)) {
-            $defaultmaxevents = intval($CFG->calendar_maxevents);
+    $events = \core_calendar\local\api::get_events(
+        $tstart,
+        $tend,
+        null,
+        null,
+        null,
+        null,
+        40,
+        null,
+        // Replace with $calendar->users??
+        [$calendar->users],
+        [$calendar->groups],
+        $calendar->courses,
+        true,
+        true,
+        function ($event) {
+            if ($cminfo = $event->get_course_module()) {
+                $cminfo = $cminfo->get_proxied_instance();
+                return $cminfo->uservisible;
+
+            }
+
+            return true;
         }
-        $maxevents = get_user_preferences('calendar_maxevents', $defaultmaxevents);
-        $content .= $renderer->show_upcoming_events($calendar, $lookahead, $maxevents);
-        break;
+    );
+
+    $related = [
+        'events' => $events,
+        'cache' => new \core_calendar\external\events_related_objects_cache($events),
+    ];
+
+    switch($view) {
+        case 'day':
+            //$content .= $renderer->show_day($calendar);
+            break;
+        case 'month':
+            $month = new \core_calendar\external\month_exporter($calendar, $type, $related);
+            $data = $month->export($renderer);
+            //print_object($data);
+            $content .= $renderer->render_from_template('core_calendar/month_detailed', $data);
+            break;
+        case 'upcoming':
+            $defaultlookahead = CALENDAR_DEFAULT_UPCOMING_LOOKAHEAD;
+            if (isset($CFG->calendar_lookahead)) {
+                $defaultlookahead = intval($CFG->calendar_lookahead);
+            }
+            $lookahead = get_user_preferences('calendar_lookahead', $defaultlookahead);
+
+            $defaultmaxevents = CALENDAR_DEFAULT_UPCOMING_MAXEVENTS;
+            if (isset($CFG->calendar_maxevents)) {
+                $defaultmaxevents = intval($CFG->calendar_maxevents);
+            }
+            $maxevents = get_user_preferences('calendar_maxevents', $defaultmaxevents);
+            //$content .= $renderer->show_upcoming_events($calendar, $lookahead, $maxevents);
+            break;
     }
 
     //Link to calendar export page.
@@ -3490,103 +3548,4 @@ function calendar_get_view($calendar, $view, $url) {
     $content .= $OUTPUT->container_end();
 
     return $content;
-}
-
-/**
- * Generate a month view.
- *
- * TODO - decide where this actually belongs!
- *
- * @param   calendar_information $calendar
- * @param   moodle_url $returnurl the url to return to
- * @return  string
- */
-function calendar_get_monthly_data(\renderer_base $renderer, calendar_information $calendar, moodle_url $returnurl) {
-    global $CFG, $USER;
-
-    // Reset to the start of the day.
-    $calendar->time = usergetmidnight($calendar->time);
-
-    // Fetch the calendar type.
-    $calendartype = \core_calendar\type_factory::get_calendar_instance();
-
-    // Calculate the bounds of the month.
-    $date = $calendartype->timestamp_to_date_array($calendar->time);
-    $monthstart = $calendartype->convert_to_timestamp($date['year'], $date['mon'], 1);
-    $monthdays = $calendartype->get_num_days_in_month($date['year'], $date['mon']);
-    $monthend = $monthstart + ($monthdays * DAYSECS) - 1;
-
-    // Determine if we're in the current month.
-    $thisdate = $calendartype->timestamp_to_date_array(time());
-    $thismonth = false;
-    if ($date['mon'] == $thisdate['mon'] && $date['year'] == $thisdate['year']) {
-        $thismonth = true;
-    }
-
-    // Setup the month templatable with base information.
-    $month = new \core_calendar\output\month($calendartype);
-
-    // Fetch the events.
-    $events = calendar_get_legacy_events($monthstart, $monthend, $calendar->users, $calendar->groups, $calendar->courses);
-    $eventsbyday = $durationnotes = [];
-    if (!empty($events)) {
-        foreach($events as $eventid => $event) {
-            $event = new calendar_event($event);
-            if (!empty($event->modulename)) {
-                $instances = get_fast_modinfo($event->courseid)->get_instances_of($event->modulename);
-                if (empty($instances[$event->instance]->uservisible)) {
-                    unset($events[$eventid]);
-                }
-            }
-        }
-        list($eventsbyday, $durationevents, $eventtypesbyday) = calendar_events_to_days($events, $date['mon'], $date['year']);
-    }
-
-    $baseurl = new moodle_url('view.php', [
-            'view' => 'day',
-            'course' => $calendar->courseid,
-        ]);
-
-    // Add the days to the calendar.
-    for ($dayno = 1; $dayno <= $monthdays; $dayno++) {
-        // Get the gregorian representation of the day.
-        $timestamp = $calendartype->convert_to_timestamp($date['year'], $date['mon'], $dayno);
-
-        $dateinfo = $calendartype->timestamp_to_date_array($timestamp);
-        $day = new \core_calendar\output\day($timestamp, $dateinfo);
-        $day->set_istoday($thismonth && $dayno == $date['mday']);
-        $day->set_viewdaylink(new \moodle_url($baseurl, ['time' => $timestamp]));
-
-        if (!empty($eventsbyday[$dayno])) {
-            foreach ($eventsbyday[$dayno] as $event) {
-                $dayevent = new \core_calendar\output\event($event);
-                $dayevent->set_link(new \moodle_url($baseurl, ['time' => $timestamp], "event_{$event->id}"));
-
-                $day->add_event($dayevent);
-            }
-        }
-
-        if (!empty($durationevents[$dayno])) {
-            $day->set_duration_events($durationevents[$dayno]);
-        }
-
-        if (!empty($eventtypesbyday[$dayno])) {
-            $day->set_event_types($eventtypesbyday[$dayno]);
-        }
-
-        $month->add_day($day);
-    }
-
-    $data = $month->export_for_template($renderer);
-
-    // TODO These should be rehomed.
-    $data['filter_selector'] = $this->course_filter_selector($returnurl, get_string('detailedmonthviewfor', 'calendar'));
-    if (calendar_user_can_add_event($calendar->course)) {
-        $data['filter_selector'] .= $this->add_event_button($calendar->course->id, 0, 0, 0, $calendar->time);
-    }
-
-    // Controls
-    $data['controls'] = calendar_top_controls('month', ['id' => $calendar->courseid, 'time' => $calendar->time]);
-
-    return $data;
 }

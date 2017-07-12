@@ -689,7 +689,7 @@ class core_calendar_external extends external_api {
     }
 
     public static function get_calendar_view($view, $time, $courseid, $url) {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB, $USER, $PAGE;
         require_once($CFG->dirroot."/calendar/lib.php");
 
         $warnings = [];
@@ -711,11 +711,17 @@ class core_calendar_external extends external_api {
             $courses = calendar_get_default_courses();
         }
 
+        // TODO: Copy what we do in calendar/view.php.
+        $context = \context_user::instance($USER->id);
+        self::validate_context($context);
+
         $calendar = new calendar_information(0, 0, 0, $time);
         $calendar->prepare_for_view($course, $courses);
 
+        $url = new moodle_url($url);
+        $PAGE->set_url($url);
         $renderer = $PAGE->get_renderer('core_calendar');
-        $content = calendar_get_monthly_data($renderer, $calendar, $view, $url);
+        $content = calendar_get_monthly_data($renderer, $calendar, $url);
 
         return array('content' => $content, 'warnings' => $warnings);
     }
@@ -738,7 +744,7 @@ class core_calendar_external extends external_api {
         //          external_calendar_day_event[]
         return new external_single_structure(
             [
-                'content' => new external_value(PARAM_TEXT, 'View'),
+                'content' => new external_value(PARAM_RAW, 'View'),
                 'warnings' => new external_warnings()
             ]
         );

@@ -26,6 +26,8 @@ namespace core_calendar\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->libdir . '/externallib.php');
+
 /**
  * Renderable for a calendar event.
  *
