@@ -345,13 +345,20 @@ class core_statslib_testcase extends advanced_testcase {
         // Fake the origin of events.
         $DB->set_field('logstore_standard_log', 'origin', 'web', array());
 
-        $logs = $DB->get_records('logstore_standard_log');
+        // Ensure that the logs are not all at the same time.
+        $logs = $DB->get_records('logstore_standard_log', null, 'id ASC');
+        $time = time() - 5;
+        foreach ($logs as $log) {
+            $DB->set_field('logstore_standard_log', 'timecreated', $time++, ['id' => $log->id]);
+        }
+        $logs = $DB->get_records('logstore_standard_log', null, 'timecreated ASC');
         $this->assertCount(4, $logs);
 
         $firstnew = reset($logs);
         $this->assertGreaterThan($firstoldtime, $firstnew->timecreated);
         $DB->set_field('logstore_standard_log', 'timecreated', 10, array('id' => $firstnew->id));
         $this->assertEquals(10, stats_get_start_from('daily'));
+
 
         $DB->set_field('logstore_standard_log', 'timecreated', $firstnew->timecreated, array('id' => $firstnew->id));
         $DB->delete_records('log');
