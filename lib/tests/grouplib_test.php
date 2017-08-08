@@ -1589,6 +1589,7 @@ class core_grouplib_testcase extends advanced_testcase {
             $generator->enrol_user($user4->id, $course->id);
         }
 
+        $this->setCurrentTimeStart();
         // Create groups.
         $group1 = $generator->create_group(array('courseid' => $course2->id)); // no members.
         $group2 = $generator->create_group(array('courseid' => $course3->id)); // one member.
@@ -1617,11 +1618,15 @@ class core_grouplib_testcase extends advanced_testcase {
 
             foreach ($props as $name => $val) {
                 $got = $actual->{$name};
-                $this->assertEquals(
-                    $val,
-                    $actual->{$name},
-                    "Failed asserting that {$got} equals {$val} for property {$name}"
-                );
+                if ($name === 'timemodified') {
+                    $this->assertTimeCurrent($val);
+                } else {
+                    $this->assertEquals(
+                        $val,
+                        $actual->{$name},
+                        "Failed asserting that {$got} equals {$val} for property {$name}"
+                    );
+                }
             }
         };
 
