@@ -780,10 +780,40 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @see Moodle\BehatExtension\Tester\MoodleStepTester
      */
     public function look_for_exceptions() {
+        // Check if we have recorded any errors in driver process.
+        $phperrors = behat_get_shutdown_process_errors();
+        if (!empty($phperrors)) {
+            foreach ($phperrors as $error) {
+                $errnostring = behat_get_error_string($error['type']);
+                $msgs[] = $errnostring . ": " .$error['message'] . " at " . $error['file'] . ": " . $error['line'];
+                if (!empty($error['trace'])) {
+                    foreach ($error['trace'] as $trace) {
+                        $msgs[] = "  * line {$trace['line']} of {$trace['file']}: call to {$trace['function']}()";
+                    }
+                }
+            }
+            $msg = "PHP errors found:\n" . implode("\n", $msgs);
+            throw new \Exception(htmlentities($msg));
+        }
+
+        $phpexceptions = behat_get_known_exceptions();
+        if (!empty($phpexceptions)) {
+            foreach ($phpexceptions as $exception) {
+                $msgs[] = "  * line {$exception['line']} of {$exception['file']}: {$exception['class']} thrown";
+                if (!empty($exception['trace'])) {
+                    foreach ($exception['trace'] as $trace) {
+                        $msgs[] = "  * line {$trace['line']} of {$trace['file']}: call to {$trace['function']}()";
+                    }
+                }
+                $msg = "Other backtraces found:\n" . implode("\n", $msgs);
+            }
+            $msg = "PHP exceptions found:\n" . implode("\n", $msgs);
+            throw new \Exception(htmlentities($msg));
+        }
+
         // Wrap in try in case we were interacting with a closed window.
         try {
 
-            // Exceptions.
             $exceptionsxpath = "//div[@data-rel='fatalerror']";
             // Debugging messages.
             $debuggingxpath = "//div[@data-rel='debugging']";
@@ -798,17 +828,6 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             // Joined xpath expression. Most of the time there will be no exceptions, so this pre-check
             // is faster than to send the 4 xpath queries for each step.
             if (!$this->getSession()->getDriver()->find($joinedxpath)) {
-                // Check if we have recorded any errors in driver process.
-                $phperrors = behat_get_shutdown_process_errors();
-                if (!empty($phperrors)) {
-                    foreach ($phperrors as $error) {
-                        $errnostring = behat_get_error_string($error['type']);
-                        $msgs[] = $errnostring . ": " .$error['message'] . " at " . $error['file'] . ": " . $error['line'];
-                    }
-                    $msg = "PHP errors found:\n" . implode("\n", $msgs);
-                    throw new \Exception(htmlentities($msg));
-                }
-
                 return;
             }
 
