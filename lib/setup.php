@@ -559,6 +559,7 @@ if (!PHPUNIT_TEST or PHPUNIT_UTIL) {
 if (defined('BEHAT_SITE_RUNNING') && !defined('BEHAT_TEST') && !defined('BEHAT_UTIL')) {
     require_once(__DIR__ . '/behat/lib.php');
     set_error_handler('behat_error_handler', E_ALL | E_STRICT);
+    set_exception_handler('behat_exception_handler');
 }
 
 // If there are any errors in the standard libraries we want to know!
