@@ -168,7 +168,7 @@ function behat_error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
     $errnostr = behat_get_error_string($errno);
 
     // If ajax script then throw exception, so the calling api catch it and show it on web page.
-    if (defined('AJAX_SCRIPT')) {
+    if (defined('AJAX_SCRIPT') && AJAX_SCRIPT) {
         throw new Exception("$errnostr: $errstr in $errfile on line $errline");
     } else {
         // Wrapping the output.
