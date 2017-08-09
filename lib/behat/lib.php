@@ -148,6 +148,20 @@ function behat_error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
         }
     }
 
+    $errors = behat_get_shutdown_process_errors();
+
+    $stacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    $errors[] = [
+        'type' => $errno,
+        'message' => $errstr,
+        'file' => $errfile,
+        'line' => $errline,
+        'trace' => array_slice($stacktrace, 1),
+    ];
+    $errorstosave = json_encode($errors);
+
+    set_config('process_errors', $errorstosave, 'tool_behat');
+
     // Using the default one in case there is a fatal catchable error.
     default_error_handler($errno, $errstr, $errfile, $errline, $errcontext);
 
@@ -165,6 +179,35 @@ function behat_error_handler($errno, $errstr, $errfile, $errline, $errcontext) {
 
     // Also use the internal error handler so we keep the usual behaviour.
     return false;
+}
+
+/**
+ * Add additional exception handling for behat to make exception detection
+ * faster, and more reliable.
+ *
+ * @param Exception $ex The exception being thrown
+ */
+function behat_exception_handler($ex) {
+    $exceptions = behat_get_known_exceptions();
+    $stacktrace = [];
+    foreach ($ex->getTrace() as $trace) {
+        $stacktrace[] = [
+            'file' => isset($trace['file']) ? $trace['file'] : '?',
+            'line' => isset($trace['line']) ? $trace['line'] : '?',
+            'function' => isset($trace['function']) ? $trace['function'] : '?',
+        ];
+    }
+    $exceptions[] = [
+        'class' => get_class($ex),
+        'message' => $ex->getMessage(),
+        'file' => $ex->getFile(),
+        'line' => $ex->getLine(),
+        'trace' => $stacktrace,
+    ];
+
+    set_config('process_exceptions', json_encode($exceptions), 'tool_behat');
+
+    return default_exception_handler($ex);
 }
 
 /**
@@ -199,6 +242,24 @@ function behat_get_shutdown_process_errors() {
 
     if (!empty($phperrors)) {
         return json_decode($phperrors, true);
+    } else {
+        return array();
+    }
+}
+
+/**
+ * Return known php exceptions caught during the page.
+ *
+ * @return array
+ */
+function behat_get_known_exceptions() {
+    global $DB;
+
+    // Don't use get_config, as it use cache and return invalid value, between selenium and cli process.
+    $exceptions = $DB->get_field('config_plugins', 'value', array('name' => 'process_exceptions', 'plugin' => 'tool_behat'));
+
+    if (!empty($exceptions)) {
+        return json_decode($exceptions, true);
     } else {
         return array();
     }
