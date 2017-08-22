@@ -2683,6 +2683,10 @@ function notice ($message, $link='', $course=null) {
     }
 
     if (!$PAGE->headerprinted) {
+        if ($link) {
+            redirect($link, $message);
+        }
+
         // Header not yet printed.
         $PAGE->set_title(get_string('notice'));
         echo $OUTPUT->header();
