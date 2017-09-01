@@ -27,18 +27,35 @@
         "content": "<img class='icon smallicon' src='../../../pix/i/siteevent.svg'>Test site event"
     }
 }}
-<a id="{{uniqid}}" href="{{url}}"
-    data-container="body"
-    data-toggle="popover"
-    data-html="true"
-    data-trigger="hover"
-    data-placement="top"
-    data-title="{{title}}"
-    data-content="{{content}}">{{day}}</a>
+<a {{!
+    }} href="{{url}}"{{!
+    }} id="{{uniqid}}-{{mday}}"{{!
+    }} data-container="body"{{!
+    }} data-toggle="popover"{{!
+    }} data-html="true"{{!
+    }} data-trigger="hover"{{!
+    }} data-placement="top"{{!
+    }} data-title="{{title}}"{{!
+    }} data-alternate="{{$nocontent}}{{/nocontent}}"{{!
+}}>{{$day}}{{day}}{{/day}}</a>
+<div id="{{uniqid}}-{{mday}}-content" class="hidden">{{$content}}{{/content}}</div>
 {{#js}}
-require(['jquery'], function($) {
+require(['jquery', 'theme_bootstrapbase/bootstrap'], function($) {
     require(['theme_bootstrapbase/bootstrap'], function() {
-        $('#{{uniqid}}').popover();
+        $('#{{uniqid}}-{{mday}}').popover({
+            content: function() {
+                var source = $("#{{uniqid}}-{{mday}}-content > *:not('.hidden')");
+                var content = $('<div>');
+
+                if (source.length) {
+                    content.html(source.clone(false));
+                } else {
+                    content.html($("#{{uniqid}}-{{mday}}").data('alternate'));
+                }
+
+                return content.html();
+            }
+        });
     });
 });
 {{/js}}
