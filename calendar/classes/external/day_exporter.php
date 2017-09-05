@@ -40,6 +40,23 @@ use moodle_url;
 class day_exporter extends exporter {
 
     /**
+     * @var \calendar_information $calendar The calendar being displayed.
+     */
+    protected $calendar;
+
+    /**
+     * Constructor.
+     *
+     * @param \calendar_information $calendar The calendar information for the period being displayed
+     * @param array $related Related objects.
+     */
+    public function __construct(\calendar_information $calendar, $data, $related) {
+        $this->calendar = $calendar;
+
+        parent::__construct($data, $related);
+    }
+
+    /**
      * Return the list of properties.
      *
      * @return array
