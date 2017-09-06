@@ -45,6 +45,10 @@ class behat_partial_named_selector extends \Behat\Mink\Selector\PartialNamedSele
             $this->registerNamedXpath($name, $xpath);
         }
 
+        foreach (self::$customreplacements as $from => $tos) {
+            $this->registerReplacement($from, implode(' or ', $tos));
+        }
+
         $this->registerReplacement('%iconMatch%', "(contains(concat(' ', @class, ' '), ' icon ') or name() = 'img')");
         $this->registerReplacement('%imgAltMatch%', './/*[%iconMatch% and (%altMatch% or %titleMatch%)]');
         parent::__construct();
@@ -200,6 +204,22 @@ XPATH
 .//*[@data-passwordunmask='wrapper']
     /descendant::input[@id = %locator% or @id = //label[contains(normalize-space(string(.)), %locator%)]/@for]
 XPATH
+        ],
+    ];
+
+    /**
+     * Mink comes with a number of named replacements.
+     * Sometimes we want to add our own.
+     *
+     * @var XPaths for moodle elements.
+     */
+    protected static $customreplacements = [
+        '%buttonMatch%' => [
+            'upstream' => '%idOrNameMatch% or %valueMatch% or %titleMatch%',
+            'aria' => '%ariaLabelMatch%',
+        ],
+        '%ariaLabelMatch%' => [
+            'moodle' => 'contains(./@aria-label, %locator%)',
         ],
     ];
 
