@@ -387,14 +387,6 @@ abstract class question_behaviour {
         }
 
         if (!html_is_blank($newcomment)) {
-            // The new comment field has some form of content (and not just empty tags).
-
-            if (is_null($previouscomment)) {
-                // The old comment was never set.
-                // Technically this _should_ be covered by the previouscomment != newcomment check.
-                return false;
-            }
-
             // Check comment format.
             $previouscommentformat = $this->qa->get_last_behaviour_var('commentformat');
             $newcommentformat = $pendingstep->get_behaviour_var('commentformat');
