@@ -864,4 +864,19 @@ class phpunit_util extends testing_util {
         $method->setAccessible(true);
         return $method->invokeArgs($object, $params);
     }
+
+    /**
+     * Helper function to set a protected/private property on an object using Reflection.
+     *
+     * @param   string  $classname The class being modified
+     * @param   string  $propertyname The name of the property being set
+     * @param   object  $object The object being modified
+     * @param   mixed   $value The intended value of the property
+     */
+    public static function set_internal_property($classname, $propertyname, $object, $value) {
+        $rc = new \ReflectionClass($classname);
+        $rcp = $rc->getProperty($propertyname);
+        $rcp->setAccessible(true);
+        $rcp->setValue($object, $value);
+    }
 }
