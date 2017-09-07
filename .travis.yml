@@ -156,7 +156,7 @@ before_script:
           # MySQL-specific setup.
           sed -i \
             -e "s%= 'pgsql'%= 'mysqli'%" \
-            -e "s%= 'username'%= 'travis'%" \
+            -e "s%= 'username'%= 'root'%" \
             -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" \
             config.php;
 
