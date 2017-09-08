@@ -87,10 +87,7 @@ class block_calendar_month extends block_base {
         $this->content->text .= $renderer->render_from_template($template, $data);
 
         if (!$issite) {
-            $data = [
-                'eventtypes' => calendar_get_filter_types(),
-            ];
-            $this->content->text .= $renderer->render_from_template('core_calendar/event_filter', $data);
+            $this->content->text .= $renderer->event_filter();
         }
 
         return $this->content;
