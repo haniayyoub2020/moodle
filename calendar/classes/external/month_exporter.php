@@ -55,6 +55,10 @@ class month_exporter extends exporter {
     protected $url;
 
     /**
+     */
+    protected $includenavigation = true;
+
+    /**
      * Constructor for month_exporter.
      *
      * @param \calendar_information $calendar The calendar being represented
@@ -126,6 +130,10 @@ class month_exporter extends exporter {
                 // calendar format.
                 'type' => PARAM_RAW,
             ],
+            'includenavigation' => [
+                'type' => PARAM_BOOL,
+                'default' => true,
+            ],
             'previousperiod' => [
                 'type' => PARAM_INT,
             ],
@@ -178,6 +186,7 @@ class month_exporter extends exporter {
             'nextperiodname' => userdate($nextperiod, get_string('strftimemonthyear')),
             'larrow' => $output->larrow(),
             'rarrow' => $output->rarrow(),
+            'includenavigation' => $this->includenavigation,
         ];
     }
 
@@ -326,5 +335,11 @@ class month_exporter extends exporter {
         $monthtime = $this->related['type']->convert_to_gregorian($month[1], $month[0], 1);
 
         return make_timestamp($monthtime['year'], $monthtime['month'], $monthtime['day'], $monthtime['hour'], $monthtime['minute']);
+    }
+
+    public function set_includenavigation($include) {
+        $this->includenavigation = $include;
+
+        return $this;
     }
 }
