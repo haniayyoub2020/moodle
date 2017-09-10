@@ -51,12 +51,16 @@ define(['jquery', 'core/templates', 'core/notification', 'core_calendar/reposito
         /**
          * Refresh the month content.
          *
+         * @param {object} root The root element.
          * @param {Number} time The calendar time to be shown
          * @param {Number} courseid The id of the course whose events are shown
+         * @param {object} target The element being replaced. If not specified, the calendarwrapper is used.
          * @return {promise}
          */
-        var refreshMonthContent = function(root, time, courseid) {
+        var refreshMonthContent = function(root, time, courseid, target) {
             startLoading(root);
+
+            target = target || root.find(SELECTORS.CALENDAR_MONTH_WRAPPER);
 
             var includenavigation = root.data('includenavigation');
 
@@ -65,7 +69,7 @@ define(['jquery', 'core/templates', 'core/notification', 'core_calendar/reposito
                     return Templates.render(root.attr('data-template'), context);
                 })
                 .then(function(html, js) {
-                    return Templates.replaceNode(root.find(SELECTORS.CALENDAR_MONTH_WRAPPER), html, js);
+                    return Templates.replaceNode(target, html, js);
                 })
                 .then(function() {
                     $('body').trigger(CalendarEvents.viewUpdated);
