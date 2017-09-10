@@ -55,6 +55,7 @@ class month_exporter extends exporter {
     protected $url;
 
     /**
+     * @var bool $includenavigation Whether navigation should be included on the output.
      */
     protected $includenavigation = true;
 
@@ -337,6 +338,12 @@ class month_exporter extends exporter {
         return make_timestamp($monthtime['year'], $monthtime['month'], $monthtime['day'], $monthtime['hour'], $monthtime['minute']);
     }
 
+    /**
+     * Set whether the navigation should be shown.
+     *
+     * @param   bool    $include
+     * @return  $this
+     */
     public function set_includenavigation($include) {
         $this->includenavigation = $include;
 
