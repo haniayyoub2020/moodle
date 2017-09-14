@@ -854,16 +854,20 @@ class core_calendar_external extends external_api {
      * Get data for the monthly calendar view.
      *
      * @param   int     $time The time to be shown
+     * @param   int     $year The year to be shown
+     * @param   int     $month The month to be shown
      * @param   int     $courseid The course to be included
      * @return  array
      */
-    public static function get_calendar_monthly_view($time, $courseid) {
+    public static function get_calendar_monthly_view($time, $year, $month, $courseid) {
         global $CFG, $DB, $USER, $PAGE;
         require_once($CFG->dirroot."/calendar/lib.php");
 
         // Parameter validation.
         $params = self::validate_parameters(self::get_calendar_monthly_view_parameters(), [
             'time' => $time,
+            'year' => $year,
+            'month' => $month,
             'courseid' => $courseid,
         ]);
 
@@ -880,6 +884,18 @@ class core_calendar_external extends external_api {
         $context = \context_user::instance($USER->id);
         self::validate_context($context);
 
+        $type = \core_calendar\type_factory::get_calendar_instance();
+
+        if (null !== $time) {
+            $time = $time;
+        } else if (null !== $year && null !== $month){
+            error_log($year);
+            error_log($month);
+            $time = $type->convert_to_timestamp($year, $month, 1);
+        } else {
+            throw new \moodle_exception('Neither a time, nor a combination of month and day was provided');
+        }
+        error_log($time);
         $calendar = new calendar_information(0, 0, 0, $time);
         $calendar->prepare_for_view($course, $courses);
 
@@ -896,7 +912,9 @@ class core_calendar_external extends external_api {
     public static function get_calendar_monthly_view_parameters() {
         return new external_function_parameters(
             [
-                'time' => new external_value(PARAM_INT, 'Time to be viewed', VALUE_REQUIRED, '', NULL_NOT_ALLOWED),
+                'time' => new external_value(PARAM_INT, 'Time to be viewed', VALUE_DEFAULT, 0, NULL_ALLOWED),
+                'year' => new external_value(PARAM_INT, 'Month to be viewed', VALUE_DEFAULT, 0, NULL_ALLOWED),
+                'month' => new external_value(PARAM_INT, 'Year to be viewed', VALUE_DEFAULT, 0, NULL_ALLOWED),
                 'courseid' => new external_value(PARAM_INT, 'Course being viewed', VALUE_DEFAULT, SITEID, NULL_ALLOWED),
             ]
         );
