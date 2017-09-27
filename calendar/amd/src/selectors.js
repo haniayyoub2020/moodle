@@ -39,5 +39,9 @@ define([], function() {
         calendarPeriods: {
             month: "[data-period='month']",
         },
+        actions: {
+            edit: '[data-action="edit"]',
+            remove: '[data-action="delete"]',
+        },
     };
 });
