@@ -29,7 +29,7 @@ define(['jquery', 'core/ajax'], function($, Ajax) {
      *
      * @method deleteEvent
      * @param {int} eventId The event id.
-     * @arapm {bool} deleteSeries Whether to delete all events in the series
+     * @param {bool} deleteSeries Whether to delete all events in the series
      * @return {promise} Resolved with requested calendar event
      */
     var deleteEvent = function(eventId, deleteSeries) {
@@ -111,6 +111,30 @@ define(['jquery', 'core/ajax'], function($, Ajax) {
     };
 
     /**
+     * Get calendar data for the day view.
+     *
+     * @method getCalendarDayData
+     * @param {Number} year Year
+     * @param {Number} month Month
+     * @param {Number} day Day
+     * @param {Number} courseid The course id.
+     * @return {promise} Resolved with the day view data.
+     */
+    var getCalendarDayData = function(year, month, day, courseid) {
+        var request = {
+            methodname: 'core_calendar_get_calendar_day_view',
+            args: {
+                year: year,
+                month: month,
+                day: day,
+                courseid: courseid,
+            }
+        };
+
+        return Ajax.call([request])[0];
+    };
+
+    /**
      * Change the start day for the given event id. The day timestamp
      * only has to be any time during the target day because only the
      * date information is extracted, the time of the day is ignored.
@@ -135,8 +159,6 @@ define(['jquery', 'core/ajax'], function($, Ajax) {
      * Get calendar upcoming data.
      *
      * @method getCalendarMonthData
-     * @param {Number} year Year
-     * @param {Number} month Month
      * @param {Number} courseid The course id.
      * @return {promise} Resolved with the month view data.
      */
@@ -157,6 +179,7 @@ define(['jquery', 'core/ajax'], function($, Ajax) {
         updateEventStartDay: updateEventStartDay,
         submitCreateUpdateForm: submitCreateUpdateForm,
         getCalendarMonthData: getCalendarMonthData,
+        getCalendarDayData: getCalendarDayData,
         getCalendarUpcomingData: getCalendarUpcomingData
     };
 });
