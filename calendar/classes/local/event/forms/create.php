@@ -35,6 +35,8 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  */
 class create extends \moodleform {
 
+    use eventtype;
+
     /**
      * Build the editor options using the given context.
      *
@@ -170,105 +172,6 @@ class create extends \moodleform {
         $mform->addElement('hidden', 'visible');
         $mform->setType('visible', PARAM_INT);
         $mform->setDefault('visible', 1);
-    }
-
-    /**
-     * Add the appropriate elements for the available event types.
-     *
-     * If the only event type available is 'user' then we add a hidden
-     * element because there is nothing for the user to choose.
-     *
-     * If more than one type is available then we add the elements as
-     * follows:
-     *      - Always add the event type selector
-     *      - Elements per type:
-     *          - course: add an additional select element with each
-     *                    course as an option.
-     *          - group: add a select element for the course (different
-     *                   from the above course select) and a select
-     *                   element for the group.
-     *
-     * @param MoodleQuickForm $mform
-     * @param array $eventtypes The available event types for the user
-     */
-    protected function add_event_type_elements($mform, $eventtypes) {
-        $options = [];
-
-        if (isset($eventtypes['user'])) {
-            $options['user'] = get_string('user');
-        }
-        if (isset($eventtypes['group'])) {
-            $options['group'] = get_string('group');
-        }
-        if (isset($eventtypes['course'])) {
-            $options['course'] = get_string('course');
-        }
-        if (isset($eventtypes['category'])) {
-            $options['category'] = get_string('category');
-        }
-        if (isset($eventtypes['site'])) {
-            $options['site'] = get_string('site');
-        }
-
-        // If we only have one event type and it's 'user' event then don't bother
-        // rendering the select boxes because there is no choice for the user to
-        // make.
-        if (count(array_keys($eventtypes)) == 1 && isset($eventtypes['user'])) {
-            $mform->addElement('hidden', 'eventtype');
-            $mform->setType('eventtype', PARAM_TEXT);
-            $mform->setDefault('eventtype', 'user');
-
-            // Render a static element to tell the user what type of event will
-            // be created.
-            $mform->addElement('static', 'staticeventtype', get_string('eventkind', 'calendar'), $options['user']);
-            return;
-        } else {
-            $mform->addElement('select', 'eventtype', get_string('eventkind', 'calendar'), $options);
-        }
-
-        if (isset($eventtypes['category'])) {
-            $categoryoptions = [];
-            foreach ($eventtypes['category'] as $id => $category) {
-                $categoryoptions[$id] = $category;
-            }
-
-            $mform->addElement('select', 'categoryid', get_string('category'), $categoryoptions);
-            $mform->hideIf('categoryid', 'eventtype', 'noteq', 'category');
-        }
-
-        if (isset($eventtypes['course'])) {
-            $courseoptions = [];
-            foreach ($eventtypes['course'] as $course) {
-                $courseoptions[$course->id] = format_string($course->fullname, true,
-                    ['context' => \context_course::instance($course->id)]);
-            }
-
-            $mform->addElement('select', 'courseid', get_string('course'), $courseoptions);
-            $mform->hideIf('courseid', 'eventtype', 'noteq', 'course');
-        }
-
-        if (isset($eventtypes['group'])) {
-            $courseoptions = [];
-            foreach ($eventtypes['groupcourses'] as $course) {
-                $courseoptions[$course->id] = format_string($course->fullname, true,
-                    ['context' => \context_course::instance($course->id)]);
-            }
-
-            $mform->addElement('select', 'groupcourseid', get_string('course'), $courseoptions);
-            $mform->hideIf('groupcourseid', 'eventtype', 'noteq', 'group');
-
-            $groupoptions = [];
-            foreach ($eventtypes['group'] as $group) {
-                // We are formatting it this way in order to provide the javascript both
-                // the course and group ids so that it can enhance the form for the user.
-                $index = "{$group->courseid}-{$group->id}";
-                $groupoptions[$index] = format_string($group->name, true,
-                    ['context' => \context_course::instance($group->courseid)]);
-            }
-
-            $mform->addElement('select', 'groupid', get_string('group'), $groupoptions);
-            $mform->hideIf('groupid', 'eventtype', 'noteq', 'group');
-        }
     }
 
     /**
