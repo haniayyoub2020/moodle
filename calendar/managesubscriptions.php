@@ -29,6 +29,7 @@ require_once($CFG->dirroot.'/calendar/lib.php');
 
 // Required use.
 $courseid = optional_param('course', SITEID, PARAM_INT);
+$categoryid = optional_param('category', null, PARAM_INT);
 // Used for processing subscription actions.
 $subscriptionid = optional_param('id', 0, PARAM_INT);
 $pollinterval  = optional_param('pollinterval', 0, PARAM_INT);
@@ -37,6 +38,9 @@ $action = optional_param('action', '', PARAM_INT);
 $url = new moodle_url('/calendar/managesubscriptions.php');
 if ($courseid != SITEID) {
     $url->param('course', $courseid);
+}
+if ($categoryid) {
+    $url->param('categoryid', $categoryid);
 }
 navigation_node::override_active_url(new moodle_url('/calendar/view.php', array('view' => 'month')));
 $PAGE->set_url($url);
@@ -101,11 +105,27 @@ if (!empty($formdata)) {
     }
 }
 
-$sql = 'SELECT *
-          FROM {event_subscriptions}
-         WHERE courseid = :courseid
-            OR (courseid = 0 AND userid = :userid)';
-$params = array('courseid' => $courseid, 'userid' => $USER->id);
+$types = calendar_get_all_allowed_types();
+
+$searches = [
+    "(courseid = 0 AND userid = :userid)",
+];
+$params = [
+    'userid' => $USER->id,
+];
+
+if (isset($types['course'])) {
+    list($courseinsql, $courseparams) = $DB->get_in_or_equal(array_keys($types['course']), SQL_PARAMS_NAMED, 'course');
+    $searches[] = "courseid {$courseinsql}";
+    $params += $courseparams;
+}
+if (isset($types['category'])) {
+    list($categoryinsql, $categoryparams) = $DB->get_in_or_equal(array_keys($types['category']), SQL_PARAMS_NAMED, 'category');
+    $searches[] = "categoryid {$categoryinsql}";
+    $params += $categoryparams;
+}
+
+$sql = "SELECT * FROM {event_subscriptions} WHERE " . implode(' OR ', $searches);;
 $subscriptions = $DB->get_records_sql($sql, $params);
 
 // Print title and header.

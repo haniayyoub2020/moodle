@@ -2689,13 +2689,13 @@ function calendar_add_subscription($sub) {
  * Add an iCalendar event to the Moodle calendar.
  *
  * @param stdClass $event The RFC-2445 iCalendar event
- * @param int $courseid The course ID
+ * @param int $unused Deprecated
  * @param int $subscriptionid The iCalendar subscription ID
  * @param string $timezone The X-WR-TIMEZONE iCalendar property if provided
  * @throws dml_exception A DML specific exception is thrown for invalid subscriptionids.
  * @return int Code: CALENDAR_IMPORT_EVENT_UPDATED = updated,  CALENDAR_IMPORT_EVENT_INSERTED = inserted, 0 = error
  */
-function calendar_add_icalendar_event($event, $courseid, $subscriptionid, $timezone='UTC') {
+function calendar_add_icalendar_event($event, $unused = null, $subscriptionid, $timezone='UTC') {
     global $DB;
 
     // Probably an unsupported X-MICROSOFT-CDO-BUSYSTATUS event.
@@ -2768,6 +2768,7 @@ function calendar_add_icalendar_event($event, $courseid, $subscriptionid, $timez
     $eventrecord->userid = $sub->userid;
     $eventrecord->groupid = $sub->groupid;
     $eventrecord->courseid = $sub->courseid;
+    $eventrecord->categoryid = $sub->categoryid;
     $eventrecord->eventtype = $sub->eventtype;
 
     if ($updaterecord = $DB->get_record('event', array('uuid' => $eventrecord->uuid,
@@ -2848,6 +2849,7 @@ function calendar_delete_subscription($subscription) {
     // Trigger event, calendar subscription deleted.
     $eventparams = array('objectid' => $subscription->id,
         'context' => calendar_get_calendar_context($subscription),
+        // TODO
         'other' => array('courseid' => $subscription->courseid)
     );
     $event = \core\event\calendar_subscription_deleted::create($eventparams);
@@ -2888,7 +2890,7 @@ function calendar_get_icalendar($url) {
  * @param int $subscriptionid The subscription ID.
  * @return string A log of the import progress, including errors.
  */
-function calendar_import_icalendar_events($ical, $courseid, $subscriptionid = null) {
+function calendar_import_icalendar_events($ical, $unused = null, $subscriptionid = null) {
     global $DB;
 
     $return = '';
@@ -2915,7 +2917,7 @@ function calendar_import_icalendar_events($ical, $courseid, $subscriptionid = nu
 
     $return = '';
     foreach ($ical->components['VEVENT'] as $event) {
-        $res = calendar_add_icalendar_event($event, $courseid, $subscriptionid, $timezone);
+        $res = calendar_add_icalendar_event($event, null, $subscriptionid, $timezone);
         switch ($res) {
             case CALENDAR_IMPORT_EVENT_UPDATED:
                 $updatecount++;
@@ -3023,15 +3025,26 @@ function calendar_can_edit_subscription($subscriptionorid) {
 
     $allowed = new \stdClass;
     $courseid = $subscription->courseid;
+    $categoryid = $subscription->categoryid;
     $groupid = $subscription->groupid;
+    $category = null;
 
-    calendar_get_allowed_types($allowed, $courseid);
+    if (!empty($categoryid)) {
+        $category =  \coursecat::get($categoryid);
+    }
+    calendar_get_allowed_types($allowed, $courseid, null, $category);
     switch ($subscription->eventtype) {
         case 'user':
             return $allowed->user;
         case 'course':
             if (isset($allowed->courses[$courseid])) {
                 return $allowed->courses[$courseid];
+            } else {
+                return false;
+            }
+        case 'category':
+            if (isset($allowed->categories[$categoryid])) {
+                return $allowed->categories[$categoryid];
             } else {
                 return false;
             }
