@@ -2621,12 +2621,36 @@ function calendar_get_eventtype_choices($courseid) {
 function calendar_add_subscription($sub) {
     global $DB, $USER, $SITE;
 
+    // Undo the form definition work around to allow us to have two different
+    // course selectors present depending on which event type the user selects.
+    if (isset($sub->groupcourseid)) {
+        $sub->courseid = $sub->groupcourseid;
+        unset($sub->groupcourseid);
+    }
+
+    // Pull the group id back out of the value. The form saves the value
+    // as "<courseid>-<groupid>" to allow the javascript to work correctly.
+    if (isset($sub->groupid)) {
+        list($courseid, $groupid) = explode('-', $data->groupid);
+        $sub->courseid = $groupid;
+        $sub->groupid = $groupid;
+    }
+
+    // Default course id if none is set.
+    if (!isset($sub->courseid)) {
+        if ($sub->eventtype === 'site') {
+            $sub->courseid = SITEID;
+        } else {
+            $sub->courseid = 0;
+        }
+    }
+
     if ($sub->eventtype === 'site') {
         $sub->courseid = $SITE->id;
     } else if ($sub->eventtype === 'group' || $sub->eventtype === 'course') {
         $sub->courseid = $sub->course;
     } else if ($sub->eventtype === 'category') {
-        $sub->categoryid = $sub->category;
+        $sub->categoryid = $sub->categoryid;
     } else {
         // User events.
         $sub->courseid = 0;

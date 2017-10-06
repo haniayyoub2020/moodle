@@ -26,7 +26,6 @@ require_once('../config.php');
 require_once($CFG->libdir.'/bennu/bennu.inc.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/calendar/lib.php');
-require_once($CFG->dirroot.'/calendar/managesubscriptions_form.php');
 
 // Required use.
 $courseid = optional_param('course', SITEID, PARAM_INT);
@@ -58,7 +57,7 @@ if (!calendar_user_can_add_event($course)) {
     print_error('errorcannotimport', 'calendar');
 }
 
-$form = new calendar_addsubscription_form(null);
+$form = new \core_calendar\local\event\forms\managesubscriptions();
 $form->set_data(array(
     'course' => $course->id
 ));
