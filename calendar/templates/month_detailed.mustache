@@ -108,7 +108,29 @@
                         </div>
                         <div class="hidden-md-up hidden-desktop">
                             {{#events.0}}
-                                <a href="{{viewdaylink}}" class="day" title="{{viewdaylinktitle}}">{{mday}}</a>
+                                {{< core_calendar/minicalendar_day_link }}
+                                    {{$day}}{{mday}}{{/day}}
+                                    {{$url}}{{viewdaylink}}{{/url}}
+                                    {{$title}}{{popovertitle}}{{/title}}
+                                    {{$nocontent}}{{#str}}eventnone, calendar{{/str}}{{/nocontent}}
+                                    {{$content}}
+                                        {{#events}}
+                                            <div data-popover-eventtype-{{calendareventtype}}="1">
+                                                <a data-action="view-event"
+                                                  data-event-id="{{id}}"
+                                                  href="{{url}}"
+                                                  title="{{name}}"
+                                                  data-region="event-item">
+                                                    <span class="badge badge-circle calendar_event_{{calendareventtype}}">
+                                                        &nbsp;
+                                                    </span>
+                                                    {{> core_calendar/event_icon}}
+                                                    {{{popupname}}}
+                                                </a>
+                                            </div>
+                                        {{/events}}
+                                    {{/content}}
+                                {{/ core_calendar/minicalendar_day_link }}
                             {{/events.0}}
                             {{^events.0}}
                                 <div data-region="day-content">

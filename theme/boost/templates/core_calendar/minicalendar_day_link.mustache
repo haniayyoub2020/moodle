@@ -27,17 +27,18 @@
         "content": "<img class='icon smallicon' src='../../../pix/i/siteevent.svg'>Test site event"
     }
 }}
-<a {{!
+<span {{!
     }} id="calendar-day-popover-link-{{courseid}}-{{year}}-{{yday}}-{{uniqid}}"{{!
     }} href="{{$url}}{{url}}{{/url}}"{{!
     }} data-container="body"{{!
+    }} data-action="view-day-link"{{!
     }} data-toggle="popover"{{!
     }} data-html="true"{{!
     }} data-trigger="hover"{{!
     }} data-placement="top"{{!
     }} data-title="{{$title}}{{title}}{{/title}}"{{!
     }} data-alternate="{{$nocontent}}{{/nocontent}}"{{!
-}}>{{$day}}{{day}}{{/day}}</a>
+}}>{{$day}}{{day}}{{/day}}</span>
 <div class="hidden">
     {{$content}}{{/content}}
 </div>
