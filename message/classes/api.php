@@ -49,66 +49,45 @@ class api {
         global $DB;
 
         // Get the user fields we want.
-        $ufields = \user_picture::fields('u', array('lastaccess'), 'userfrom_id', 'userfrom_');
-        $ufields2 = \user_picture::fields('u2', array('lastaccess'), 'userto_id', 'userto_');
+        $ufields = \user_picture::fields('u', array('lastaccess'), 'u_id', 'u_');
 
         // Get all the messages for the user.
-        $sql = "SELECT m.id, m.useridfrom, m.useridto, m.subject, m.fullmessage, m.fullmessagehtml, m.fullmessageformat,
-                       m.smallmessage, m.notification, m.timecreated, 0 as isread, $ufields, mc.blocked as userfrom_blocked,
-                       $ufields2, mc2.blocked as userto_blocked
-                  FROM {message} m
-                  JOIN {user} u
-                    ON m.useridfrom = u.id
-             LEFT JOIN {message_contacts} mc
-                    ON (mc.contactid = u.id AND mc.userid = ?)
-                  JOIN {user} u2
-                    ON m.useridto = u2.id
-             LEFT JOIN {message_contacts} mc2
-                    ON (mc2.contactid = u2.id AND mc2.userid = ?)
-                 WHERE ((useridto = ? AND timeusertodeleted = 0)
-                    OR (useridfrom = ? AND timeuserfromdeleted = 0))
-                   AND notification = 0
-                   AND u.deleted = 0
-                   AND u2.deleted = 0
-                   AND " . $DB->sql_like('smallmessage', '?', false) . "
-             UNION ALL
-                SELECT mr.id, mr.useridfrom, mr.useridto, mr.subject, mr.fullmessage, mr.fullmessagehtml, mr.fullmessageformat,
-                       mr.smallmessage, mr.notification, mr.timecreated, 1 as isread, $ufields, mc.blocked as userfrom_blocked,
-                       $ufields2, mc2.blocked as userto_blocked
-                  FROM {message_read} mr
-                  JOIN {user} u
-                    ON mr.useridfrom = u.id
-             LEFT JOIN {message_contacts} mc
-                    ON (mc.contactid = u.id AND mc.userid = ?)
-                  JOIN {user} u2
-                    ON mr.useridto = u2.id
-             LEFT JOIN {message_contacts} mc2
-                    ON (mc2.contactid = u2.id AND mc2.userid = ?)
-                 WHERE ((useridto = ? AND timeusertodeleted = 0)
-                    OR (useridfrom = ? AND timeuserfromdeleted = 0))
-                   AND notification = 0
-                   AND u.deleted = 0
-                   AND u2.deleted = 0
-                   AND " . $DB->sql_like('smallmessage', '?', false) . "
-              ORDER BY timecreated DESC";
-        $params = array($userid, $userid, $userid, $userid, '%' . $search . '%',
-                        $userid, $userid, $userid, $userid, '%' . $search . '%');
+        $sql = "SELECT
+                    m.*,
+                    {$ufields},
+                    mc.blocked,
+                    CASE WHEN (m.sender = cu.id) THEN 1
+                         WHEN (m.timecreated >= mp.seento) THEN 1
+                         ELSE 0
+                    END AS read
+                 FROM {user} cu
+           INNER JOIN {message_participants} mp ON mp.userid = cu.id
+           INNER JOIN {message_discussions} md ON md.id = mp.discussionid
+           INNER JOIN {messages} m ON m.discussionid = md.id
+           INNER JOIN {user} u ON m.sender = u.id
+            LEFT JOIN {message_deleted} mdel ON mdel.messageid = m.id AND mdel.userid = cu.id
+            LEFT JOIN {message_contacts} mc ON mc.contactid = m.sender AND mc.userid = cu.id
+                WHERE (
+                    cu.id = ?
+                  AND
+                    mdel.id IS NULL
+                  AND
+                    " . $DB->sql_like('smallmessage', '?', false) . "
+                )
+             ORDER BY m.timecreated DESC
+        ";
+        $params = [
+            $userid,
+            "%{$search}%",
+        ];
 
         // Convert the messages into searchable contacts with their last message being the message that was searched.
         $conversations = array();
         if ($messages = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum)) {
             foreach ($messages as $message) {
-                $prefix = 'userfrom_';
-                if ($userid == $message->useridfrom) {
-                    $prefix = 'userto_';
-                    // If it from the user, then mark it as read, even if it wasn't by the receiver.
-                    $message->isread = true;
-                }
-                $blockedcol = $prefix . 'blocked';
-                $message->blocked = $message->$blockedcol;
-
+                print_object($message);
                 $message->messageid = $message->id;
-                $conversations[] = helper::create_contact($message, $prefix);
+                $conversations[] = helper::create_contact($message, 'u_');
             }
         }
 
@@ -266,75 +245,45 @@ class api {
     public static function get_conversations($userid, $limitfrom = 0, $limitnum = 20) {
         global $DB;
 
-        // The case statement is used to make sure the same key is generated
-        // whether a user sent or received a message (it's the same conversation).
-        // E.g. If there is a message from user 1 to user 2 and then from user 2 to user 1 the result set
-        // will group those into a single record, since 1 -> 2 and 2 -> 1 is the same conversation.
-        $case1 = $DB->sql_concat('useridfrom', "'-'", 'useridto');
-        $case2 = $DB->sql_concat('useridto', "'-'", 'useridfrom');
-        $convocase = "CASE WHEN useridfrom > useridto
-                        THEN $case1
-                        ELSE $case2 END";
-        $convosig = "$convocase AS convo_signature";
+        // TODO
+        // Just change this to fetch all discussions where this user is a
+        // participants.
+        // Then spawn a second query to fetch the most recent message in
+        // each of those discussions.
+        // I
+        // Get the user fields we want.
+        $ufields = \user_picture::fields('u', array('lastaccess'), 'u_id', 'u_');
 
-        // This is a snippet to join the message tables and filter out any messages the user has deleted
-        // and ignore notifications. The fields are specified by name so that the union works on MySQL.
-        $allmessages = "SELECT
-                            id, useridfrom, useridto, subject, fullmessage, fullmessageformat,
-                            fullmessagehtml, smallmessage, notification, contexturl,
-                            contexturlname, timecreated, timeuserfromdeleted, timeusertodeleted,
-                            component, eventtype, 0 as timeread
-                        FROM {message}
-                        WHERE
-                            (useridto = ? AND timeusertodeleted = 0 AND notification = 0)
-                        UNION ALL
-                        SELECT
-                            id, useridfrom, useridto, subject, fullmessage, fullmessageformat,
-                            fullmessagehtml, smallmessage, notification, contexturl,
-                            contexturlname, timecreated, timeuserfromdeleted, timeusertodeleted,
-                            component, eventtype, 0 as timeread
-                        FROM {message}
-                        WHERE
-                            (useridfrom = ? AND timeuserfromdeleted = 0 AND notification = 0)
-                        UNION ALL
-                        SELECT
-                            id, useridfrom, useridto, subject, fullmessage, fullmessageformat,
-                            fullmessagehtml, smallmessage, notification, contexturl,
-                            contexturlname, timecreated, timeuserfromdeleted, timeusertodeleted,
-                            component, eventtype, timeread
-                        FROM {message_read}
-                        WHERE
-                            (useridto = ? AND timeusertodeleted = 0 AND notification = 0)
-                        UNION ALL
-                        SELECT
-                            id, useridfrom, useridto, subject, fullmessage, fullmessageformat,
-                            fullmessagehtml, smallmessage, notification, contexturl,
-                            contexturlname, timecreated, timeuserfromdeleted, timeusertodeleted,
-                            component, eventtype, timeread
-                        FROM {message_read}
-                        WHERE
-                            (useridfrom = ? AND timeuserfromdeleted = 0 AND notification = 0)";
-        $allmessagesparams = [$userid, $userid, $userid, $userid];
+        // Get all the messages for the user.
+        $sql = "SELECT
+                    MAX(m.timecreated)
+                    mc.blocked
+                 FROM {user} cu
+           INNER JOIN {message_participants} mp ON mp.userid = cu.id
+           INNER JOIN {message_discussions} md ON md.id = mp.discussionid
+           INNER JOIN {messages} m ON m.discussionid = md.id
+            LEFT JOIN {message_deleted} mdel ON mdel.messageid = m.id AND mdel.userid = cu.id
+            LEFT JOIN {message_contacts} mc ON mc.contactid = m.sender AND mc.userid = cu.id
+                WHERE (
+                    cu.id = ?
+                  AND
+                    mdel.id IS NULL
+                )
+             ORDER BY m.timecreated DESC
+        ";
+        $params = [
+            $userid,
+        ];
 
-        // Create a transaction to protect against concurrency issues.
-        $transaction = $DB->start_delegated_transaction();
-
-        // First we need to get the list of conversations from the database ordered by the conversation
-        // with the most recent message first.
-        //
-        // This query will join the two message tables and then group the results by the combination
-        // of useridfrom and useridto (the 'convo_signature').
-        $conversationssql = "SELECT $convosig, max(timecreated) as timecreated
-                             FROM ($allmessages) x
-                             GROUP BY $convocase
-                             ORDER BY timecreated DESC, max(id) DESC";
-        $conversationrecords = $DB->get_records_sql($conversationssql, $allmessagesparams, $limitfrom, $limitnum);
-
-        // This user has no conversations so we can return early here.
-        if (empty($conversationrecords)) {
-            $transaction->allow_commit();
-            return [];
+        // Convert the messages into searchable contacts with their last message being the message that was searched.
+        $conversations = array();
+        if ($messages = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum)) {
+            foreach ($messages as $message) {
+                $message->messageid = $message->id;
+                $conversations[] = helper::create_contact($message, 'u_');
+            }
         }
+
 
         // Next we need to get the max id of the messages sent at the latest time for each conversation.
         // This needs to be a separate query to above because there is no guarantee that the message with

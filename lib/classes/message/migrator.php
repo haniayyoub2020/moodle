@@ -77,8 +77,8 @@ class migrator {
             sort($userids);
             $lockname = implode('-', $userids);
             if (!$targetlock = $lockfactory->get_lock($lockname, 1)) {
-                // Could not get the lock immediately.
-                // This user may also be running the conversion.
+                // Unable not get the lock immediately.
+                // This user may also be running the same conversion.
                 // Skip this user.
                 // Any messages between these two users will be missing, but will be picked up by the cleanup task.
                 continue;
