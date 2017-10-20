@@ -212,4 +212,52 @@ class manager {
             self::send_message_to_processors($eventdata, $savemessage, $processorlist);
         }
     }
+
+    public static function get_discussion_with_users($userids) {
+        global $DB;
+
+        list ($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        $inparams['usercount'] = count($userids);
+
+        $sql = "
+            SELECT
+                discussionid
+              FROM {message_participants}
+             WHERE discussionid IN (
+                SELECT discussionid
+                  FROM {message_participants}
+                 WHERE userid {$insql}
+             )
+          GROUP BY discussionid
+            HAVING COUNT(userid) = :usercount
+        ";
+
+        $discussionid = $DB->get_field_sql($sql, $inparams);
+
+        if (empty($discussionid)) {
+            $discussionid = $DB->insert_record('message_discussions', (object) [
+                'name' => '',
+            ]);
+
+            $participants = array_map(function ($userid) use ($discussionid) {
+                return [
+                    'discussionid' => $discussionid,
+                    'userid' => $userid,
+                ];
+            }, $userids);
+
+            $DB->insert_records('message_participants', $participants);
+        }
+
+        return $discussionid;
+    }
+
+    public static function mark_discussion_seen($discussionid, $user, $seento) {
+        global $DB;
+
+        $DB->set_field('message_participants', 'seento', $seento, [
+                'discussionid' => $discussionid,
+                'userid' => $user->id,
+            ]);
+    }
 }
