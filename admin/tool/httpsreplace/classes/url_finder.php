@@ -81,9 +81,7 @@ class url_finder {
         } else {
             $replace = preg_replace('|http://|i', 'https://', $search);
         }
-        $DB->set_debug(true);
         $DB->replace_all_text($table, $column, $search, $replace);
-        $DB->set_debug(false);
     }
 
     /**
