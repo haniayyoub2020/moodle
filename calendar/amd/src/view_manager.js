@@ -45,11 +45,6 @@ define([
     SummaryModal
 ) {
 
-        var SELECTORS = {
-            CALENDAR_NAV_LINK: ".calendarwrapper .arrow_link",
-            LOADING_ICON_CONTAINER: '[data-region="overlay-icon-container"]'
-        };
-
         /**
          * Register event listeners for the module.
          *
@@ -84,7 +79,8 @@ define([
                 renderEventSummaryModal(eventId);
             });
 
-            root.on('click', SELECTORS.CALENDAR_NAV_LINK, function(e) {
+
+            root.on('click', CalendarSelectors.links.navLink, function(e) {
                 var wrapper = root.find(CalendarSelectors.wrapper);
                 var view = wrapper.data('view');
                 var courseId = wrapper.data('courseid');
@@ -283,7 +279,7 @@ define([
          * @method startLoading
          */
         var startLoading = function(root) {
-            var loadingIconContainer = root.find(SELECTORS.LOADING_ICON_CONTAINER);
+            var loadingIconContainer = root.find(CalendarSelectors.containers.loadingIcon);
 
             loadingIconContainer.removeClass('hidden');
         };
@@ -295,7 +291,7 @@ define([
          * @method stopLoading
          */
         var stopLoading = function(root) {
-            var loadingIconContainer = root.find(SELECTORS.LOADING_ICON_CONTAINER);
+            var loadingIconContainer = root.find(CalendarSelectors.containers.loadingIcon);
 
             loadingIconContainer.addClass('hidden');
         };
