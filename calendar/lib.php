@@ -1068,6 +1068,13 @@ class calendar_information {
 
             $this->categories = $category->get_parents();
             $this->categories[] = $category->id;
+        } else if (SITEID !== $this->courseid) {
+            // A specific course was requested.
+            $category = \coursecat::get($course->category);
+            $this->categoryid = $category->id;
+
+            $this->categories = $category->get_parents();
+            $this->categories[] = $category->id;
         } else if (SITEID === $this->courseid) {
             // This is the site.
             // Show categories for all courses the user has access to.

@@ -904,29 +904,27 @@ class core_calendar_external extends external_api {
         self::validate_context($context);
         $PAGE->set_url('/calendar/');
 
+        $category = null;
         if ($courseid != SITEID && !empty($courseid)) {
             // Course ID must be valid and existing.
             $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
             $courses = [$course->id => $course];
+        } else if (!empty($categoryid)) {
+            $course = get_site();
+            $courses = calendar_get_default_courses();
 
-            $coursecat = \coursecat::get($course->category);
-            $category = $coursecat->get_db_record();
+            self::validate_context(context_coursecat::instance($categoryid));
+            $ids = [$categoryid];
+            $category = \coursecat::get($categoryid);
+            $ids += $category->get_parents();
+            $categories = \coursecat::get_many($ids);
+            $courses = array_filter($courses, function($course) use ($categories) {
+                return array_search($course->category, $categories) !== false;
+            });
+            $category = $category->get_db_record();
         } else {
             $course = get_site();
             $courses = calendar_get_default_courses();
-            $category = null;
-
-            if ($categoryid) {
-                self::validate_context(context_coursecat::instance($categoryid));
-                $ids = [$categoryid];
-                $category = \coursecat::get($categoryid);
-                $ids += $category->get_parents();
-                $categories = \coursecat::get_many($ids);
-                $courses = array_filter($courses, function($course) use ($categories) {
-                    return array_search($course->category, $categories) !== false;
-                });
-                $category = $category->get_db_record();
-            }
         }
 
         $type = \core_calendar\type_factory::get_calendar_instance();
