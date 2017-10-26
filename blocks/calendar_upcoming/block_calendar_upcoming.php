@@ -68,7 +68,7 @@ class block_calendar_upcoming extends block_base {
         if (empty($data->events)) {
             $this->content->text = '<div class="post">'. get_string('noupcomingevents', 'calendar').'</div>';
         } else {
-            $this->content->text .= $renderer->render_from_template($template, $data);
+            $this->content->text .= $renderer->render_from_template('core_calendar/calendar_upcoming_block', $data);
         }
 
         $this->content->footer = '<div class="gotocal">
@@ -78,5 +78,3 @@ class block_calendar_upcoming extends block_base {
         return $this->content;
     }
 }
-
-
