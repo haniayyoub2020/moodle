@@ -68,7 +68,12 @@ define([
                 var target = $(e.target);
                 var eventId = null;
 
-                var eventLink = target.closest(CalendarSelectors.actions.viewEvent);
+                var eventLink;
+                if (target.is(CalendarSelectors.actions.viewEvent)) {
+                    eventLink = target;
+                } else {
+                    eventLink = target.closest(CalendarSelectors.actions.viewEvent);
+                }
 
                 if (eventLink.length) {
                     eventId = eventLink.data('eventId');
