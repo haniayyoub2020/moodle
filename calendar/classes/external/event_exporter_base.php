@@ -272,19 +272,19 @@ class event_exporter_base extends exporter {
             $coursesummaryexporter = new course_summary_exporter($course, ['context' => $context]);
             $values['course'] = $coursesummaryexporter->export($output);
         }
-        $courseid = (!$course) ? SITEID : $course->id;
 
         $values['canedit'] = calendar_edit_event_allowed($legacyevent, true);
         $values['candelete'] = calendar_delete_event_allowed($legacyevent);
 
-        $deleteurl = new moodle_url('/calendar/delete.php', ['id' => $event->get_id(), 'course' => $courseid]);
+        $deleteurl = new moodle_url('/calendar/view.php', ['eventid' => $event->get_id()]);
         $values['deleteurl'] = $deleteurl->out(false);
 
-        $editurl = new moodle_url('/calendar/event.php', ['action' => 'edit', 'id' => $event->get_id(),
-                'course' => $courseid]);
+        $editurl = new moodle_url('/calendar/view.php', ['eventid' => $event->get_id()]);
         $values['editurl'] = $editurl->out(false);
-        $viewurl = new moodle_url('/calendar/view.php', ['view' => 'day', 'course' => $courseid,
-                'time' => $timesort]);
+        $viewurl = new moodle_url('/calendar/view.php', [
+                'eventid' => $event->get_id(),
+                'view' => 'day',
+            ]);
         $viewurl->set_anchor('event_' . $event->get_id());
         $values['viewurl'] = $viewurl->out(false);
         $values['formattedtime'] = calendar_format_event_time($legacyevent, time(), null, false,

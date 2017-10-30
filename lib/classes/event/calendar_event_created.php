@@ -90,7 +90,7 @@ class calendar_event_created extends base {
      * @return array of parameters to be passed to legacy add_to_log() function.
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'calendar', 'add', 'event.php?action=edit&amp;id=' . $this->objectid , $this->other['name']);
+        return array($this->courseid, 'calendar', 'add', 'view.php?action=edit&amp;eventid=' . $this->objectid , $this->other['name']);
     }
 
     /**

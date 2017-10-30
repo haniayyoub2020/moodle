@@ -80,7 +80,7 @@ class calendar_event_updated extends base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/calendar/event.php', array('action' => 'edit', 'id' => $this->objectid));
+        return new \moodle_url('/calendar/view.php', array('action' => 'edit', 'eventid' => $this->objectid));
     }
 
     /**
@@ -89,7 +89,7 @@ class calendar_event_updated extends base {
      * @return array of parameters to be passed to legacy add_to_log() function.
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'calendar', 'edit', 'event.php?action=edit&amp;id=' . $this->objectid, $this->other['name']);
+        return array($this->courseid, 'calendar', 'edit', 'view.php?action=edit&amp;eventid=' . $this->objectid, $this->other['name']);
     }
 
     /**
