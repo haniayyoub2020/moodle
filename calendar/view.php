@@ -49,12 +49,23 @@ require_once('../config.php');
 require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot.'/calendar/lib.php');
 
+$eventid = optional_param('eventid', null, PARAM_INT);
 $categoryid = optional_param('category', null, PARAM_INT);
 $courseid = optional_param('course', SITEID, PARAM_INT);
 $view = optional_param('view', 'upcoming', PARAM_ALPHA);
 $time = optional_param('time', 0, PARAM_INT);
 
 $url = new moodle_url('/calendar/view.php');
+
+if (!empty($eventid) && empty($time)) {
+    $event = calendar_event::load($eventid);
+    // TODO Check user visible.
+    $time = $event->timestart;
+    if ($view == 'upcoming') {
+        // The upcoming view probably won't show this event.
+        $view = 'day';
+    }
+}
 
 if (empty($time)) {
     $time = time();
