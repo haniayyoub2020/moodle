@@ -96,10 +96,29 @@ define([
 
         return {
             init: function(root, type) {
-                root = $(root);
+                var initPromise = $.Deferred();
 
-                CalendarViewManager.init(root, type);
-                registerEventListeners(root, type);
+                initPromise
+                .then(function(root) {
+                    root = $(root);
+
+                    return root;
+                })
+                .then(function(root) {
+                    CalendarViewManager.init(root, type);
+
+                    return root;
+                })
+                .then(function(root) {
+                    registerEventListeners(root, type);
+
+                    return root;
+                })
+                .fail(Notification.exception);
+
+                initPromise.resolve(root);
+
+                return initPromise;
             }
         };
     });

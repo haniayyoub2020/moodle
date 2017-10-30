@@ -35,7 +35,19 @@
     {{> core_calendar/upcoming_detailed}}
 </div>
 {{#js}}
-require(['jquery', 'core_calendar/calendar_view'], function($, CalendarView) {
-    CalendarView.init($("#calendar-upcoming-{{uniqid}}"), 'upcoming');
+require([
+    'jquery',
+    'core_calendar/calendar_view',
+    'core_calendar/view_manager',
+    'core/notification',
+], function(
+        $,
+        CalendarView,
+        CalendarViewManager
+) {
+    CalendarView
+        .init($("#calendar-upcoming-{{uniqid}}"), 'upcoming')
+        .then(CalendarViewManager.processInitialUrl)
+        .fail(Notification.exception);
 });
 {{/js}}

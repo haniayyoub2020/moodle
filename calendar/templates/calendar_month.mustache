@@ -35,7 +35,20 @@
     {{> core_calendar/month_detailed}}
 </div>
 {{#js}}
-require(['jquery', 'core_calendar/calendar'], function($, Calendar) {
-    Calendar.init($("#calendar-month-{{uniqid}}"));
+require([
+    'jquery',
+    'core_calendar/calendar',
+    'core_calendar/view_manager',
+    'core/notification',
+], function(
+    $,
+    Calendar,
+    CalendarViewManager,
+    Notification
+) {
+    Calendar
+        .init($("#calendar-month-{{uniqid}}"))
+        .then(CalendarViewManager.processInitialUrl)
+        .fail(Notification.exception);
 });
 {{/js}}

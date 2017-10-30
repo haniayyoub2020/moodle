@@ -216,9 +216,29 @@ define([
 
     return {
         init: function(root) {
-            root = $(root);
-            CalendarViewManager.init(root);
-            registerEventListeners(root);
+            var initPromise = $.Deferred();
+
+            initPromise
+            .then(function(root) {
+                root = $(root);
+
+                return root;
+            })
+            .then(function(root) {
+                CalendarViewManager.init(root);
+
+                return root;
+            })
+            .then(function(root) {
+                registerEventListeners(root);
+
+                return root;
+            })
+            .fail(Notification.exception);
+
+            initPromise.resolve(root);
+
+            return initPromise;
         }
     };
 });

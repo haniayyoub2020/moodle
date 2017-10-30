@@ -35,7 +35,20 @@
     {{> core_calendar/day_detailed}}
 </div>
 {{#js}}
-require(['jquery', 'core_calendar/calendar_view'], function($, CalendarView) {
-    CalendarView.init($("#calendar-day-{{uniqid}}"), 'day');
+require([
+    'jquery',
+    'core_calendar/calendar_view',
+    'core_calendar/view_manager',
+    'core/notification',
+], function(
+        $,
+        CalendarView,
+        CalendarViewManager,
+        Notification
+) {
+    CalendarView
+        .init($("#calendar-day-{{uniqid}}"), 'day')
+        .then(CalendarViewManager.processInitialUrl)
+        .fail(Notification.exception);
 });
 {{/js}}

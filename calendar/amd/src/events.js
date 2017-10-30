@@ -36,5 +36,6 @@ define([], function() {
         moveEvent: 'calendar-events:move_event',
         filterChanged: 'calendar-events:filter_changed',
         viewUpdated: 'calendar-events:view_updated',
+        viewEvent: 'calendar-events:view_event',
     };
 });

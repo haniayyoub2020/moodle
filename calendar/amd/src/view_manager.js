@@ -56,9 +56,9 @@ define([
             // Bind click events to event links.
             root.on('click', CalendarSelectors.links.eventLink, function(e) {
                 e.preventDefault();
-                // We've handled the event so stop it from bubbling
-                // and causing the day click handler to fire.
-                e.stopPropagation();
+
+                // We've handled the event so stop it from bubbling and causing the day click handler to fire.
+                e.stopImmediatePropagation();
 
                 var target = $(e.target);
                 var eventId = null;
@@ -76,9 +76,15 @@ define([
                     eventId = target.find(CalendarSelectors.actions.viewEvent).data('eventId');
                 }
 
-                renderEventSummaryModal(eventId);
+                $('body').trigger(CalendarEvents.viewEvent, eventId);
             });
 
+            $('body').on(CalendarEvents.viewEvent, function(e, eventId) {
+                // We've handled the event so stop it from bubbling and causing the day click handler to fire.
+                e.stopImmediatePropagation();
+
+                renderEventSummaryModal(eventId);
+            });
 
             root.on('click', CalendarSelectors.links.navLink, function(e) {
                 var wrapper = root.find(CalendarSelectors.wrapper);
@@ -394,9 +400,26 @@ define([
             });
         };
 
+        /**
+         * Check the initial URL and process any params as required.
+         */
+        var processInitialUrl = function() {
+            var url = $('<a>').attr('href', document.location.href);
+            var search = url.prop('search');
+            var searchKey = 'eventid=';
+
+            if (search.length > 1) {
+                $(search.slice(1).split('&')).each(function(index, value) {
+                    if (value.indexOf(searchKey) === 0) {
+                        $(document.body).trigger(CalendarEvents.viewEvent, value.slice(searchKey.length));
+                    }
+                });
+            }
+        };
+
         return {
             init: function(root) {
-                registerEventListeners(root);
+                return registerEventListeners(root);
             },
             reloadCurrentMonth: reloadCurrentMonth,
             changeMonth: changeMonth,
@@ -404,6 +427,7 @@ define([
             reloadCurrentDay: reloadCurrentDay,
             changeDay: changeDay,
             refreshDayContent: refreshDayContent,
-            reloadCurrentUpcoming: reloadCurrentUpcoming
+            reloadCurrentUpcoming: reloadCurrentUpcoming,
+            processInitialUrl: processInitialUrl,
         };
     });
