@@ -2905,6 +2905,7 @@ class MoodleQuickForm_Renderer extends HTML_QuickForm_Renderer_Tableless{
             );
             $PAGE->requires->string_for_js('changesmadereallygoaway', 'moodle');
         }
+        $PAGE->requires->js_call_amd('core_form/advanced', 'init', [$formid]);
         if (!empty($this->_collapsibleElements)) {
             if (count($this->_collapsibleElements) > 1) {
                 $this->_collapseButtons = $this->_collapseButtonsTemplate;
