@@ -294,10 +294,11 @@ class core_calendar_renderer extends plugin_renderer_base {
             get_string('colcalendar', 'calendar'),
             get_string('collastupdated', 'calendar'),
             get_string('eventkind', 'calendar'),
+            get_string('eventkindinfo', 'calendar'),
             get_string('colpoll', 'calendar'),
             get_string('colactions', 'calendar')
         );
-        $table->align = array('left', 'left', 'left', 'center');
+        $table->align = array('left', 'left', 'left', 'left', 'center');
         $table->width = '100%';
         $table->data  = array();
 
@@ -322,10 +323,35 @@ class core_calendar_renderer extends plugin_renderer_base {
             $cell->colspan = 2;
             $type = $sub->eventtype . 'events';
 
+            $kindinfo = '';
+            if (!empty($sub->courseid) && $sub->courseid != SITEID) {
+                $course = get_course($sub->courseid);
+                $context = \context_course::instance($course->id);
+                if (empty($sub->groupid)) {
+                    $kindinfo = get_course_display_name_for_list($course);
+                } else {
+                    $group = groups_get_group($sub->groupid, 'id,name,courseid');
+                    $kindinfo = get_string('subscriptionkindinfogroup', 'calendar', [
+                            'course' => get_course_display_name_for_list($course),
+                            'group' => format_string($group->name, true, ['context' => $context]),
+                        ]);
+                }
+
+                $kindinfo = html_writer::link(
+                        new \moodle_url('/course/view.php', ['id' => $course->id]),
+                        $kindinfo
+                    );
+            } else if (!empty($sub->categoryid)) {
+                if ($category = \coursecat::get($sub->categoryid, IGNORE_MISSING)) {
+                    $kindinfo = $category->get_nested_name();
+                }
+            }
+
             $table->data[] = new html_table_row(array(
                 new html_table_cell($label),
                 new html_table_cell($lastupdated),
                 new html_table_cell(get_string($type, 'calendar')),
+                new html_table_cell($kindinfo),
                 $cell
             ));
         }

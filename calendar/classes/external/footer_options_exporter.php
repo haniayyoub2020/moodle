@@ -83,7 +83,12 @@ class footer_options_exporter extends exporter {
      */
     protected function get_manage_subscriptions_button() {
         if (calendar_user_can_add_event($this->calendar->course)) {
-            $managesubscriptionurl = new moodle_url('/calendar/managesubscriptions.php', $this->get_link_params());
+            if ($this->calendar->course->id == SITEID) {
+                $params = [];
+            } else {
+                $params = $this->get_link_params();
+            }
+            $managesubscriptionurl = new moodle_url('/calendar/managesubscriptions.php', $params);
             return new \single_button($managesubscriptionurl,
                     get_string('managesubscriptions', 'calendar'), 'get');
         }
