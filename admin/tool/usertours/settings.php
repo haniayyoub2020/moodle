@@ -33,7 +33,7 @@ if ($hassiteconfig || has_any_capability($capabilities, context_system::instance
         new admin_externalpage(
             'tool_usertours/tours',
             get_string('usertours', 'tool_usertours'),
-            new moodle_url('/admin/tool/usertours/configure.php'),
+            new moodle_url("/{$CFG->admin}/tool/usertours/configure.php"),
             'tool/usertours:managetours'
         )
     );
