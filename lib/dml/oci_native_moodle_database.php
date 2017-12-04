@@ -441,6 +441,7 @@ class oci_native_moodle_database extends moodle_database {
                   JOIN ALL_IND_COLUMNS c ON c.INDEX_NAME=i.INDEX_NAME
              LEFT JOIN ALL_CONSTRAINTS ac ON (ac.TABLE_NAME=i.TABLE_NAME AND ac.CONSTRAINT_NAME=i.INDEX_NAME AND ac.CONSTRAINT_TYPE='P')
                  WHERE i.TABLE_NAME = '$tablename'
+                   AND i.TABLE_OWNER = (SELECT SYS_CONTEXT('userenv', 'current_schema') x FROM DUAL)
               ORDER BY i.INDEX_NAME, c.COLUMN_POSITION";
 
         $stmt = $this->parse_query($sql);
