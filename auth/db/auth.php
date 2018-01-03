@@ -361,16 +361,7 @@ class auth_plugin_db extends auth_plugin_base {
         // Update existing accounts.
         if ($do_updates) {
             // Narrow down what fields we need to update.
-            $all_keys = array_keys(get_object_vars($this->config));
-            $updatekeys = array();
-            foreach ($all_keys as $key) {
-                if (preg_match('/^field_updatelocal_(.+)$/',$key, $match)) {
-                    if ($this->config->{$key} === 'onlogin') {
-                        array_push($updatekeys, $match[1]); // The actual key name.
-                    }
-                }
-            }
-            unset($all_keys); unset($key);
+            $updatekeys = $this->get_update_keys();
 
             // Only go ahead if we actually have fields to update locally.
             if (!empty($updatekeys)) {
@@ -429,6 +420,7 @@ class auth_plugin_db extends auth_plugin_base {
 
         if (!empty($add_users)) {
             $trace->output(get_string('auth_dbuserstoadd','auth_db',count($add_users)));
+            $updatekeys = $this->get_update_keys(true);
             // Do not use transactions around this foreach, we want to skip problematic users, not revert everything.
             foreach($add_users as $user) {
                 $username = $user;
@@ -462,7 +454,8 @@ class auth_plugin_db extends auth_plugin_base {
                 }
                 try {
                     $id = user_create_user($user, false); // It is truly a new user.
-                    $trace->output(get_string('auth_dbinsertuser', 'auth_db', array('name'=>$user->username, 'id'=>$id)), 1);
+                    $this->update_user_record($user->username, $updatekeys, false);
+                    $trace->output(get_string('auth_dbinsertuser', 'auth_db', array('name' => $user->username, 'id' => $id)), 1);
                 } catch (moodle_exception $e) {
                     $trace->output(get_string('auth_dbinsertusererror', 'auth_db', $user->username), 1);
                     continue;
@@ -837,5 +830,27 @@ class auth_plugin_db extends auth_plugin_base {
         debugging('The method clean_data() has been deprecated, please use core_user::clean_data() instead.',
             DEBUG_DEVELOPER);
         return core_user::clean_data($user);
+    }
+
+    /**
+     * Fetch the field mappings.
+     *
+     * @param   boolean $allkeys    Fetch all keys, not just those which will be fetched for update.
+     * @return  array
+     */
+    protected function get_update_keys($allkeys = false) {
+        // Narrow down what fields we need to update.
+        $all_keys = array_keys(get_object_vars($this->config));
+        $updatekeys = array();
+        foreach ($all_keys as $key) {
+            if (preg_match('/^field_updatelocal_(.+)$/',$key, $match)) {
+                if ($allkeys || $this->config->{$key} === 'onlogin') {
+                    // The actual key name.
+                    array_push($updatekeys, $match[1]);
+                }
+            }
+        }
+
+        return $updatekeys;
     }
 }
