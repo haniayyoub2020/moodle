@@ -41,10 +41,9 @@ if (quiz_has_attempts($quizid)) {
 }
 
 $slotnumber++;
-$repage = new \mod_quiz\repaginate($quizid);
-$repage->repaginate_slots($slotnumber, $repagtype);
 
 $structure = $quizobj->get_structure();
+$structure->repaginate_slots($slotnumber, $repagtype);
 $slots = $structure->refresh_page_numbers_and_update_db();
 
 redirect(new moodle_url('edit.php', array('cmid' => $quizobj->get_cmid())));

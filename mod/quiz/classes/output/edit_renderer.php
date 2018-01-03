@@ -25,7 +25,7 @@
 namespace mod_quiz\output;
 defined('MOODLE_INTERNAL') || die();
 
-use \mod_quiz\structure;
+use \mod_quiz\local\structure\structure;
 use \html_writer;
 use renderable;
 
