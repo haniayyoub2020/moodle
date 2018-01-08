@@ -71,16 +71,16 @@ class core_iplookup_geoip_testcase extends advanced_testcase {
 
         $CFG->geoipfile = $geoipfile;
 
-        $result = iplookup_find_location('147.230.16.1');
+        $result = iplookup_find_location('192.30.255.112');
 
         $this->assertEquals('array', gettype($result));
-        $this->assertEquals('Liberec', $result['city']);
-        $this->assertEquals(15.0653, $result['longitude'], '', 0.001);
-        $this->assertEquals(50.7639, $result['latitude'], '', 0.001);
+        $this->assertEquals('San Francisco', $result['city']);
+        $this->assertEquals(-122.3933, $result['longitude'], 'Coordinates are out of accepted tolerance', 0.01);
+        $this->assertEquals(37.7697, $result['latitude'], 'Coordinates are out of accepted tolerance', 0.01);
         $this->assertNull($result['error']);
         $this->assertEquals('array', gettype($result['title']));
-        $this->assertEquals('Liberec', $result['title'][0]);
-        $this->assertEquals('Czech Republic', $result['title'][1]);
+        $this->assertEquals('San Francisco', $result['title'][0]);
+        $this->assertEquals('United States', $result['title'][1]);
     }
 }
 
