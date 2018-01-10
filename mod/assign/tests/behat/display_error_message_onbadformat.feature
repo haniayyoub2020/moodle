@@ -1,4 +1,4 @@
-@mod @mod_assign
+@mod @mod_assign @arn
 Feature: Check that the assignment grade can not be input in a wrong format.
   In order to ensure that the grade is entered in the right format
   As a teacher
