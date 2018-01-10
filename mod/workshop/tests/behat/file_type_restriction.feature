@@ -22,7 +22,7 @@ Feature: File types of the submission and feedback attachments can be limitted
       | activity | name         | intro                     | course | idnumber  |
       | workshop | TestWorkshop | Test workshop description | c1     | workshop1 |
 
-  @_file_upload @javascript
+  @_file_upload @javascript @arn
   Scenario: Student submission attachments obey the list of allowed file types
     # Define workshop to accept only images as submission attachments.
     Given I log in as "teacher1"
