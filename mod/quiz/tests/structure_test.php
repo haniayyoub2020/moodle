@@ -929,55 +929,18 @@ class mod_quiz_structure_testcase extends advanced_testcase {
     }
 
     /**
-     * Test the get_slots_by_slot_number() method with no slots specified.
-     */
-    public function test_get_slots_by_slot_number_unspecified() {
-        $quiz = $this->get_quiz_object();
-        $slots = $quiz->get_slots();
-
-        $expected = [];
-        $actual = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [null], \mod_quiz\local\structure\structure::class);
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
      * Test the get_slots_by_slot_number() method.
-     */
-    public function test_get_slots_by_slotnumber_as_array() {
-        $quiz = $this->get_quiz_object();
-        $slots = $quiz->get_slots();
-
-        foreach ($slots as $slot) {
-            $expected[$slot->slot] = $slot;
-        }
-        $actual = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [$slots], \mod_quiz\local\structure\structure::class);
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * Test the get_slots_by_slot_number() method with no slots specified.
      */
     public function test_get_this_slot() {
         $quiz = $this->get_quiz_object();
         $slots = $quiz->get_slots();
 
-        $slotsbyno = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [$slots], \mod_quiz\local\structure\structure::class);
+        $slotsbyno = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [], \mod_quiz\local\structure\structure::class);
 
         for ($slotno = 1; $slotno < count($slotsbyno) + 1; $slotno++) {
-            $thisslot = phpunit_util::call_internal_method($quiz, 'get_this_slot', [$slots, $slotno], \mod_quiz\local\structure\structure::class);
+            $thisslot = phpunit_util::call_internal_method($quiz, 'get_this_slot', [$slotno], \mod_quiz\local\structure\structure::class);
             $this->assertEquals($slotsbyno[$slotno], $thisslot);
         }
-    }
-
-    /**
-     * Test the get_slots_by_slotid() method when no slot is specified.
-     */
-    public function test_get_slots_by_slotid_null() {
-        $quiz = $this->get_quiz_object();
-
-        $expected = [];
-        $actual = phpunit_util::call_internal_method($quiz, 'get_slots_by_slotid', [null], \mod_quiz\local\structure\structure::class);
-        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -987,9 +950,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
         $quiz = $this->get_quiz_object();
         $slots = $quiz->get_slots();
 
-        $slotsbyno = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [$slots], \mod_quiz\local\structure\structure::class);
-
-        $actual = phpunit_util::call_internal_method($quiz, 'get_slots_by_slotid', [$slotsbyno], \mod_quiz\local\structure\structure::class);
+        $actual = phpunit_util::call_internal_method($quiz, 'get_slots_by_slotid', [], \mod_quiz\local\structure\structure::class);
         $this->assertEquals($slots, $actual);
     }
 
@@ -1017,7 +978,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
             }
             $expected[$slot->id] = $slot;
         }
-        $actual = $quiz->repaginate_n_question_per_page($slots, 2);
+        $actual = $quiz->repaginate_n_question_per_page(2);
         $this->assertEquals($expected, $actual);
 
         // Expect 3 questions per page.
@@ -1033,7 +994,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
             }
             $expected[$slot->id] = $slot;
         }
-        $actual = $quiz->repaginate_n_question_per_page($slots, 3);
+        $actual = $quiz->repaginate_n_question_per_page(3);
         $this->assertEquals($expected, $actual);
 
         // Expect 5 questions per page.
@@ -1049,7 +1010,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
             }
             $expected[$slot->id] = $slot;
         }
-        $actual = $quiz->repaginate_n_question_per_page($slots, 5);
+        $actual = $quiz->repaginate_n_question_per_page(5);
         $this->assertEquals($expected, $actual);
 
         // Expect 10 questions per page.
@@ -1065,7 +1026,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
             }
             $expected[$slot->id] = $slot;
         }
-        $actual = $quiz->repaginate_n_question_per_page($slots, 10);
+        $actual = $quiz->repaginate_n_question_per_page(10);
         $this->assertEquals($expected, $actual);
 
         // Expect 1 questions per page.
@@ -1075,7 +1036,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
             $slot->page = $page++;
             $expected[$slot->id] = $slot;
         }
-        $actual = $quiz->repaginate_n_question_per_page($slots, 1);
+        $actual = $quiz->repaginate_n_question_per_page(1);
         $this->assertEquals($expected, $actual);
     }
 
@@ -1086,7 +1047,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
         $quiz = $this->get_quiz_object();
         $slots = $quiz->get_slots();
 
-        $slotsbyslotno = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [$slots], \mod_quiz\local\structure\structure::class);
+        $slotsbyslotno = phpunit_util::call_internal_method($quiz, 'get_slots_by_slot_number', [], \mod_quiz\local\structure\structure::class);
         $slotnumber = 3;
         $newpagenumber = 2;
         $thisslot = $slotsbyslotno[3];
@@ -1112,7 +1073,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
                 $expected[$slot->id] = $slot;
             }
         }
-        $actual = $quiz->repaginate_the_rest($slots, $slotfrom, $type, false);
+        $actual = $quiz->repaginate_the_rest($slotfrom, $type, false);
         $this->assertEquals($expected, $actual);
     }
 
@@ -1140,7 +1101,7 @@ class mod_quiz_structure_testcase extends advanced_testcase {
                 $expected[$slot->id] = $slot;
             }
         }
-        $actual = $quiz->repaginate_the_rest($newslots, $slotfrom, $type, false);
+        $actual = $quiz->repaginate_the_rest($slotfrom, $type, false);
         $this->assertEquals($expected, $actual);
     }
 
