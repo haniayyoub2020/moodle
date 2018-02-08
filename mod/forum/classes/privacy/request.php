@@ -24,7 +24,7 @@
 
 namespace mod_forum\privacy;
 
-use \core_privacy\request\helper;
+use \core_privacy\request\writer;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -116,7 +116,7 @@ class request implements
             return;
         }
 
-        static::$writer = helper::get_writer();
+        static::$writer = writer::instance();
 
         $contextids = array_map(function($context) {
             return $context->id;
@@ -154,8 +154,6 @@ class request implements
 
         $forums = $DB->get_recordset_sql($sql, $params);
         foreach ($forums as $forum) {
-            static::$writer->set_context(\context_module::instance($forum->cmid));
-
             // Store relevant metadata about this forum instance.
             static::store_digest_data($userid, $forum);
             static::store_subscription_data($userid, $forum);
@@ -205,13 +203,14 @@ class request implements
         $discussions = $DB->get_recordset_sql($sql, $params);
 
         foreach ($discussions as $discussion) {
-            static::$writer->set_context(\context::instance_by_id($mappings[$discussion->forum]));
+            $context = \context::instance_by_id($mappings[$discussion->forum]);
 
             // Store related metadata for this discussion.
-            static::store_discussion_subscription_data($userid, $discussion);
+            static::store_discussion_subscription_data($userid, $context, $discussion);
 
             // Store the discussion content.
-            static::$writer->store_data(static::get_discussion_area($discussion), $discussion);
+            static::$writer->with_context($context)
+                ->store_data(static::get_discussion_area($discussion), $discussion);
 
             // Forum discussions do not have any files associately directly with them.
         }
@@ -260,29 +259,33 @@ class request implements
         $posts = $DB->get_recordset_sql($sql, $params);
 
         foreach ($posts as $post) {
-            static::$writer->set_context(\context::instance_by_id($mappings[$post->forumid]));
+            $context = \context::instance_by_id($mappings[$post->forumid]);
             $postarea = static::get_post_area($post);
 
             // Store related metadata.
-            static::store_read_data($userid, $post);
+            static::store_read_data($userid, $context,  $post);
 
             // Store the post content.
             if ($post->userid == $userid) {
-                $post->message = static::$writer->rewrite_pluginfile_urls($postarea, 'mod_forum', 'post', $post->id, $post->message);
+                $post->message = static::$writer->with_context($context)->rewrite_pluginfile_urls($postarea, 'mod_forum', 'post', $post->id, $post->message);
 
                 // Transform all user fields on the post.
                 $post = \core_user\privacy\request\transformation::user($userid, $post, ['userid']);
-                static::$writer->store_data($postarea, $post);
 
-                // Store the associated files.
-                static::$writer->store_area_files($postarea, 'mod_forum', 'post', $post->id);
+                static::$writer->with_context($context)
+                    // Store the post.
+                    ->store_data($postarea, $post)
+
+                    // Store the associated files.
+                    ->store_area_files($postarea, 'mod_forum', 'post', $post->id)
+                    ;
 
                 // Store all ratings against this post as the post belongs to the user. All ratings on it are ratings of their content.
-                \core_rating\privacy\request\provider::store_area_ratings($userid, $postarea, 'mod_forum', 'post', $post->id, false);
+                \core_rating\privacy\request\provider::store_area_ratings($userid, $context, $postarea, 'mod_forum', 'post', $post->id, false);
             }
 
             // Check for any ratings that the user has made on this post.
-            \core_rating\privacy\request\provider::store_area_ratings($userid, $postarea, 'mod_forum', 'post', $post->id, $userid, true);
+            \core_rating\privacy\request\provider::store_area_ratings($userid, $context, $postarea, 'mod_forum', 'post', $post->id, $userid, true);
         }
         $posts->close();
     }
@@ -309,7 +312,8 @@ class request implements
                 break;
             }
 
-            static::$writer->store_metadata([], 'digestpreference', $forum->maildigest, new \lang_string('privacy:digesttypepreference', 'mod_forum', $a));
+            static::$writer->with_context(\context_module::instance($forum->cmid))
+                ->store_metadata([], 'digestpreference', $forum->maildigest, new \lang_string('privacy:digesttypepreference', 'mod_forum', $a));
         }
     }
 
@@ -319,14 +323,15 @@ class request implements
     protected static function store_subscription_data(int $userid, \stdClass $forum) {
         if (null !== $forum->subscribed) {
             // The user is subscribed to this forum.
-            static::$writer->store_metadata([], 'subscriptionpreference', 1, new \lang_string('privacy:subscribedtoforum', 'mod_forum'));
+            static::$writer->with_context(\context_module::instance($forum->cmid))
+                ->store_metadata([], 'subscriptionpreference', 1, new \lang_string('privacy:subscribedtoforum', 'mod_forum'));
         }
     }
 
     /**
      * Store data about whether the user subscribes to this particular discussion.
      */
-    protected static function store_discussion_subscription_data(int $userid, \stdClass $discussion) {
+    protected static function store_discussion_subscription_data(int $userid, \context_module $context, \stdClass $discussion) {
         $area = static::get_discussion_area($discussion);
         if (null !== $discussion->preference) {
             // The user has a specific subscription preference for this discussion.
@@ -341,12 +346,13 @@ class request implements
                 break;
             }
 
-            static::$writer->store_metadata(
-                $area,
-                'subscriptionpreference',
-                $discussion->preference,
-                new \lang_string('privacy:discussionsubscriptionpreference', 'mod_forum', $a)
-            );
+            static::$writer->with_context($context)
+                ->store_metadata(
+                    $area,
+                    'subscriptionpreference',
+                    $discussion->preference,
+                    new \lang_string('privacy:discussionsubscriptionpreference', 'mod_forum', $a)
+                );
         }
     }
 
@@ -358,14 +364,15 @@ class request implements
     protected static function store_tracking_data(int $userid, \stdClass $forum) {
         if (null !== $forum->tracked) {
             // The user has a main preference to track all forums, but has opted out of this one.
-            static::$writer->store_metadata([], 'trackreadpreference', 1, new \lang_string('privacy:readtrackingdisabled', 'mod_forum'));
+            static::$writer->with_context(\context_module::instance($forum->cmid))
+                ->store_metadata([], 'trackreadpreference', 1, new \lang_string('privacy:readtrackingdisabled', 'mod_forum'));
         }
     }
 
     /**
      * Store read-tracking information about a particular forum post.
      */
-    protected static function store_read_data(int $userid, \stdClass $post) {
+    protected static function store_read_data(int $userid, \context $context, \stdClass $post) {
         if (null !== $post->firstread) {
             $a = (object) [
                 'firstread' => $post->firstread,
