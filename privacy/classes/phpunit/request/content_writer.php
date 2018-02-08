@@ -194,6 +194,10 @@ class content_writer implements \core_privacy\request\content_writer {
     public function get_metadata(array $subcontext = [], $key, $valueonly = true) {
         $data = $this->get_all_metadata($subcontext);
 
+        if (!isset($data[$key])) {
+            return null;
+        }
+
         $metadata = $data[$key];
         if ($valueonly) {
             return $metadata->value;
