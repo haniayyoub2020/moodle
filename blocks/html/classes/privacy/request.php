@@ -36,8 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class request implements \core_privacy\metadata\provider, \core_privacy\request\plugin_provider {
 
-    public static function get_metadata() : \core_privacy\metadata\items {
-        return new \core_privacy\metadata\items();
+    public static function get_metadata(\core_privacy\metadata\items $items) {
     }
 
     /**
@@ -52,8 +51,10 @@ class request implements \core_privacy\metadata\provider, \core_privacy\request\
     /**
      * @inheritdoc
      */
-    public static function store_user_data(int $userid, array $contexts, exporter $exporter) {
+    public static function store_user_data(int $userid, array $contexts) {
         global $DB;
+
+        $writer = \core_privacy\request\helper::get_writer();
 
         if (empty($contexts)) {
             return;
@@ -82,23 +83,32 @@ class request implements \core_privacy\metadata\provider, \core_privacy\request\
 
         $instances = $DB->get_recordset_sql($sql, $params);
         foreach ($instances as $instance) {
-            $context = \context_block::instance($forum->cmid);
+            $context = \context_block::instance($instance->contextid);
+            $writer->set->context($context);
 
-            // Store relevant metadata about this forum instance.
-            static::store_digest_data($userid, $context, $exporter, $forum);
-            static::store_subscription_data($userid, $context, $exporter, $forum);
-            static::store_tracking_data($userid, $context, $exporter, $forum);
+            // TODO Consider moving this to the manager.
+            $block = block_instance('block_html', $instance);
 
-            $mappings[$forum->id] = $forum->contextid;
+            // Get data - use a Mustache template.
+            $title = $block->config->title;
+            $html = $block->config->text;
+
+            $html = $writer->rewrite_pluginfile_urls([], 'block_html', 'content', null, $html);
+
+            // Default to FORMAT_HTML which is what will have been used before the
+            // editor was properly implemented for the block.
+            $format = isset($block->config->format) ? $block->config->format : FORMAT_HTML;
+
+            $filteropt = (object) [
+                'overflowdiv' => true,
+                'noclean' => true,
+            ];
+            $html = format_text($html, $format, $filteropt);
+
+            // Store data.
+            $writer->store_custom_file([], 'content.html', $html);
+
         }
-        $forums->close();
-
-        if (!empty($mappings)) {
-            // Store all discussion data for this forum.
-            static::store_discussion_data($userid, $mappings, $exporter);
-
-            // Store all post data for this forum.
-            static::store_post_data($userid, $mappings, $exporter);
-        }
+        $instances->close();
     }
 }
