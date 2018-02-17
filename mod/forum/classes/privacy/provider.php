@@ -82,8 +82,7 @@ class provider implements
      * @inheritdoc
      */
     public static function get_contexts_for_userid(int $userid) : \core_privacy\request\contextlist {
-
-        list($ratingselect, $ratingjoin, $ratingparams, $ratinguserwhere) = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid);
+        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid);
         // Fetch all forum discussions, and forum posts.
         $sql = "SELECT c.id
                   FROM {context} c
@@ -97,7 +96,7 @@ class provider implements
              LEFT JOIN {forum_track_prefs} pref ON pref.forumid = f.id
              LEFT JOIN {forum_read} hasread ON hasread.forumid = f.id
              LEFT JOIN {forum_discussion_subs} dsub ON dsub.forum = f.id
-             {$ratingjoin}
+             {$ratingsql->join}
                  WHERE (
                     p.userid        = :postuserid OR
                     d.userid        = :discussionuserid OR
@@ -106,7 +105,7 @@ class provider implements
                     pref.userid     = :prefuserid OR
                     hasread.userid  = :hasreaduserid OR
                     dsub.userid     = :dsubuserid OR
-                    {$ratinguserwhere}
+                    {$ratingsql->userwhere}
                 )
         ";
         // TODO add:
@@ -129,7 +128,7 @@ class provider implements
             'hasreaduserid'     => $userid,
             'dsubuserid'        => $userid,
         ];
-        $params += $ratingparams;
+        $params += $ratingsql->params;
 
         $contextlist = new \core_privacy\request\contextlist();
         $contextlist->add_from_sql($sql, $params);
@@ -260,11 +259,9 @@ class provider implements
     protected static function store_post_data(int $userid, array $mappings) {
         global $DB;
 
-
         // Find all of the posts, and post subscriptions for this forum.
         list($foruminsql, $forumparams) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
-        list($ratingselect, $ratingjoin, $ratingparams, $ratinguserwhere) = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid);
-
+        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid);
         $sql = "SELECT
                     f.id AS forumid,
                     p.*,
@@ -276,12 +273,12 @@ class provider implements
             INNER JOIN {forum_discussions} d ON d.forum = f.id
             INNER JOIN {forum_posts} p ON p.discussion = d.id
              LEFT JOIN {forum_read} fr ON fr.postid = p.id
-            {$ratingjoin}
+            {$ratingsql->join}
                  WHERE f.id ${foruminsql} AND
                 (
                     p.userid = :postuserid OR
                     fr.userid = :readuserid OR
-                    {$ratinguserwhere}
+                    {$ratingsql->userwhere}
                 )
         ";
 
@@ -290,7 +287,7 @@ class provider implements
             'readuserid'    => $userid,
         ];
         $params += $forumparams;
-        $params += $ratingparams;
+        $params += $ratingsql->params;
 
         $posts = $DB->get_recordset_sql($sql, $params);
 
