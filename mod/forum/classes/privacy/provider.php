@@ -41,7 +41,10 @@ class provider implements
     \core_privacy\metadata\provider,
 
     // This plugin currently implements the original plugin\provider interface.
-    \core_privacy\request\plugin\provider
+    \core_privacy\request\plugin\provider,
+
+    // This plugin has some sitewide user preferences to store.
+    \core_privacy\request\preference_provider
 {
 
     use helper;
@@ -50,7 +53,7 @@ class provider implements
      * @inheritdoc
      */
     public static function get_metadata(item_collection $items) : item_collection {
-        $items->add_datastore('forum_discussions', [
+        $items->add_database_table('forum_discussions', [
             'name' => 'privacy:metadata:forum_discussions:name',
             'userid' => 'privacy:metadata:forum_discussions:userid',
             'assessed' => 'privacy:metadata:forum_discussions:assessed',
@@ -58,7 +61,7 @@ class provider implements
             'usermodified' => 'privacy:metadata:forum_discussions:usermodified',
         ], 'privacy:metadata:forum_discussions');
 
-        $items->add_datastore('forum_discussion_subs', [
+        $items->add_database_table('forum_discussion_subs', [
             'userid' => 'privacy:metadata:forum_discussion_subs:userid',
             'discussionid' => 'privacy:metadata:forum_discussion_subs:discussionid',
             'preference' => 'privacy:metadata:forum_discussion_subs:preference',
@@ -72,8 +75,14 @@ class provider implements
         // * forum_subscriptions
         // * forum_track_prefs
 
+        // Forum posts can be tagged and rated.
         $items->link_subsystem('core_tag', 'privacy:metadata:core_tag');
         $items->link_subsystem('core_rating', 'privacy:metadata:core_rating');
+
+        $items->add_user_preference('maildigest', 'privacy:metadata:preference:maildigest');
+        $items->add_user_preference('autosubscribe', 'privacy:metadata:preference:autosubscribe');
+        $items->add_user_preference('trackforums', 'privacy:metadata:preference:trackforums');
+        $items->add_user_preference('markasreadnotificatio', 'privacy:metadata:preference:markasreadnotificatio');
 
         return $items;
     }
@@ -135,6 +144,65 @@ class provider implements
 
         return $contextlist;
     }
+
+    /**
+     * Store all user preferences for the plugin.
+     *
+     * @param   int         $userid The userid of the user whose data is to be stored.
+     */
+    public static function store_user_preferences(int $userid) {
+        $user = \core_user::get_user($userid);
+
+        switch ($user->maildigest) {
+            case 1:
+                $digestdescription = get_string('emaildigestcomplete');
+                break;
+            case 2:
+                $digestdescription = get_string('emaildigestsubjects');
+                break;
+            case 0:
+            default:
+                $digestdescription = get_string('emaildigestoff');
+                break;
+        }
+        writer::store_user_preference('mod_forum', 'maildigest', $user->maildigest, $digestdescription);
+
+        switch ($user->autosubscribe) {
+            case 0:
+                $subscribedescription = get_string('autosubscribeno');
+                break;
+            case 1:
+            default:
+                $subscribedescription = get_string('autosubscribeyes');
+                break;
+        }
+        writer::store_user_preference('mod_forum', 'autosubscribe', $user->autosubscribe, $subscribedescription);
+
+        switch ($user->trackforums) {
+            case 0:
+                $trackforumdescription = get_string('trackforumsno');
+                break;
+            case 1:
+            default:
+                $trackforumdescription = get_string('trackforumsyes');
+                break;
+        }
+        writer::store_user_preference('mod_forum', 'trackforums', $user->trackforums, $trackforumdescription);
+
+        $markasreadonnotification = get_user_preference('markasreadonnotification', null, $user->id);
+        if (null !== $markasreadonnotification) {
+            switch ($markasreadonnotification) {
+                case 0:
+                    $markasreadonnotificationdescription = get_string('markasreadonnotificationno', 'mod_forum');
+                    break;
+                case 1:
+                default:
+                    $markasreadonnotificationdescription = get_string('markasreadonnotificationyes', 'mod_forum');
+                    break;
+            }
+            writer::store_user_preference('mod_forum', 'markasreadonnotification', $markasreadonnotification, $markasreadonnotificationdescription);
+        }
+   }
 
     /**
      * @inheritdoc
