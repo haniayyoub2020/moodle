@@ -43,7 +43,7 @@ class contextlist extends contextlist_base {
      * @param   array   $params The set of SQL parameters
      * @return  $this
      */
-    public function add_from_sql($sql, $params) {
+    public function add_from_sql(string $sql, array $params) : contextlist {
         global $DB;
 
         $fields = \context_helper::get_preload_record_columns_sql('ctx');
@@ -56,7 +56,7 @@ class contextlist extends contextlist_base {
             \context_helper::preload_from_record($context);
         }
 
-        $this->contextids += $contextids;
+        $this->set_contextids(array_merge($this->get_contextids(), $contextids));
 
         return $this;
     }

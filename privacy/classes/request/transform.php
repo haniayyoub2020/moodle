@@ -25,23 +25,38 @@
 namespace core_privacy\request;
 
 class transform {
+    /**
+     * Translate a userid into the standard user format for exports.
+     *
+     * We have not determined if we will do this or not, but we provide the functionality and encourgae people to use
+     * it so that it can be retrospectively fitted if required.
+     *
+     * @param   int         $userid the userid to translate
+     * @return  mixed
+     */
     public static function user(int $userid) {
         // For the moment we do not think we should transform as this reveals information about other users.
         // However this function is implemented should the need arise in the future.
         return $userid;
     }
 
+    /**
+     * Translate a unix timestamp into a datetime string.
+     *
+     * @param   int         $datetime the unixtimestamp to translate.
+     * @return  string      The translated string.
+     */
     public static function datetime($datetime) {
-        if ($datetime) {
-            return userdate($datetime, get_string('strftimedaydatetime', 'langconfig'));
-        }
-        return null;
+        return userdate($datetime, get_string('strftimedaydatetime', 'langconfig'));
     }
 
+    /**
+     * Translate a unix timestamp into a date string.
+     *
+     * @param   int         $date the unixtimestamp to translate.
+     * @return  string      The translated string.
+     */
     public static function date($date) {
-        if ($datetime) {
-            return userdate($datetime, get_string('strftimetime', 'langconfig'));
-        }
-        return null;
+        return userdate($date, get_string('strftimetime', 'langconfig'));
     }
 }

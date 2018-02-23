@@ -30,28 +30,6 @@ require_once($CFG->libdir . '/modinfolib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 
 class helper {
-    protected static $writer = null;
-
-    /**
-     * Fetch the current content writer.
-     *
-     * @return  content_writer
-     */
-    public static function get_writer() : content_writer {
-        if (null === static::$writer) {
-            static::$writer = new moodle_content_writer();
-        }
-
-        return static::$writer;
-    }
-
-    /**
-     * Clear any current content_writer.
-     */
-    public static function clear_writer() {
-        static::$writer = null;
-    }
-
     /**
      * Get all general data for this context.
      *

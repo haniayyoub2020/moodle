@@ -26,10 +26,13 @@
 namespace core_privacy\request;
 
 class deletion_criteria {
+    /**
+     * @var context The context being deleted.
+     */
     protected $context = null;
 
     public function __construct(\context $context) {
-        $this->contet = $context;
+        $this->context = $context;
     }
 
     /**

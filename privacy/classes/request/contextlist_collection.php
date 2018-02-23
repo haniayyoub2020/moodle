@@ -45,6 +45,10 @@ class contextlist_collection {
      * @return  $this
      */
     public function add_contextlist($component, contextlist_base $contextlist) {
+        if (isset($this->contextlists[$component])) {
+            throw new \moodle_exception("A contextlist has already been added for the '{$component}' component");
+        }
+
         $this->contextlists[$component] = $contextlist;
 
         return $this;
@@ -60,7 +64,13 @@ class contextlist_collection {
         return $this->contextlists;
     }
 
-    public function get_contextlist_for_component(string $component) : contextlist_base {
+    /**
+     * Get the contextlist for the specified component.
+     *
+     * @param   string      $component the frankenstyle name of the component to fetch for.
+     * @return  contextlist_base|null
+     */
+    public function get_contextlist_for_component(string $component) {
         if (isset($this->contextlists[$component])) {
             return $this->contextlists[$component];
         }

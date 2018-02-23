@@ -46,7 +46,7 @@ class approved_contextlist extends contextlist_base {
     public function __construct(\stdClass $user, array $contextids) {
         $this->set_user($user);
 
-        $this->contextids = $contextids;
+        $this->set_contextids($contextids);
     }
 
     /**
@@ -55,7 +55,7 @@ class approved_contextlist extends contextlist_base {
      * @param   \stdClass       $user The user record.
      * @return  $this
      */
-    public function set_user(\stdClass $user) : approved_contextlist {
+    protected function set_user(\stdClass $user) : approved_contextlist {
         $this->user = $user;
 
         return $this;

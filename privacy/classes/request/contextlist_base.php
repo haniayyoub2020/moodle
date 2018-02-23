@@ -44,8 +44,11 @@ abstract class contextlist_base implements
 
     /**
      * @var array List of context IDs.
+     *
+     * Note: this must not be updated using set_contextids only as this
+     * ensures uniqueness.
      */
-    protected $contextids = [];
+    private $contextids = [];
 
     /**
      * @var int Current position of the iterator.
@@ -53,12 +56,21 @@ abstract class contextlist_base implements
     protected $iteratorposition = 0;
 
     /**
+     * Set the contextids.
+     *
+     * @param   array   $contextids The list of contexts.
+     */
+    protected function set_contextids(array $contextids) {
+        $this->contextids = array_unique($contextids);
+    }
+
+    /**
      * Get the list of context IDs that relate to this request.
      *
      * @return  int[]
      */
     public function get_contextids() : array {
-        return array_unique($this->contextids);
+        return $this->contextids;
     }
 
     /**
@@ -112,11 +124,17 @@ abstract class contextlist_base implements
 
     /**
      * Rewind to the first found context.
+     *
+     * The list of contexts is uniqued during the rewind.
+     * The rewind is called at the start of most iterations.
      */
     public function rewind() {
         $this->iteratorposition = 0;
     }
 
+    /**
+     * Return the number of contexts.
+     */
     public function count() {
         return count($this->contextids);
     }
