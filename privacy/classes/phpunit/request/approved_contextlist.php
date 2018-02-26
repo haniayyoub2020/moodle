@@ -32,121 +32,48 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class approved_contextlist implements \core_privacy\request\approved_contextlist {
-    // TODO: Possibly make this class implement Iterator.
-    protected $contextids = [];
-
-    protected $user;
-
-    protected $iteratorposition = 0;
-
+class approved_contextlist extends \core_privacy\request\approved_contextlist {
     /**
-     * Specify the user which owns this request.
+     * Add a single context to this approved_contextlist.
      *
-     * @param   \stdClass       $user The user record.
+     * @param   \context    $context        The context to be added.
      * @return  $this
      */
-    public function set_user(\stdClass $user) : \core_privacy\request\approved_contextlist {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    /**
-     * Get the user which requested their data.
-     *
-     * @return  \stdClass
-     */
-    public function get_user() : \stdClass {
-        return $this->user;
-    }
-
-    /**
-     * Get the list of context IDs that relate to this request.
-     *
-     * @return  int[]
-     */
-    public function get_contextids() : array {
-        return array_unique($this->contextids);
-    }
-
-    /**
-     * Get the complete list of context objects that relate to this
-     * request.
-     *
-     * @return  \contect[]
-     */
-    public function get_contexts() : array {
-        $contexts = [];
-        foreach ($this->contextids as $contextid) {
-            $contexts[] = \context::instance_by_id($contextid);
-        }
-
-        return $contexts;
-    }
-
     public function add_context(\context $context) {
-        $this->contextids[] = $context->id;
+        return $this->add_context_by_id($context->id);
     }
 
+    /**
+     * Add a single context to this approved_contextlist by it's ID.
+     *
+     * @param   int         $contextid      The context to be added.
+     * @return  $this
+     */
     public function add_context_by_id($contextid) {
-        $this->contextids[] = $contextid;
+        return $this->set_contextids(array_merge($this->get_contextids(), [$contextid]));
     }
 
+    /**
+     * Add a set of contexts to this approved_contextlist.
+     *
+     * @param   \context[]  $contexts       The contexts to be added.
+     * @return  $this
+     */
     public function add_contexts(array $contexts) {
         foreach ($contexts as $context) {
             $this->add_context($context);
         }
     }
 
+    /**
+     * Add a set of contexts to this approved_contextlist by ID.
+     *
+     * @param   int[]       $contexts       The contexts to be added.
+     * @return  $this
+     */
     public function add_contexts_by_id(array $contexts) {
         foreach ($contexts as $contextid) {
             $this->add_context_by_id($contextid);
         }
-    }
-
-    /**
-     * Return the current context.
-     *
-     * @return  \context
-     */
-    public function current() {
-        return \context::instance_by_id($this->contextids[$this->iteratorposition]);
-    }
-
-    /**
-     * Return the key of the current element.
-     *
-     * @return  mixed
-     */
-    public function key() {
-        return $this->iteratorposition;
-    }
-
-    /**
-     * Move to the next context in the list.
-     */
-    public function next() {
-        ++$this->iteratorposition;
-    }
-
-    /**
-     * Check if the current position is valid.
-     *
-     * @return  bool
-     */
-    public function valid() {
-        return isset($this->contextids[$this->iteratorposition]);
-    }
-
-    /**
-     * Rewind to the first found context.
-     */
-    public function rewind() {
-        $this->iteratorposition = 0;
-    }
-
-    public function count() {
-        return count($this->contextids);
     }
 }

@@ -106,9 +106,7 @@ abstract class provider_testcase extends \advanced_testcase {
             throw new \coding_exception("{$plugin} does not declare that it provides any user data");
         }
 
-        $cl = new \core_privacy\phpunit\request\approved_contextlist();
-        $cl->set_user(\core_user::get_user($userid));
-        $cl->add_context($context);
+        $cl = new \core_privacy\phpunit\request\approved_contextlist(\core_user::get_user($userid), [$context->id]);
 
         $classname::export_user_data($cl);
     }
