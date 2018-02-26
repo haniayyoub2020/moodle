@@ -35,8 +35,8 @@ defined('MOODLE_INTERNAL') || die();
  * a plugin. They do not provide data directly to the core Privacy
  * subsystem, but will be accessed and called via the plugin itself.
  *
- * @package    core_privacy
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface subplugin_provider extends \core_privacy\request\shared_data_provider {
 }
