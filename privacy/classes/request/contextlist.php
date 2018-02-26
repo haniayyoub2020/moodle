@@ -60,4 +60,8 @@ class contextlist extends contextlist_base {
 
         return $this;
     }
+
+    public function set_component($component) {
+        parent::set_component($component);
+    }
 }

@@ -44,7 +44,11 @@ class contextlist_collection {
      * @param   contextlist $contextlist the contextlist to export.
      * @return  $this
      */
-    public function add_contextlist($component, contextlist_base $contextlist) {
+    public function add_contextlist(contextlist_base $contextlist) {
+        $component = $contextlist->get_component();
+        if (empty($component)) {
+            throw new \moodle_exception("The contextlist must have a component set");
+        }
         if (isset($this->contextlists[$component])) {
             throw new \moodle_exception("A contextlist has already been added for the '{$component}' component");
         }

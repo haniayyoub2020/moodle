@@ -51,6 +51,11 @@ abstract class contextlist_base implements
     private $contextids = [];
 
     /**
+     * @var string component the frankenstyle component name.
+     */
+    protected $component;
+
+    /**
      * @var int Current position of the iterator.
      */
     protected $iteratorposition = 0;
@@ -86,6 +91,21 @@ abstract class contextlist_base implements
         }
 
         return $contexts;
+    }
+
+    /**
+     * Sets the component for this contextlist.
+     * @param string $component the frankenstyle component name.
+     */
+    protected function set_component($component) {
+        $this->component = $component;
+    }
+
+    /**
+     * @return string the component name associated with this contextlist.
+     */
+    public function get_component() : string {
+        return $this->component;
     }
 
     /**

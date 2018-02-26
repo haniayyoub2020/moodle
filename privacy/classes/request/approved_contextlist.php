@@ -41,11 +41,12 @@ class approved_contextlist extends contextlist_base {
      * Create a new approved contextlist.
      *
      * @param   \stdClass       $user The user record.
+     * @param   string          $component the frankenstyle component name.
      * @param   \int[]          $contextids The list of contextids present in this list.
      */
-    public function __construct(\stdClass $user, array $contextids) {
+    public function __construct(\stdClass $user, string $component, array $contextids) {
         $this->set_user($user);
-
+        $this->set_component($component);
         $this->set_contextids($contextids);
     }
 
