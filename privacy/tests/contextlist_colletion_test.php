@@ -44,7 +44,9 @@ class contextlist_collection_test extends advanced_testcase {
      */
     public function test_supports_contextlist() {
         $uit = new contextlist_collection();
-        $uit->add_contextlist('core_tests', new contextlist());
+        $contextlist = new contextlist();
+        $contextlist->set_component('core_privacy');
+        $uit->add_contextlist($contextlist);
 
         $this->assertCount(1, $uit->get_contextlists());
     }
@@ -56,7 +58,7 @@ class contextlist_collection_test extends advanced_testcase {
         $uit = new contextlist_collection();
         $testuser = \core_user::get_user_by_username('admin');
         $contextids = [3, 2, 1];
-        $uit->add_contextlist('core_tests', new approved_contextlist($testuser, $contextids));
+        $uit->add_contextlist(new approved_contextlist($testuser, 'core_privacy', $contextids));
 
         $this->assertCount(1, $uit->get_contextlists());
     }
@@ -67,9 +69,12 @@ class contextlist_collection_test extends advanced_testcase {
     public function test_get_contextlist_for_component() {
         $uit = new contextlist_collection();
         $coretests = new contextlist();
+        $coretests->set_component('core_tests');
+        $uit->add_contextlist($coretests);
+
         $coreprivacy = new contextlist();
-        $uit->add_contextlist('core_tests', $coretests);
-        $uit->add_contextlist('core_privacy', $coreprivacy);
+        $coreprivacy->set_component('core_privacy');
+        $uit->add_contextlist($coreprivacy);
 
         // Note: This uses assertSame rather than assertEquals.
         // The former checks the actual object, whilst assertEquals only checks that they look the same.
@@ -91,11 +96,12 @@ class contextlist_collection_test extends advanced_testcase {
      */
     public function test_duplicate_addition_throws() {
         $uit = new contextlist_collection();
+
         $coretests = new contextlist();
-        $coreprivacy = new contextlist();
-        $uit->add_contextlist('core_tests', $coretests);
+        $coretests->set_component('core_tests');
+        $uit->add_contextlist($coretests);
 
         $this->expectException('moodle_exception');
-        $uit->add_contextlist('core_tests', $coreprivacy);
+        $uit->add_contextlist($coretests);
     }
 }

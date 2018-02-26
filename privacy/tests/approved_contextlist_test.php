@@ -42,10 +42,12 @@ class approved_contextlist_test extends advanced_testcase {
     public function test_default_values_set() {
         $testuser = \core_user::get_user_by_username('admin');
         $contextids = [3, 2, 1];
+        $component = 'core_privacy';
 
-        $uit = new approved_contextlist($testuser, $contextids);
+        $uit = new approved_contextlist($testuser, $component, $contextids);
 
         $this->assertEquals($testuser, $uit->get_user());
+        $this->assertEquals($component, $uit->get_component());
         $result = $uit->get_contextids();
 
         // Note: Array order is not guaranteed and should not matter.
