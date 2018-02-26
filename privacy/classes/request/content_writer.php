@@ -19,11 +19,18 @@
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The interface for a Moodle content writer.
+ *
+ * @package core_privacy
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ */
 interface content_writer {
 
     /**

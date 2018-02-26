@@ -24,6 +24,17 @@
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The user_preference_provider interface is an interface designed to be
+ * implemented by components directly to describe a case where that
+ * component is responsible for storing some form of system-wide user
+ * preference.
+ *
+ * @package core_privacy
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ */
 interface user_preference_provider extends core_data_provider {
 
     /**

@@ -150,8 +150,6 @@ class request_helper_test extends advanced_testcase {
 
         // This function should only fetch data. It does not export it.
         $this->assertFalse(writer::with_context($context)->has_any_data());
-
-
     }
 
     /**

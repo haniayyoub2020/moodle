@@ -27,13 +27,14 @@
  */
 namespace core_privacy\request\subsystem;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The provider interface for plugins which provide data from a subsystem
  * directly to the Privacy subsystem.
  *
  * @package    privacy
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface provider extends \core_privacy\request\core_user_data_provider {
 }

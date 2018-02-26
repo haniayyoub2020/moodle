@@ -23,6 +23,8 @@
  */
 namespace core_privacy\metadata\item_record;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The external_location item record.
  *
@@ -52,7 +54,8 @@ class external_location implements type {
      *
      * @param   string  $name A name for the type of data exported.
      * @param   array   $privacyfields A list of fields with their description.
-     * @param   string  $summary A description of what the table is used for. This is a language string identifier within the component.
+     * @param   string  $summary A description of what the table is used for. This is a language string identifier
+     *                  within the component.
      */
     public function __construct($name, array $privacyfields = [], $summary = '') {
         if (debugging('', DEBUG_DEVELOPER)) {

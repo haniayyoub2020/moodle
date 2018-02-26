@@ -28,6 +28,8 @@ namespace core_privacy\metadata;
 
 use core_privacy\metadata\item_record\type;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * A collection of metadata items.
  *
@@ -99,7 +101,8 @@ class item_collection {
      *
      * @param   string  $name A name for the type of data exported.
      * @param   array   $privacyfields A list of fields with their description.
-     * @param   string  $summary A description of what the table is used for. This is a language string identifier within the component.
+     * @param   string  $summary A description of what the table is used for. This is a language string identifier
+     *                           within the component.
      * @return  $this
      */
     public function link_external_location($name, array $privacyfields, $summary = '') {

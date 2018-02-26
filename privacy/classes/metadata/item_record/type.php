@@ -24,6 +24,8 @@
  */
 namespace core_privacy\metadata\item_record;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The item_record interface which all item_record types must implement.
  *

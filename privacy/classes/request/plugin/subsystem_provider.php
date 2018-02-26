@@ -22,11 +22,13 @@
  * It should not be implemented directly, but should be extended by the
  * subsystem responsible for the plugintype.
  *
- * @package    privacy
+ * @package    core_privacy
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request\plugin;
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * The subsystem_provider interface is for plugins which may not
@@ -44,7 +46,7 @@ namespace core_privacy\request\plugin;
  * Care should be taken when extending this provider to not conflict with
  * the \core_privacay\request\plugin\provider interface.
  *
- * @package    privacy
+ * @package    core_privacy
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

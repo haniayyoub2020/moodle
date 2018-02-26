@@ -17,7 +17,7 @@
 /**
  * Privacy Subsystem implementation for core_ratings.
  *
- * @package    core_ratings
+ * @package    core_rating
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -46,6 +46,7 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
      * made themselves.
      *
      * @param   int         $userid The user whose information is to be exported
+     * @param   \context    $context The context being stored.
      * @param   array       $subcontext The subcontext within the context to export this information
      * @param   string      $component The component to fetch data from
      * @param   string      $ratingarea The ratingarea that the data was stored in within the component
@@ -96,9 +97,12 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
     /**
      * Get the SQL required to find all submission items where this user has had any involvements.
      *
-     * @param   int           $userid       The user to search.
+     * @param   string          $alias      The name of the table alias to use.
+     * @param   string          $component  The na eof the component to fetch ratings for.
+     * @param   string          $ratingarea The rating area to fetch results for.
+     * @param   string          $itemidjoin The right-hand-side of the JOIN ON clause.
+     * @param   int             $userid     The ID of the user being stored.
      * @return  \stdClass
-
      */
     public static function get_sql_join($alias, $component, $ratingarea, $itemidjoin, $userid) {
         static $count = 0;

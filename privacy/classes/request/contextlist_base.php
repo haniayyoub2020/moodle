@@ -95,6 +95,7 @@ abstract class contextlist_base implements
 
     /**
      * Sets the component for this contextlist.
+     *
      * @param string $component the frankenstyle component name.
      */
     protected function set_component($component) {

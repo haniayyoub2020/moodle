@@ -705,6 +705,9 @@ class moodle_content_writer_test extends advanced_testcase {
      *
      * Note: This is a wrapper around the real function.
      *
+     * @param   \context        $context    The context being written
+     * @param   array           $subcontext The subcontext path
+     * @param   string          $name       THe name of the file target
      * @return  array                       The context path.
      */
     protected function get_context_path($context, $subcontext = null, $name = '') {

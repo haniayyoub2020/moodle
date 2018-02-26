@@ -26,6 +26,8 @@
  */
 namespace core_privacy\request\plugin;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The provider interface for plugins which provide data from a plugin
  * directly to the Privacy subsystem.

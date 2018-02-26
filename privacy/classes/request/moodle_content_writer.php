@@ -19,11 +19,23 @@
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The moodle_content_writer is the default Moodle implementation of a content writer.
+ *
+ * It exports data to a rich tree structure using Moodle's context system,
+ * and produces a single zip file with all content.
+ *
+ * Objects of data are stored as JSON.
+ *
+ * @package core_privacy
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ */
 class moodle_content_writer implements content_writer {
     /**
      * @var string The base path on disk for this instance.

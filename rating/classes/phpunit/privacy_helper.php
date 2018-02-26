@@ -40,7 +40,7 @@ trait privacy_helper {
     /**
      * Fetch all ratings on a subcontext.
      *
-     * @param   content_writer      $writer     The contextualised writer to fetch ratings for.
+     * @param   \context            $context    The context being stored.
      * @param   array               $subcontext The subcontext path to check.
      * @return  array
      */
@@ -52,9 +52,12 @@ trait privacy_helper {
     /**
      * Check that all included ratings belong to the specified user.
      *
-     * @param   content_writer      $writer     The contextualised writer to fetch ratings for.
-     * @param   int                 $userid     The ID of the user being rated.
+     * @param   int                 $userid     The ID of the user being stored.
+     * @param   \context            $context    The context being stored.
      * @param   array               $subcontext The subcontext path to check.
+     * @param   string              $component  The component being stored.
+     * @param   string              $ratingarea The rating area to store results for.
+     * @param   int                 $itemid     The itemid to store.
      */
     protected function assert_all_own_ratings_on_context(
         int $userid,
@@ -93,8 +96,11 @@ trait privacy_helper {
     /**
      * Check that all included ratings are valid. They may belong to any user.
      *
-     * @param   content_writer      $writer     The contextualised writer to fetch ratings for.
+     * @param   \context            $context    The context being stored.
      * @param   array               $subcontext The subcontext path to check.
+     * @param   string              $component  The component being stored.
+     * @param   string              $ratingarea The rating area to store results for.
+     * @param   int                 $itemid     The itemid to store.
      */
     protected function assert_all_ratings_on_context(\context $context, array $subcontext, $component, $ratingarea, $itemid) {
         $writer = \core_privacy\request\writer::with_context($context);
@@ -121,6 +127,9 @@ trait privacy_helper {
 
     /**
      * Assert that the rating matches.
+     *
+     * @param   \stdClass           $expected   The expected rating structure
+     * @param   \stdClass           $stored     The actual rating structure
      */
     protected function assert_rating_matches($expected, $stored) {
         $this->assertEquals($expected->rating, $stored->rating);

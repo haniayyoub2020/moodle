@@ -24,6 +24,8 @@
 
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * An implementation of a contextlist which has been filtered and approved.
  *

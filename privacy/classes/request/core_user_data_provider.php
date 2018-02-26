@@ -25,6 +25,17 @@
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The core_user_data_provider interface is used to describe a provider
+ * which services user requests between components and core.
+ *
+ * It describes data how these requests are serviced in a specific format.
+ *
+ * @package core_privacy
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ */
 interface core_user_data_provider extends core_data_provider {
 
     /**

@@ -20,11 +20,19 @@
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The deletion_criteria class is used to describe conditions for a set of
+ * data due to be deleted.
+ *
+ * @package core_privacy
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ */
 class deletion_criteria {
     /**
      * @var context The context being deleted.

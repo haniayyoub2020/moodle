@@ -26,6 +26,8 @@ namespace core_privacy\request;
 
 use \core_privacy\request\writer;
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir . '/modinfolib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 

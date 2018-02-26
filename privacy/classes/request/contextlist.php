@@ -61,6 +61,11 @@ class contextlist extends contextlist_base {
         return $this;
     }
 
+    /**
+     * Sets the component for this contextlist.
+     *
+     * @param string $component the frankenstyle component name.
+     */
     public function set_component($component) {
         parent::set_component($component);
     }

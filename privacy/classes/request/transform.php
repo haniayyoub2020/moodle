@@ -19,11 +19,18 @@
  *
  * @package core_privacy
  * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * A class containing a set of data transformations for core data types.
+ *
+ * @package core_privacy
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ */
 class transform {
     /**
      * Translate a userid into the standard user format for exports.

@@ -24,6 +24,8 @@
  */
 namespace core_privacy\phpunit\request;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * An implementation of the content_writer for use in unit tests.
  */

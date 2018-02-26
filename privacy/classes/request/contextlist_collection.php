@@ -25,6 +25,8 @@
  */
 namespace core_privacy\request;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * A collection of contextlist items.
  *
@@ -32,6 +34,7 @@ namespace core_privacy\request;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class contextlist_collection {
+
     /**
      * @var array $contextlists the internal array of contextlist objects.
      */

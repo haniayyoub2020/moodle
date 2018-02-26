@@ -35,10 +35,17 @@ defined('MOODLE_INTERNAL') || die();
 class provider implements \core_privacy\request\subsystem\plugin_provider {
 
     /**
-     * @inheritdoc
+     * Returns meta data about this system.
+     *
+     * @param   item_collection     $itemcollection The initialised item collection to add items to.
+     * @return  item_collection     A listing of user data stored through this system.
      */
     public static function get_metadata(\core_privacy\metadata\item_collection $items) {
-        // TODO
+        // The table 'tag' contains user data.
+        // TODO - Describe this table.
+
+        // The table 'tag' contains user data.
+        // TODO - Describe this table.
     }
 
     /**

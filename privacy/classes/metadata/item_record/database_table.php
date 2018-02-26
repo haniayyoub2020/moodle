@@ -23,6 +23,8 @@
  */
 namespace core_privacy\metadata\item_record;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * The database_table item record.
  *

@@ -23,6 +23,8 @@
  */
 namespace core_privacy\metadata;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Interface component_metadata_provider
  *
