@@ -24,6 +24,9 @@
  */
 namespace core_privacy\phpunit\request;
 
+/**
+ * An implementation of the content_writer for use in unit tests.
+ */
 class content_writer implements \core_privacy\request\content_writer {
     protected $context = null;
 

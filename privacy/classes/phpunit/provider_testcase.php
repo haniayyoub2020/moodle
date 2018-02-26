@@ -44,70 +44,77 @@ abstract class provider_testcase extends \advanced_testcase {
     }
 
     /**
-     * Export all data for a plugin for the specified user.
+     * Export all data for a component for the specified user.
+     *
+     * @param   int         $userid     The userid of the user to fetch.
+     * @param   string      $component  The component to get context data for.
+     * @return  \core_privacy\request\contextlist
      */
-    public function get_contexts_for_userid(int $userid, string $plugin) {
-        $classname = "\\${plugin}\\privacy\\provider";
-
-        if (!class_exists($classname)) {
-            throw new \coding_exception("{$plugin} does not implement any provider");
-        }
-
-        $rc = new \ReflectionClass($classname);
-        if (!$rc->implementsInterface(\core_privacy\metadata\provider::class)) {
-            throw new \coding_exception("{$plugin} does not implement metadata provider");
-        }
-        if (!$rc->implementsInterface(\core_privacy\request\core_user_data_provider::class)) {
-            throw new \coding_exception("{$plugin} does not declare that it provides any user data");
-        }
+    public function get_contexts_for_userid(int $userid, string $component) {
+        $classname = $this->get_provider_classname($component);
 
         return $classname::get_contexts_for_userid($userid);
     }
 
     /**
-     * Export all data for a plugin for the specified user.
+     * Export all data for a component for the specified user.
+     *
+     * @param   int         $userid     The userid of the user to fetch.
+     * @param   string      $component  The component to get export data for.
      */
-    public function export_all_data_for_user(int $userid, string $plugin) {
-        $classname = "\\${plugin}\\privacy\\provider";
+    public function export_all_data_for_user(int $userid, string $component) {
+        $contextlist = $this->get_contexts_for_userid($userid, $component);
 
-        if (!class_exists($classname)) {
-            throw new \coding_exception("{$plugin} does not implement any provider");
-        }
+        $approvedcontextlist = new \core_privacy\phpunit\request\approved_contextlist(
+            \core_user::get_user($userid),
+            $component,
+            $contextlist->get_contextids()
+        );
 
-        $rc = new \ReflectionClass($classname);
-        if (!$rc->implementsInterface(\core_privacy\metadata\provider::class)) {
-            throw new \coding_exception("{$plugin} does not implement metadata provider");
-        }
-        if (!$rc->implementsInterface(\core_privacy\request\core_user_data_provider::class)) {
-            throw new \coding_exception("{$plugin} does not declare that it provides any user data");
-        }
-
-        if ($contextlist = $classname::get_contexts_for_userid($userid)) {
-            $contextlist->set_user(\core_user::get_user($userid));
-            $classname::export_user_data($contextlist);
-        }
+        $classname = $this->get_provider_classname($component);
+        $classname::export_user_data($approvedcontextlist);
     }
 
     /**
-     * Export all data within a context for a plugin for the specified user.
+     * Export all daa within a context for a component for the specified user.
+     *
+     * @param   int         $userid     The userid of the user to fetch.
+     * @param   \context    $context    The context to export data for.
+     * @param   string      $component  The component to get export data for.
      */
-    public function export_context_data_for_user(int $userid, \context $context, string $plugin) {
-        $classname = "\\${plugin}\\privacy\\provider";
+    public function export_context_data_for_user(int $userid, \context $context, string $component) {
+        $contextlist = new \core_privacy\phpunit\request\approved_contextlist(
+            \core_user::get_user($userid),
+            $component,
+            [$context->id]
+        );
+
+        $classname = $this->get_provider_classname($component);
+        $classname::export_user_data($contextlist);
+    }
+
+    /**
+     * Determine the classname and ensure that it is a provider.
+     *
+     * @param   string      $component      The classname.
+     * @return  string
+     */
+    protected function get_provider_classname($component) {
+        $classname = "\\${component}\\privacy\\provider";
 
         if (!class_exists($classname)) {
-            throw new \coding_exception("{$plugin} does not implement any provider");
+            throw new \coding_exception("{$component} does not implement any provider");
         }
 
         $rc = new \ReflectionClass($classname);
         if (!$rc->implementsInterface(\core_privacy\metadata\provider::class)) {
-            throw new \coding_exception("{$plugin} does not implement metadata provider");
+            throw new \coding_exception("{$component} does not implement metadata provider");
         }
+
         if (!$rc->implementsInterface(\core_privacy\request\core_user_data_provider::class)) {
-            throw new \coding_exception("{$plugin} does not declare that it provides any user data");
+            throw new \coding_exception("{$component} does not declare that it provides any user data");
         }
 
-        $cl = new \core_privacy\phpunit\request\approved_contextlist(\core_user::get_user($userid), [$context->id]);
-
-        $classname::export_user_data($cl);
+        return $classname;
     }
 }
