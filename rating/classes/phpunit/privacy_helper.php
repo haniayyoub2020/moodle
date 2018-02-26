@@ -56,7 +56,14 @@ trait privacy_helper {
      * @param   int                 $userid     The ID of the user being rated.
      * @param   array               $subcontext The subcontext path to check.
      */
-    protected function assert_all_own_ratings_on_context(int $userid, \context $context, array $subcontext, $component, $ratingarea, $itemid) {
+    protected function assert_all_own_ratings_on_context(
+        int $userid,
+        \context $context,
+        array $subcontext,
+        $component,
+        $ratingarea,
+        $itemid
+    ) {
         $writer = \core_privacy\request\writer::with_context($context);
         $rm = new \rating_manager();
         $dbratings = $rm->get_all_ratings_for_item((object) [

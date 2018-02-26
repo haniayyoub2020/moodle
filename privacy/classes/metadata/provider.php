@@ -8,29 +8,34 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file contains the core_privacy\metadata_provider interface.
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\metadata;
 
 /**
  * Interface component_metadata_provider
- * @package core_privacy
+ *
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface provider {
+
     /**
-     * @return array The array of metadata
+     * Returns meta data about this system.
+     *
+     * @param   item_collection     $itemcollection The initialised item collection to add items to.
+     * @return  item_collection     A listing of user data stored through this system.
      */
     public static function get_metadata(item_collection $itemcollection) : item_collection ;
 }

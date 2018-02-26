@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file contains the moodle format implementation of the content writer.
@@ -155,7 +155,11 @@ class content_writer implements \core_privacy\request\content_writer {
      * @param   string          $value      The metadata value.
      * @param   string          $description    The description of the value.
      */
-    public function export_metadata(array $subcontext, String $key, $value, String $description) : \core_privacy\request\content_writer {
+    public function export_metadata(array $subcontext,
+        String $key,
+        $value,
+        String $description
+    ) : \core_privacy\request\content_writer {
         array_push($subcontext, 'metadata');
 
         $finalcontent = [
@@ -397,7 +401,12 @@ class content_writer implements \core_privacy\request\content_writer {
      * @param   string          $description    A description of the value
      * @return  content_writer
      */
-    public function export_user_preference(string $component, string $key, string $value, string $description) : \core_privacy\request\content_writer {
+    public function export_user_preference(
+        string $component,
+        string $key,
+        string $value,
+        string $description
+    ) : \core_privacy\request\content_writer {
         if (!isset($this->userprefs[$component])) {
             $this->userprefs[$component] = (object) [];
         }

@@ -44,7 +44,8 @@ class provider implements metadataprovider, subsystemprovider {
     /**
      * Returns meta data about this system.
      *
-     * @return item_collection A listing of user data stored through this system.
+     * @param   item_collection     $itemcollection The initialised item collection to add items to.
+     * @return  item_collection     A listing of user data stored through this system.
      */
     public static function get_metadata(item_collection $itemcollection) : item_collection {
         $comments = [
@@ -60,7 +61,7 @@ class provider implements metadataprovider, subsystemprovider {
     /**
      * Writes user data to the writer for the user to download.
      *
-     * @param  array  $contexts Contexts to run through and return data.
+     * @param  array  $context Contexts to run through and return data.
      * @param  string $component The component that is calling this function
      * @param  string $commentarea The comment area related to the component
      * @param  int    $itemid An identifier for a group of comments
@@ -79,7 +80,7 @@ class provider implements metadataprovider, subsystemprovider {
         $commentobject->set_view_permission(true);
         $comments = $commentobject->get_comments(0);
         $subcontext[] = get_string('commentsubcontext');
-        
+
         $comments = array_filter($comments, function($comment) use ($onlyforthisuser) {
             unset($comment->id);
             unset($comment->profileurl);
@@ -95,7 +96,7 @@ class provider implements metadataprovider, subsystemprovider {
                 return $comment;
             }
         });
-        
+
         if (!empty($comments)) {
             writer::with_context($context)
                     ->export_data($subcontext, (object)$comments);

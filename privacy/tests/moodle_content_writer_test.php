@@ -183,7 +183,7 @@ class moodle_content_writer_test extends advanced_testcase {
      */
     public function test_export_metadata($key, $value, $description) {
         $context = \context_system::instance();
-        $subcontext = ['a', 'b', 'c',];
+        $subcontext = ['a', 'b', 'c'];
 
         $writer = $this->get_writer_instance()
             ->set_context($context)
@@ -319,7 +319,7 @@ class moodle_content_writer_test extends advanced_testcase {
         $context = \context_system::instance();
         $fs = get_file_storage();
 
-        // Add two files to core_privacy::tests::0
+        // Add two files to core_privacy::tests::0.
         $files = [];
         $file = (object) [
             'component' => 'core_privacy',

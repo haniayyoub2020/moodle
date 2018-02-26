@@ -67,7 +67,7 @@ class contextlist_base_test extends advanced_testcase {
                 5,
             ],
             'duplicates' => [
-                [1 ,1, 2, 2, 3, 4, 5],
+                [1, 1, 2, 2, 3, 4, 5],
                 [1, 2, 3, 4, 5],
                 5,
             ],

@@ -8,15 +8,14 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the polyfill to allow a plugin to operate with Moodle
- * 3.3 up.
+ * This file contains the polyfill to allow a plugin to operate with Moodle 3.3 up.
  *
  * @package core_privacy
  * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
@@ -28,6 +27,14 @@ use \core_privacy\metadata\item_collection;
 use \core_privacy\request\approved_contextlist;
 use \core_privacy\request\deletion_criteria;
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * The trait used to provide a backwards compatability for third-party plugins.
+ *
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 trait legacy_polyfill {
 
     /**
@@ -41,6 +48,8 @@ trait legacy_polyfill {
     }
 
     /**
+     * Get the list of items.
+     *
      * @return array The array of metadata
      */
     public static function get_metadata(item_collection $itemcollection) : item_collection  {

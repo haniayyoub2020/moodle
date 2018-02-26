@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file defines the core_privacy\metadata\item_collection class object.
@@ -22,7 +22,6 @@
  *
  * @package core_privacy
  * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\metadata;
@@ -30,15 +29,21 @@ namespace core_privacy\metadata;
 use core_privacy\metadata\item_record\type;
 
 /**
- * Class item_collection
- * @package core_privacy\metadata
+ * A collection of metadata items.
+ *
+ * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class item_collection {
 
-    // Item collection component reference.
+    /**
+     * @var string The component that the items in the collection belong to.
+     */
     protected $component;
 
-    // Item collection of item_records.
+    /**
+     * @var array   The collection of metadata items.
+     */
     protected $itemcollection = [];
 
     /**

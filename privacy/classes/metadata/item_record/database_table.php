@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file defines an item of metadata which encapsulates a database table.
@@ -31,13 +31,19 @@ namespace core_privacy\metadata\item_record;
  */
 class database_table implements type {
 
-    // Database table name.
+    /**
+     * @var string  Database table name.
+     */
     protected $name;
 
-    // Fields which contain user information within the table.
+    /**
+     * @var array Fields which contain user information within the table.
+     */
     protected $privacyfields;
 
-    // A description of what this table is used for.
+    /**
+     * @var string  A description of what this table is used for.
+     */
     protected $summary;
 
     /**

@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file contains the interface required to implmeent a content writer.
@@ -105,7 +105,12 @@ class writer {
      * @param   string          $description    A description of the value
      * @return  content_writer
      */
-    public static function export_user_preference(string $component, string $key, string $value, string $description) : content_writer {
+    public static function export_user_preference(
+        string $component,
+        string $key,
+        string $value,
+        string $description
+    ) : content_writer {
         return static::with_context(\context_system::instance())
             ->export_user_preference($component, $key, $value, $description);
     }

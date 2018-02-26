@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * An item record which encapsulates a set of user preferences.
@@ -32,10 +32,14 @@ namespace core_privacy\metadata\item_record;
  */
 class user_preference implements type {
 
-    // The name of this user prefence.
+    /**
+     * @var The name of this user prefence.
+     */
     protected $name;
 
-    // A description of what this user preference means.
+    /**
+     * @var A description of what this user preference means.
+     */
     protected $summary;
 
     /**

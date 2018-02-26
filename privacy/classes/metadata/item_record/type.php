@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * An item_record which encapsulates a set of data held by a component with
@@ -39,7 +39,17 @@ interface type {
      */
     public function get_name();
 
+    /**
+     * A list of the fields and their usage description.
+     *
+     * @return  array
+     */
     public function get_privacy_fields();
 
+    /**
+     * A summary of what the metalink type is used for.
+     *
+     * @return string $summary
+     */
     public function get_summary();
 }

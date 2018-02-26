@@ -39,9 +39,11 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
     /**
      * Export all ratings which match the specified component, areaid, and itemid.
      *
-     * If requesting ratings for a users own content, and you wish to include all ratings of that content, specify $onlyuser as false.
+     * If requesting ratings for a users own content, and you wish to include all ratings of that content, specify
+     * $onlyuser as false.
      *
-     * When requesting ratings for another users content, you should only export the ratings that the specified user made themselves.
+     * When requesting ratings for another users content, you should only export the ratings that the specified user
+     * made themselves.
      *
      * @param   int         $userid The user whose information is to be exported
      * @param   array       $subcontext The subcontext within the context to export this information
@@ -50,7 +52,15 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
      * @param   int         $itemid The itemid within that ratingarea
      * @param   bool        $onlyuser Whether to only export ratings that the current user has made, or all ratings
      */
-    public static function export_area_ratings(int $userid, \context $context, array $subcontext, string $component, string $ratingarea, int $itemid, bool $onlyuser = true) {
+    public static function export_area_ratings(
+        int $userid,
+        \context $context,
+        array $subcontext,
+        string $component,
+        string $ratingarea,
+        int $itemid,
+        bool $onlyuser = true
+    ) {
         global $DB;
 
         $rm = new \rating_manager();

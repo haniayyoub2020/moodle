@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * This file defines a link to another Moodle subsystem.
@@ -31,10 +31,14 @@ namespace core_privacy\metadata\item_record;
  */
 class subsystem_link implements type {
 
-    // The name of the core subsystem to link.
+    /**
+     * @var The name of the core subsystem to link.
+     */
     protected $name;
 
-    // A description of what this subsystem is used to store.
+    /**
+     * @var string A description of what this subsystem is used to store.
+     */
     protected $summary;
 
     /**
