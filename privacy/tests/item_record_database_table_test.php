@@ -41,6 +41,9 @@ class core_privacy_metadata_item_rdcord_database_table extends advanced_testcase
      * Ensure that warnings are thrown if string identifiers contain invalid characters.
      *
      * @dataProvider invalid_string_provider
+     * @param   string  $name Name
+     * @param   array   $array List of fields
+     * @param   string  $summary Summary
      */
     public function test_invalid_configs($name, $fields, $summary) {
         $record = new database_table($name, $fields, $summary);
@@ -51,6 +54,9 @@ class core_privacy_metadata_item_rdcord_database_table extends advanced_testcase
      * Ensure that warnings are not thrown if debugging is not enabled, even if string identifiers contain invalid characters.
      *
      * @dataProvider invalid_string_provider
+     * @param   string  $name Name
+     * @param   array   $array List of fields
+     * @param   string  $summary Summary
      */
     public function test_invalid_configs_debug_normal($name, $fields, $summary) {
         global $CFG;
@@ -65,6 +71,9 @@ class core_privacy_metadata_item_rdcord_database_table extends advanced_testcase
      * Ensure that no warnings are shown for valid combinations.
      *
      * @dataProvider valid_string_provider
+     * @param   string  $name Name
+     * @param   array   $array List of fields
+     * @param   string  $summary Summary
      */
     public function test_valid_configs($name, $fields, $summary) {
         $record = new database_table($name, $fields, $summary);

@@ -41,6 +41,8 @@ class core_privacy_metadata_item_record_user_preference extends advanced_testcas
      * Ensure that warnings are thrown if string identifiers contain invalid characters.
      *
      * @dataProvider invalid_string_provider
+     * @param   string  $name Name
+     * @param   string  $summary Summary
      */
     public function test_invalid_configs($name, $summary) {
         $record = new user_preference($name, $summary);
@@ -51,6 +53,8 @@ class core_privacy_metadata_item_record_user_preference extends advanced_testcas
      * Ensure that warnings are not thrown if debugging is not enabled, even if string identifiers contain invalid characters.
      *
      * @dataProvider invalid_string_provider
+     * @param   string  $name Name
+     * @param   string  $summary Summary
      */
     public function test_invalid_configs_debug_normal($name, $summary) {
         global $CFG;
@@ -65,6 +69,8 @@ class core_privacy_metadata_item_record_user_preference extends advanced_testcas
      * Ensure that no warnings are shown for valid combinations.
      *
      * @dataProvider valid_string_provider
+     * @param   string  $name Name
+     * @param   string  $summary Summary
      */
     public function test_valid_configs($name, $summary) {
         $record = new user_preference($name, $summary);

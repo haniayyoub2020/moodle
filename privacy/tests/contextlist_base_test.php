@@ -40,6 +40,9 @@ class contextlist_base_test extends advanced_testcase {
      * Ensure that get_contextids returns the list of unique contextids.
      *
      * @dataProvider    get_contextids_provider
+     * @param   array   $input List of context IDs
+     * @param   array   $expected list of contextids
+     * @param   int     $count Expected count
      */
     public function test_get_contextids($input, $expected, $count) {
         $uit = new test_contextlist_base();
@@ -108,6 +111,9 @@ class contextlist_base_test extends advanced_testcase {
      * Ensure that the contextlist_base is countable.
      *
      * @dataProvider    get_contextids_provider
+     * @param   array   $input List of context IDs
+     * @param   array   $expected list of contextids
+     * @param   int     $count Expected count
      */
     public function test_countable($input, $expected, $count) {
         $uit = new test_contextlist_base();

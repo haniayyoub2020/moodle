@@ -28,8 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The writer factory class used to fetch and work with the content_writer.
  *
- * @package core_privacy
  * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class writer {
     /**

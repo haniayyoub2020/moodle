@@ -182,6 +182,7 @@ class core_privacy_metadata_item_collection extends advanced_testcase {
      * The component will be used for string translations.
      *
      * @dataProvider component_list_provider
+     * @param   string  $component The component to test
      */
     public function test_get_component($component) {
         $collection = new item_collection($component);

@@ -50,7 +50,8 @@ trait legacy_polyfill {
     /**
      * Get the list of items.
      *
-     * @return array The array of metadata
+     * @param   item_collection     $itemcollection The initialised item collection to add items to.
+     * @return  item_collection     A listing of user data stored through this system.
      */
     public static function get_metadata(item_collection $itemcollection) : item_collection  {
         return static::_get_metadata($itemcollection);

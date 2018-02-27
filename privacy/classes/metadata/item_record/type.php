@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * An item_record which encapsulates a set of data held by a component with
- * Moodle.
+ * An item_record which encapsulates a set of data held by a component with Moodle.
  *
  * @package core_privacy
  * @copyright 2018 Zig Tan <zig@moodle.com>
@@ -30,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
  * The item_record interface which all item_record types must implement.
  *
  * @copyright 2018 Zig Tan <zig@moodle.com>
- * @package core_privacy\metadata
+ * @package core_privacy
  */
 interface type {
 

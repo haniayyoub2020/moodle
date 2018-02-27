@@ -57,7 +57,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Constructor for the content writer.
      *
      * Note: The writer_factory must be passed.
-     * @param   writer          $factory    The factory.
+     * @param   \core_privacy\request\writer          $factory    The factory.
      */
     public function __construct(\core_privacy\request\writer $writer) {
     }
@@ -153,7 +153,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Metadata consists of a key/value pair and a description of the value.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $name       The metadata name.
+     * @param   string          $key        The metadata name.
      * @param   string          $value      The metadata value.
      * @param   string          $description    The description of the value.
      */
@@ -207,7 +207,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Get the specified metadata within the subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $name       The metadata to be fetched within the context + subcontext.
+     * @param   string          $key        The metadata to be fetched within the context + subcontext.
      * @param   boolean         $valueonly  Whether to fetch only the value, rather than the value + description.
      * @return  array                       The metadata as a series of keys to value + descrition objects.
      */
@@ -250,6 +250,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Get all data within the subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
+     * @param   string          $filename   The name of the intended filename.
      * @return  array                       The metadata as a series of keys to value + descrition objects.
      */
     public function get_related_data(array $subcontext = [], $filename) {
@@ -381,7 +382,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Get all files in the specfied subcontext.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @return  stored_file[]               The list of stored_files in this context + subcontext.
+     * @return  \stored_file[]              The list of stored_files in this context + subcontext.
      */
     public function get_files(array $subcontext = []) {
         $basepath = $this->files[$this->context->id];
@@ -401,7 +402,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * @param   string          $key        The name of th key to be exported.
      * @param   string          $value      The value of the preference
      * @param   string          $description    A description of the value
-     * @return  content_writer
+     * @return  \core_privacy\request\content_writer
      */
     public function export_user_preference(
         string $component,
@@ -425,7 +426,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Get all user preferences for the specified component.
      *
      * @param   string          $component  The name of the component.
-     * @return  \stdClas
+     * @return  \stdClass
      */
     public function get_user_preferences(string $component) {
         if (isset($this->userprefs[$component])) {

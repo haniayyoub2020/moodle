@@ -42,6 +42,7 @@ class moodle_content_writer_test extends advanced_testcase {
      * Test that exported data is saved correctly within the system context.
      *
      * @dataProvider export_data_provider
+     * @param   \stdClass  $data Data
      */
     public function test_export_data($data) {
         $context = \context_system::instance();
@@ -65,6 +66,7 @@ class moodle_content_writer_test extends advanced_testcase {
      * Test that exported data is saved correctly for context/subcontext.
      *
      * @dataProvider export_data_provider
+     * @param   \stdClass  $data Data
      */
     public function test_export_data_different_context($data) {
         $context = \context_user::instance(\core_user::get_user_by_username('admin')->id);
@@ -180,6 +182,9 @@ class moodle_content_writer_test extends advanced_testcase {
      * Test that metadata can be set.
      *
      * @dataProvider export_metadata_provider
+     * @param   string  $key Key
+     * @param   string  $value Value
+     * @param   string  $description Description
      */
     public function test_export_metadata($key, $value, $description) {
         $context = \context_system::instance();
@@ -412,6 +417,9 @@ class moodle_content_writer_test extends advanced_testcase {
      * Exporting a single stored_file should cause that file to be output in the files directory.
      *
      * @dataProvider    export_file_provider
+     * @param   string  $filepath File path
+     * @param   string  $filename File name
+     * @param   string  $content Content
      */
     public function test_export_file($filepath, $filename, $content) {
         $this->resetAfterTest();
@@ -559,6 +567,10 @@ class moodle_content_writer_test extends advanced_testcase {
      * User preferences can be exported against the system.
      *
      * @dataProvider    export_user_preference_provider
+     * @param   string      $component  Component
+     * @param   string      $key Key
+     * @param   string      $value Value
+     * @param   string      $desc Description
      */
     public function test_export_user_preference_context_system($component, $key, $value, $desc) {
         $context = \context_system::instance();

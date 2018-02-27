@@ -17,7 +17,7 @@
 /**
  * An implementation of a contextlist which has been filtered and approved.
  *
- * @package    privacy
+ * @package    core_privacy
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
