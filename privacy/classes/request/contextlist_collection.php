@@ -43,7 +43,6 @@ class contextlist_collection {
     /**
      * Add a contextlist to this collection.
      *
-     * @param   string      $component the frankenstyle name of the component to which the contextlist applies. E.g. core_comment.
      * @param   contextlist $contextlist the contextlist to export.
      * @return  $this
      */

@@ -35,14 +35,14 @@ use \core_privacy\metadata\item_record\database_table;
  * @copyright   2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core_privacy_metadata_item_rdcord_database_table extends advanced_testcase {
+class core_privacy_metadata_item_record_database_table extends advanced_testcase {
 
     /**
      * Ensure that warnings are thrown if string identifiers contain invalid characters.
      *
      * @dataProvider invalid_string_provider
      * @param   string  $name Name
-     * @param   array   $array List of fields
+     * @param   array   $fields List of fields
      * @param   string  $summary Summary
      */
     public function test_invalid_configs($name, $fields, $summary) {
@@ -55,7 +55,7 @@ class core_privacy_metadata_item_rdcord_database_table extends advanced_testcase
      *
      * @dataProvider invalid_string_provider
      * @param   string  $name Name
-     * @param   array   $array List of fields
+     * @param   array   $fields List of fields
      * @param   string  $summary Summary
      */
     public function test_invalid_configs_debug_normal($name, $fields, $summary) {
@@ -72,7 +72,7 @@ class core_privacy_metadata_item_rdcord_database_table extends advanced_testcase
      *
      * @dataProvider valid_string_provider
      * @param   string  $name Name
-     * @param   array   $array List of fields
+     * @param   array   $fields List of fields
      * @param   string  $summary Summary
      */
     public function test_valid_configs($name, $fields, $summary) {

@@ -37,7 +37,7 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
     /**
      * Returns meta data about this system.
      *
-     * @param   item_collection     $itemcollection The initialised item collection to add items to.
+     * @param   item_collection     $items The initialised item collection to add items to.
      * @return  item_collection     A listing of user data stored through this system.
      */
     public static function get_metadata(\core_privacy\metadata\item_collection $items) {

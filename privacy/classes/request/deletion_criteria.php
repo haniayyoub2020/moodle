@@ -15,11 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains the \core_privacy\request\core_user_data_provider interface to describe
- * classes which provide user data in some form to core.
+ * The \core_privacy\request\deletion_criteria class.
  *
  * @package core_privacy
- * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
@@ -30,8 +29,8 @@ defined('MOODLE_INTERNAL') || die();
  * The deletion_criteria class is used to describe conditions for a set of
  * data due to be deleted.
  *
- * @package core_privacy
- * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class deletion_criteria {
     /**
@@ -39,6 +38,11 @@ class deletion_criteria {
      */
     protected $context = null;
 
+    /**
+     * Constructor for a new deletion_criteria.
+     *
+     * @param   \context $context The context being deleted.
+     */
     public function __construct(\context $context) {
         $this->context = $context;
     }

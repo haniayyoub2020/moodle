@@ -18,7 +18,7 @@
  * This file contains the moodle format implementation of the content writer.
  *
  * @package core_privacy
- * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\request;
@@ -33,8 +33,8 @@ defined('MOODLE_INTERNAL') || die();
  *
  * Objects of data are stored as JSON.
  *
- * @package core_privacy
- * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class moodle_content_writer implements content_writer {
     /**
@@ -57,7 +57,7 @@ class moodle_content_writer implements content_writer {
      *
      * Note: The writer factory must be passed.
      *
-     * @param   writer          $factory    The factory.
+     * @param   writer          $writer     The factory.
      */
     public function __construct(writer $writer) {
         $this->path = make_request_directory();
@@ -94,7 +94,7 @@ class moodle_content_writer implements content_writer {
      * Metadata consists of a key/value pair and a description of the value.
      *
      * @param   array           $subcontext The location within the current context that this data belongs.
-     * @param   string          $name       The metadata name.
+     * @param   string          $key        The metadata name.
      * @param   string          $value      The metadata value.
      * @param   string          $description    The description of the value.
      */
@@ -155,7 +155,7 @@ class moodle_content_writer implements content_writer {
      * @param   string          $component  The name of the component that the files belong to.
      * @param   string          $filearea   The filearea within that component.
      * @param   string          $itemid     Which item those files belong to.
-     * param    string          $text       The text to be processed
+     * @param   string          $text       The text to be processed
      * @return  string                      The processed string
      */
     public function rewrite_pluginfile_urls(array $subcontext, $component, $filearea, $itemid, $text) : String {

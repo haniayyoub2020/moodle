@@ -37,7 +37,7 @@ interface content_writer {
      * Constructor for the content writer.
      *
      * Note: The writer_factory must be passed.
-     * @param   writer          $factory    The factory.
+     * @param   writer          $writer    The factory.
      */
     public function __construct(writer $writer);
 

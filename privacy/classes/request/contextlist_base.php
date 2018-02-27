@@ -17,7 +17,7 @@
 /**
  * Base implementation of a contextlist.
  *
- * @package    privacy
+ * @package    core_privacy
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -103,6 +103,8 @@ abstract class contextlist_base implements
     }
 
     /**
+     * Get the name of the component to which this contextlist belongs.
+     *
      * @return string the component name associated with this contextlist.
      */
     public function get_component() : string {

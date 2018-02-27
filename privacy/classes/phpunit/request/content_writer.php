@@ -18,8 +18,7 @@
  * This file contains the moodle format implementation of the content writer.
  *
  * @package core_privacy
- * @copyright 2018 Jake Dallimore <jrhdallimore@gmail.com>
- *
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_privacy\phpunit\request;
@@ -28,15 +27,48 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * An implementation of the content_writer for use in unit tests.
+ *
+ * This implementation does not export any data but instead stores it in
+ * structures within the instance which can be easily queried for use
+ * during unit tests.
+ *
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class content_writer implements \core_privacy\request\content_writer {
+    /**
+     * @var \context The context currently being exported.
+     */
     protected $context = null;
 
+    /**
+     * @var array The collection of metadata which has been exported.
+     */
     protected $metadata = [];
+
+    /**
+     * @var array The data which has been exported.
+     */
     protected $data = [];
+
+    /**
+     * @var array The related data which has been exported.
+     */
     protected $relateddata = [];
+
+    /**
+     * @var array The list of stored files which have been exported.
+     */
     protected $files = [];
+
+    /**
+     * @var array The custom files which have been exported.
+     */
     protected $customfiles = [];
+
+    /**
+     * @var array The site-wide user preferences which have been exported.
+     */
     protected $userprefs = [];
 
     /**
@@ -57,7 +89,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * Constructor for the content writer.
      *
      * Note: The writer_factory must be passed.
-     * @param   \core_privacy\request\writer          $factory    The factory.
+     * @param   \core_privacy\request\writer          $writer    The writer factory.
      */
     public function __construct(\core_privacy\request\writer $writer) {
     }
@@ -156,6 +188,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * @param   string          $key        The metadata name.
      * @param   string          $value      The metadata value.
      * @param   string          $description    The description of the value.
+     * @return  $this
      */
     public function export_metadata(array $subcontext,
         String $key,
@@ -324,7 +357,7 @@ class content_writer implements \core_privacy\request\content_writer {
      * @param   string          $component  The name of the component that the files belong to.
      * @param   string          $filearea   The filearea within that component.
      * @param   string          $itemid     Which item those files belong to.
-     * param    string          $text       The text to be processed
+     * @param   string          $text       The text to be processed
      * @return  string                      The processed string
      */
     public function rewrite_pluginfile_urls(array $subcontext, $component, $filearea, $itemid, $text) : String {
