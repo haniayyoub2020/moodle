@@ -479,5 +479,6 @@ class content_writer implements \core_privacy\request\content_writer {
      * @return  string
      */
     public function finalise_content() : string {
+        return 'mock_path';
     }
 }
