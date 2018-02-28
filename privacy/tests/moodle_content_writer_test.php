@@ -481,9 +481,16 @@ class moodle_content_writer_test extends advanced_testcase {
                 'logo.png',
                 file_get_contents(__DIR__ . '/fixtures/logo.png'),
             ],
-            // TODO file with UTF8 characters in content.
-            // TODO file with UTF8 characters in filepath.
-            // TODO file with UTF8 characters in filename.
+            'UTF8' => [
+                '/Žluťoučký/',
+                'koníček.txt',
+                'koníček',
+            ],
+            'EUC-JP' => [
+                '/言語設定/',
+                '言語設定.txt',
+                '言語設定',
+            ],
         ];
     }
 
