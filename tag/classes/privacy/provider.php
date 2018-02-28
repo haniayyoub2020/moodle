@@ -78,6 +78,8 @@ class provider implements
 
         // The table 'tag_correlation' does not contain any user data.
         // It is a cache for other data already stored.
+
+        return $items;
     }
 
     /**
