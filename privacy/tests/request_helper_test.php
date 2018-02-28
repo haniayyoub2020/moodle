@@ -76,23 +76,35 @@ class request_helper_test extends advanced_testcase {
 
     /**
      * Test that a course moudle with completion tracking enabled has the completion data returned.
-     * TODO
      */
     public function test_get_context_data_context_module_completion() {
-    }
+        $this->resetAfterTest();
 
-    /**
-     * Test that block data is returned.
-     * TODO
-     */
-    public function test_get_context_data_context_block() {
-    }
+        // Create a module and set completion.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $user = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+        $assign = $this->getDataGenerator()->create_module('assign', ['course' => $course->id, 'completion' => 1]);
+        $context = context_module::instance($assign->cmid);
+        $cm = get_coursemodule_from_id('assign', $assign->cmid);
 
-    /**
-     * Test that course data is returned.
-     * TODO
-     */
-    public function test_get_context_data_context_course_basic() {
+        // Fetch context data.
+        $contextdata = helper::get_context_data($context, $user);
+
+        // Completion state is zero.
+        // Check non completion for a user.
+        $this->assertEquals(0, $contextdata->completion->state);
+
+        // Complete the activity as a user.
+        $completioninfo = new completion_info($course);
+        $completioninfo->update_state($cm, COMPLETION_COMPLETE, $user->id);
+
+        // Check that completion is now exported.
+        $contextdata = helper::get_context_data($context, $user);
+        $this->assertEquals(1, $contextdata->completion->state);
+
+        // This function should only fetch data. It does not export it.
+        $this->assertFalse(writer::with_context($context)->has_any_data());
     }
 
     /**
@@ -128,13 +140,6 @@ class request_helper_test extends advanced_testcase {
     }
 
     /**
-     * Test that when there are no files to export for a block context, nothing is exported.
-     * TODO
-     */
-    public function test_export_context_files_context_block_no_files() {
-    }
-
-    /**
      * Test that when there are no files to export for a course context, nothing is exported.
      */
     public function test_export_context_files_context_course_no_files() {
@@ -153,9 +158,38 @@ class request_helper_test extends advanced_testcase {
     }
 
     /**
-     * Test that when there are no files to export for a coursecat context, nothing is exported.
-     * TODO
+     * Test that when there are files to export for a course context, the files are exported.
      */
-    public function test_export_context_files_context_coursecat_no_files() {
+    public function test_export_context_files_context_course_intro_files() {
+        $this->resetAfterTest();
+
+        // Setup.
+        $course = $this->getDataGenerator()->create_course();
+        $user = \core_user::get_user_by_username('admin');
+        $assign = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
+        $context = context_module::instance($assign->cmid);
+
+        // File details.
+        $filerecord = array(
+            'contextid' => $context->id,
+            'component' => 'mod_assign',
+            'filearea'  => 'intro',
+            'itemid'    => 0,
+            'filepath'  => '/',
+            'filename'  => 'logo.png',
+        );
+
+        $content = file_get_contents(__DIR__ . '/fixtures/logo.png');
+
+        // Store the file.
+        $fs = get_file_storage();
+        $file = $fs->create_file_from_string($filerecord, $content);
+
+        // Fetch the data.
+        helper::export_context_files($context, $user);
+
+        // This should have resulted in the file being exported.
+        $this->assertTrue(writer::with_context($context)->has_any_data());
     }
+
 }
