@@ -75,6 +75,25 @@ class request_helper_test extends advanced_testcase {
     }
 
     /**
+     * Test that basic block data is returned.
+     */
+    public function test_get_context_data_context_block() {
+        $this->resetAfterTest();
+
+        // Setup.
+        $block = $this->getDataGenerator()->create_block('online_users');
+        $context = context_block::instance($block->id);
+        $user = \core_user::get_user_by_username('admin');
+
+        // Fetch the data.
+        $data = helper::get_context_data($context, $user);
+        $this->assertEquals(get_string('pluginname', 'block_online_users'), $data->blocktype);
+
+         // This function should only fetch data. It does not export it.
+        $this->assertFalse(writer::with_context($context)->has_any_data());
+    }
+
+    /**
      * Test that a course moudle with completion tracking enabled has the completion data returned.
      */
     public function test_get_context_data_context_module_completion() {
@@ -108,13 +127,6 @@ class request_helper_test extends advanced_testcase {
     }
 
     /**
-     * Test that coursecat data is returned.
-     * TODO
-     */
-    public function test_get_context_data_context_coursecat() {
-    }
-
-    /**
      * Test that when there are no files to export for a course module context, nothing is exported.
      */
     public function test_export_context_files_context_module_no_files() {
@@ -136,7 +148,6 @@ class request_helper_test extends advanced_testcase {
 
         // This function should only fetch data. It does not export it.
         $this->assertFalse(writer::with_context($context)->has_any_data());
-
     }
 
     /**

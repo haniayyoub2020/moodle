@@ -54,6 +54,9 @@ class helper {
         if ($context instanceof \context_module) {
             return static::get_context_module_data($context, $user);
         }
+        if ($context instanceof \context_block) {
+            return static::get_context_block_data($context, $user);
+        }
 
         return $basedata;
     }
@@ -103,6 +106,25 @@ class helper {
                 'state' => $completiondata->completionstate,
             ];
         }
+
+        return $basedata;
+    }
+
+    /**
+     * Get all general data for the block at this context.
+     *
+     * @param   \context_block $context The context to retrieve data for.
+     * @param   \stdClass $user The user being written.
+     * @return  \stdClass General data about this block instance.
+     */
+    protected static function get_context_block_data(\context_block $context, \stdClass $user) : \stdClass {
+        global $DB;
+
+        $block = $DB->get_record('block_instances', ['id' => $context->instanceid]);
+
+        $basedata = (object) [
+            'blocktype' => get_string('pluginname', 'block_' . $block->blockname)
+        ];
 
         return $basedata;
     }
