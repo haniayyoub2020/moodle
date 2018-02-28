@@ -26,6 +26,8 @@ namespace core_tag\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
+use \core_privacy\metadata\item_collection;
+
 /**
  * Privacy Subsystem implementation for core_tag.
  *
@@ -46,7 +48,7 @@ class provider implements
      * @param   item_collection     $items The initialised item collection to add items to.
      * @return  item_collection     A listing of user data stored through this system.
      */
-    public static function get_metadata(\core_privacy\metadata\item_collection $items) {
+    public static function get_metadata(item_collection $items) : item_collection {
         // The table 'tag' contains data that a user has entered.
         // It is currently linked with a userid, but this field will hopefulyl go away.
         // Note: The userid is not necessarily 100% accurate. See MDL-61555.

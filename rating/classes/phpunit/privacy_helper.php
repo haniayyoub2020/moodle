@@ -78,12 +78,10 @@ trait privacy_helper {
 
         $exportedratings = $this->get_ratings_on_subcontext($context, $subcontext);
 
-        foreach ($exportedratings as $rating) {
-            $ratingid = $rating->id;
+        foreach ($exportedratings as $ratingid => $rating) {
             $this->assertTrue(isset($dbratings[$ratingid]));
             $this->assertEquals($userid, $rating->author);
             $this->assert_rating_matches($dbratings[$ratingid], $rating);
-            $ratingid = $rating->id;
         }
 
         foreach ($dbratings as $rating) {
@@ -114,8 +112,7 @@ trait privacy_helper {
 
         $exportedratings = $this->get_ratings_on_subcontext($context, $subcontext);
 
-        foreach ($exportedratings as $rating) {
-            $ratingid = $rating->id;
+        foreach ($exportedratings as $ratingid => $rating) {
             $this->assertTrue(isset($dbratings[$ratingid]));
             $this->assert_rating_matches($dbratings[$ratingid], $rating);
         }
