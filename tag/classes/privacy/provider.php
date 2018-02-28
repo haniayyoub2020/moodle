@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  */
 class provider implements
     // Tags store user data.
-    \core_privacy\request\provider,
+    \core_privacy\metadata\provider,
 
     // The tag subsystem provides data to other components.
     \core_privacy\request\subsystem\plugin_provider
