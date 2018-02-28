@@ -24,6 +24,8 @@
 
 namespace core_rating\privacy;
 
+use \core_privacy\metadata\item_collection;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/rating/lib.php');
@@ -34,7 +36,35 @@ require_once($CFG->dirroot . '/rating/lib.php');
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\request\subsystem\plugin_provider {
+class provider implements
+    // The ratings subsystem contains data.
+    \core_privacy\metadata\provider,
+
+    // The ratings subsystem provides a data service to other components.
+    \core_privacy\request\subsystem\plugin_provider
+
+    // The ratings subsystem is only ever used to store data for other components.
+    // It does not store any data of its own and does not need to implement the \core_privacy\request\subsystem\provider
+    // as a result.
+{
+
+    /**
+     * Returns metadata about the ratings subsystem.
+     *
+     * @param   item_collection     $items The initialised item collection to add items to.
+     * @return  item_collection     A listing of user data stored through the subsystem.
+     */
+    public static function get_metadata(item_collection $items) : item_collection {
+        // The table 'rating' cotains data that a user has entered.
+        // It stores the user-entered rating alongside a mapping to describe what was mapped.
+        $items->add_database_table('rating', [
+                'rating' => 'privacy:metadata:rating:rating',
+                'timecreated' => 'privacy:metadata:rating:timecreated',
+                'timemodified' => 'privacy:metadata:rating:timemodified',
+            ], 'privacy:metadata:rating');
+
+        return $items;
+    }
 
     /**
      * Export all ratings which match the specified component, areaid, and itemid.
@@ -84,7 +114,6 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
 
         $toexport = array_map(function($rating) {
             return (object) [
-                'id' => $rating->id,
                 'rating' => $rating->rating,
                 'author' => $rating->userid,
             ];
@@ -108,19 +137,13 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
         static $count = 0;
         $count++;
 
-        $select = [
-            "{$alias}.itemid        AS {$alias}_itemid",
-            "{$alias}.scaleid       AS {$alias}_scaleid",
-            "{$alias}.rating        AS {$alias}_rating",
-            "{$alias}.userid        AS {$alias}_userid",
-            "{$alias}.timecreated   AS {$alias}_timecreated",
-            "{$alias}.timemodified  AS {$alias}_timemodified",
-        ];
+        // Join the rating table with the specified alias and the relevant join params.
         $join = "LEFT JOIN {rating} {$alias} ON ";
         $join .= "{$alias}.component = :ratingcomponent{$count} AND ";
         $join .= "{$alias}.ratingarea = :ratingarea{$count} AND ";
         $join .= "{$alias}.itemid = {$itemidjoin}";
 
+        // Match against the specified user.
         $userwhere = "{$alias}.userid = :ratinguserid{$count}";
 
         $params = [
@@ -130,7 +153,6 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
         ];
 
         $return = (object) [
-            'select' => implode(', ', $select),
             'join' => $join,
             'params' => $params,
             'userwhere' => $userwhere,
