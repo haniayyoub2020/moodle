@@ -32,7 +32,13 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Zig Tan <zig@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\request\subsystem\plugin_provider {
+class provider implements
+    // Tags store user data.
+    \core_privacy\request\provider,
+
+    // The tag subsystem provides data to other components.
+    \core_privacy\request\subsystem\plugin_provider
+{
 
     /**
      * Returns meta data about this system.
@@ -41,11 +47,35 @@ class provider implements \core_privacy\request\subsystem\plugin_provider {
      * @return  item_collection     A listing of user data stored through this system.
      */
     public static function get_metadata(\core_privacy\metadata\item_collection $items) {
-        // The table 'tag' contains user data.
-        // TODO - Describe this table.
+        // The table 'tag' contains data that a user has entered.
+        // It is currently linked with a userid, but this field will hopefulyl go away.
+        // Note: The userid is not necessarily 100% accurate. See MDL-61555.
+        $items->add_database_table('tag', [
+                'name' => 'privacy:metadata:tag:name',
+                'rawname' => 'privacy:metadata:tag:rawname',
+                'description' => 'privacy:metadata:tag:description',
+                'flag' => 'privacy:metadata:tag:flag',
+                'timemodified' => 'privacy:metadata:tag:timemodified',
+            ], 'privacy:metadata:tag');
 
-        // The table 'tag' contains user data.
-        // TODO - Describe this table.
+        // The table 'tag_instance' contains user data.
+        // It links the user of a specific tag, to the item which is tagged.
+        // In some cases the userid who 'owns' the tag is also stored.
+        $items->add_database_table('tag_instance', [
+                'tagid' => 'privacy:metadata:taginstance:tagid',
+                'ordering' => 'privacy:metadata:taginstance:ordering',
+                'timecreated' => 'privacy:metadata:taginstance:timecreated',
+                'timemodified' => 'privacy:metadata:taginstance:timemodified',
+            ], 'privacy:metadata:taginstance');
+
+        // The table 'tag_area' does not contain any specific user data.
+        // It links components and item types to collections and describes how they can be associated.
+
+        // The table 'tag_coll' does not contain any specific user data.
+        // It describes a list of tag collections configured by the administrator.
+
+        // The table 'tag_correlation' does not contain any user data.
+        // It is a cache for other data already stored.
     }
 
     /**
