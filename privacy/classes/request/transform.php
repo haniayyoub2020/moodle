@@ -66,4 +66,18 @@ class transform {
     public static function date($date) {
         return userdate($date, get_string('strftimetime', 'langconfig'));
     }
+
+    /**
+     * Translate a bool or int (0/1) value into a translated yes/no string.
+     *
+     * @param   bool        $value The value to translate
+     * @return  string
+     */
+    public static function yesno($value) {
+        if ($value) {
+            return get_string('yes');
+        } else {
+            return get_string('no');
+        }
+    }
 }

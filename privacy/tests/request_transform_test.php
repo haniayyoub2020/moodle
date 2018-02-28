@@ -62,4 +62,49 @@ class request_transform_test extends advanced_testcase {
     public function test_date() {
         $this->assertInternalType('string', transform::date(1));
     }
+
+    /**
+     * Ensure that the yesno function translates correctly.
+     *
+     * @dataProvider yesno_provider
+     * @param   mixed   $input The input to test
+     * @param   string  $expected The expected value
+     */
+    public function test_yesno($input, $expected) {
+        $this->assertEquals($expected, transform::yesno($input));
+    }
+
+    /**
+     * Data provider for tests of the yesno transformation.
+     *
+     * @return  array
+     */
+    public function yesno_provider() {
+        return [
+            'Bool False' => [
+                false,
+                get_string('no'),
+            ],
+            'Bool true' => [
+                true,
+                get_string('yes'),
+            ],
+            'Int 0' => [
+                0,
+                get_string('no'),
+            ],
+            'Int 1' => [
+                1,
+                get_string('yes'),
+            ],
+            'String 0' => [
+                '0',
+                get_string('no'),
+            ],
+            'String 1' => [
+                '1',
+                get_string('yes'),
+            ],
+        ];
+    }
 }
