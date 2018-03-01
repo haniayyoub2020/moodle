@@ -17,7 +17,7 @@
 /**
  * Unit tests for the core_rating implementation of the Privacy API.
  *
- * @package    core_comment
+ * @package    core_rating
  * @category   test
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -36,7 +36,7 @@ use \core_rating\privacy\provider;
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core_comment_privacy_testcase extends \core_privacy\phpunit\provider_testcase {
+class core_rating_privacy_testcase extends \core_privacy\phpunit\provider_testcase {
 
     /**
      * Rate something as a user.
