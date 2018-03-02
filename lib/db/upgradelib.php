@@ -511,8 +511,10 @@ function upgrade_fix_block_instance_configuration() {
 
     $sql = "SELECT *
               FROM {block_instances}
-             WHERE configdata <> ''";
-    $blockinstances = $DB->get_recordset_sql($sql);
+             WHERE configdata <> :empty";
+    $blockinstances = $DB->get_recordset_sql($sql, [
+            'empty' => $DB->sql_isempty('block_instances', 'configdata', true, true),
+        ]);
     foreach ($blockinstances as $blockinstance) {
         $configdata = base64_decode($blockinstance->configdata);
         list($updated, $configdata) = upgrade_fix_serialized_objects($configdata);
