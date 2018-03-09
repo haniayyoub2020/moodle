@@ -111,7 +111,15 @@ class process_data_request_task extends adhoc_task {
 
 
         } else if ($request->type == api::DATAREQUEST_TYPE_DELETE) {
-            // TODO: Add code here to execute the user data deletion process.
+            $manager = new \core_privacy\manager();
+            $contextcollection = $manager->get_contexts_for_userid($foruser->id);
+
+            $approvedcollection = new \core_privacy\local\request\contextlist_collection($foruser->id);
+
+            foreach ($contextcollection as $contextlist) {
+                $approvedcollection->add_contextlist(new \core_privacy\local\request\approved_contextlist($foruser, $contextlist->get_component(), $contextlist->get_contextids()));
+            }
+            $manager->delete_user_data($approvedcollection);
         }
 
         // When the preparation of the metadata finishes, update the request status to awaiting approval.
