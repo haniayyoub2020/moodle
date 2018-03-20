@@ -2196,6 +2196,13 @@ function send_file($path, $filename, $lifetime = null , $filter=0, $pathisstring
         $lifetime = $CFG->filelifetime;
     }
 
+    if (defined('BEHAT_SITE_RUNNING') && BEHAT_SITE_RUNNING) {
+        if (strpos($_SERVER['REQUEST_URI'], '/pluginfile.php/') !== false) {
+            $options['immutable'] = false;
+            $lifetime = 0;
+        }
+    }
+
     if (is_object($path)) {
         $pathisstring = false;
     }
