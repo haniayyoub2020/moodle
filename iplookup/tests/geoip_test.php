@@ -44,48 +44,30 @@ class core_iplookup_geoip_testcase extends advanced_testcase {
         $this->resetAfterTest();
     }
 
-
     /**
-     * Setup the GeoIP2File system.
+     * Test the format of data returned in the iplookup_find_location function.
+     *
+     * @dataProvider ip_provider
+     * @param   string  $ip The IP to test
      */
-    public function setup_geoip2file() {
-        global $CFG;
+    public function test_ip($ip) {
+        // Note: The results we get from the iplookup tests are beyond our control.
+        // We used to check a specific IP to a known location, but these have become less reliable and change too
+        // frequently to be used for testing.
 
-        // Store the file somewhere where it won't be wiped out..
-        $gzfile = "$CFG->dataroot/phpunit/geoip/GeoLite2-City.mmdb.gz";
-        check_dir_exists(dirname($gzfile));
-        if (file_exists($gzfile) and (filemtime($gzfile) < time() - 60*60*24*30)) {
-            // Delete file if older than 1 month.
-            unlink($gzfile);
-        }
+        $result = iplookup_find_location($ip);
+        $this->assertDebuggingCalled('The iplookup_find_location function has been deprecated. ' .
+                'Please update your code to use \core\iplookup instead.');
 
-        if (!file_exists($gzfile)) {
-            download_file_content('http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz',
-                null, null, false, 300, 20, false, $gzfile);
-        }
-
-        $this->assertTrue(file_exists($gzfile));
-
-        $geoipfile = str_replace('.gz', '', $gzfile);
-
-        // Open our files (in binary mode).
-        $file = gzopen($gzfile, 'rb');
-        $geoipfilebuf = fopen($geoipfile, 'wb');
-
-        // Keep repeating until the end of the input file.
-        while (!gzeof($file)) {
-            // Read buffer-size bytes.
-            // Both fwrite and gzread and binary-safe.
-            fwrite($geoipfilebuf, gzread($file, 4096));
-        }
-
-        // Files are done, close files.
-        fclose($geoipfilebuf);
-        gzclose($file);
-
-        $this->assertTrue(file_exists($geoipfile));
-
-        $CFG->geoip2file = $geoipfile;
+        $this->assertInternalType('array', $result);
+        $this->assertInternalType('float', $result['latitude']);
+        $this->assertInternalType('float', $result['longitude']);
+        $this->assertInternalType('string', $result['city']);
+        $this->assertInternalType('string', $result['country']);
+        $this->assertInternalType('array', $result['title']);
+        $this->assertInternalType('string', $result['title'][0]);
+        $this->assertInternalType('string', $result['title'][1]);
+        $this->assertNull($result['error']);
     }
 
     /**
@@ -94,14 +76,18 @@ class core_iplookup_geoip_testcase extends advanced_testcase {
      * @dataProvider ip_provider
      * @param   string  $ip The IP to test
      */
-    public function test_ip($ip) {
-        $this->setup_geoip2file();
+    public function test_remote_api($ip) {
+        global $CFG;
+
+        $CFG->geoipfile = '';
 
         // Note: The results we get from the iplookup tests are beyond our control.
         // We used to check a specific IP to a known location, but these have become less reliable and change too
         // frequently to be used for testing.
 
         $result = iplookup_find_location($ip);
+        $this->assertDebuggingCalled('The iplookup_find_location function has been deprecated. ' .
+                'Please update your code to use \core\iplookup instead.');
 
         $this->assertInternalType('array', $result);
         $this->assertInternalType('float', $result['latitude']);

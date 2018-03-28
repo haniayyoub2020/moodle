@@ -1,0 +1,172 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * GeoIP tests
+ *
+ * @package    core
+ * @category   tests
+ * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+
+/**
+ * GeoIp data file parsing test.
+ */
+class core_iplookup_testcase extends advanced_testcase {
+
+    /**
+     * Shared setup to reset after test, and declare a long unit test.
+     */
+    public function setUp() {
+        if (!PHPUNIT_LONGTEST) {
+            // These tests are intensive and required downloads.
+            $this->markTestSkipped('PHPUNIT_LONGTEST is not defined');
+        }
+
+        $this->resetAfterTest();
+    }
+
+
+    /**
+     * Setup the GeoIP2File system.
+     */
+    public function setup_geoip2file() {
+        global $CFG;
+
+        // Store the file somewhere where it won't be wiped out..
+        $gzfile = "$CFG->dataroot/phpunit/geoip/GeoLite2-City.mmdb.gz";
+        check_dir_exists(dirname($gzfile));
+        if (file_exists($gzfile) and (filemtime($gzfile) < time() - 60*60*24*30)) {
+            // Delete file if older than 1 month.
+            unlink($gzfile);
+        }
+
+        if (!file_exists($gzfile)) {
+            download_file_content('http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz',
+                null, null, false, 300, 20, false, $gzfile);
+        }
+
+        $this->assertTrue(file_exists($gzfile));
+
+        $geoipfile = str_replace('.gz', '', $gzfile);
+
+        // Open our files (in binary mode).
+        $file = gzopen($gzfile, 'rb');
+        $geoipfilebuf = fopen($geoipfile, 'wb');
+
+        // Keep repeating until the end of the input file.
+        while (!gzeof($file)) {
+            // Read buffer-size bytes.
+            // Both fwrite and gzread and binary-safe.
+            fwrite($geoipfilebuf, gzread($file, 4096));
+        }
+
+        // Files are done, close files.
+        fclose($geoipfilebuf);
+        gzclose($file);
+
+        $this->assertTrue(file_exists($geoipfile));
+
+        $CFG->geoip2file = $geoipfile;
+    }
+
+    /**
+     * Test the format of data returned in the iplookup_find_location function.
+     *
+     * @dataProvider ip_provider
+     * @param   string  $ip The IP to test
+     */
+    public function test_ip($ip) {
+        $this->setup_geoip2file();
+
+        // Note: The results we get from the iplookup tests are beyond our control.
+        // We used to check a specific IP to a known location, but these have become less reliable and change too
+        // frequently to be used for testing.
+
+        $this->assert_iplookup_result(\core\iplookup::lookup($ip));
+    }
+
+    /**
+     * Test the format of data returned in the iplookup_find_location function.
+     *
+     * @dataProvider ip_provider
+     * @param   string  $ip The IP to test
+     */
+    public function test_remote_api($ip) {
+        global $CFG;
+
+        $CFG->geoip2file = '';
+
+        // Note: The results we get from the iplookup tests are beyond our control.
+        // We used to check a specific IP to a known location, but these have become less reliable and change too
+        // frequently to be used for testing.
+
+        $this->assert_iplookup_result(\core\iplookup::lookup($ip));
+    }
+
+    /**
+     * Test that an invalid lookup address throws an exception.
+     */
+    public function test_invalid_remote_api() {
+        global $CFG;
+
+        $CFG->geoip2file = '';
+        $CFG->geoipremote = $CFG->wwwroot . '/index.php';
+
+        // Note: The results we get from the iplookup tests are beyond our control.
+        // We used to check a specific IP to a known location, but these have become less reliable and change too
+        // frequently to be used for testing.
+
+        $this->expectException('moodle_exception');
+        $this->expectExceptionMessage(get_string('cannotcontactgeoipserver', 'error', $CFG->geoipremote));
+        try {
+            // Note, this throws a debugging message
+            \core\iplookup::lookup('24.24.24.24');
+        } catch (\moodle_exception $e) {
+            $this->assertDebuggingCalledCount(1);
+            throw $e;
+        }
+    }
+
+    /**
+     * Data provider for IP lookup test.
+     *
+     * @return array
+     */
+    public function ip_provider() {
+        return [
+            'IPv4: Sample suggested by maxmind themselves' => ['24.24.24.24'],
+            'IPv4: github.com' =>  ['192.30.255.112'],
+            'IPv6: UCLA' => ['2607:f010:3fe:fff1::ff:fe00:25'],
+        ];
+    }
+
+    /**
+     * Assert that the data returned by iplookup was valid.
+     *
+     * @param   \core\iplookup  $data
+     */
+    protected function assert_iplookup_result(\core\iplookup $data) {
+        $this->assertInternalType('string', $data->get_city());
+        $this->assertInternalType('string', $data->get_country());
+        $this->assertInternalType('float', $data->get_latitude());
+        $this->assertInternalType('float', $data->get_longitude());
+    }
+}

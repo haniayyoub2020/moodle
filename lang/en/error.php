@@ -96,7 +96,7 @@ $string['cannotfindinfo'] = 'Cannot find info for: "{$a}"';
 $string['cannotfindlang'] = 'Cannot find "{$a}" language pack!';
 $string['cannotfindteacher'] = 'Cannot find teacher';
 $string['cannotfinduser'] = 'Cannot find user named "{$a}"';
-$string['cannotgeoplugin'] = 'Cannot connect to geoPlugin server at http://www.geoplugin.com, please check proxy settings or better install MaxMind GeoLite City data file';
+$string['cannotcontactgeoipserver'] = 'Cannot connect to the GeoIP server at {$a}. Please check your proxy settings or install the MaxMind GeoLite City data file.';
 $string['cannotgetblock'] = 'Could not retrieve blocks from the database';
 $string['cannotgetcats'] = 'Cannot get category record';
 $string['cannotgetdata'] = 'Cannot get data';
@@ -600,3 +600,5 @@ $string['alreadyloggedin'] = 'You are already logged in as {$a}, you need to log
 $string['youcannotdeletecategory'] = 'You cannot delete category \'{$a}\' because you can neither delete the contents, nor move them elsewhere.';
 $string['protected_cc_not_supported'] = 'Protected cartridges not supported.';
 
+// Deprecated.
+$string['cannotgeoplugin'] = 'Cannot connect to the geoplugin server at http://www.geoplugin.com, please check proxy settings or better install MaxMind GeoLite City data file';
