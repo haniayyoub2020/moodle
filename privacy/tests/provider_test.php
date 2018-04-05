@@ -95,6 +95,16 @@ class provider_testcase extends advanced_testcase {
     }
 
     /**
+     * Test that all providers implement some form of compliant provider.
+     *
+     * @dataProvider    get_component_list
+     */
+    public function test_all_providers($component, $classname) {
+        $manager = new manager();
+        $this->assertTrue($manager->component_is_compliant($component));
+    }
+
+    /**
      * Checks whether the component's provider class implements the specified interface, either directly or as a grandchild.
      *
      * @param   string  $providerclass The name of the class to test.
