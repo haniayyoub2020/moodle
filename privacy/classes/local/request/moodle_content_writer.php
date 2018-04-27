@@ -241,7 +241,7 @@ class moodle_content_writer implements content_writer {
         $path = [];
         $contexts = array_reverse($this->context->get_parent_contexts(true));
         foreach ($contexts as $context) {
-            $path[] = clean_param($context->get_context_name(), PARAM_FILE);
+            $path[] = shorten_filename(clean_param($context->get_context_name(), PARAM_FILE));
         }
 
         return $path;
@@ -255,6 +255,9 @@ class moodle_content_writer implements content_writer {
      * @return  string                      The fully-qualfiied file path.
      */
     protected function get_path(array $subcontext, string $name) : string {
+        $subcontext = shorten_filename_from_array($subcontext);
+        $name = shorten_filename($name);
+
         // Combine the context path, and the subcontext data.
         $path = array_merge(
             $this->get_context_path(),
