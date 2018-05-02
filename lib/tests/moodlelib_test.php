@@ -1007,6 +1007,29 @@ class core_moodlelib_testcase extends advanced_testcase {
                 shorten_text($text, 1));
     }
 
+    public function test_shorten_filename() {
+        // Test filename that contains more than 100 characters.
+        $filename = 'sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem';
+        $this->assertSame('sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium tot',
+            shorten_filename($filename));
+        // Filename contains extension.
+        $this->assertSame('sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium tot.zip',
+            shorten_filename($filename . '.zip'));
+        // Limit filename to 50 chars.
+        $this->assertSame('sed ut perspiciatis unde omnis iste natus error si',
+            shorten_filename($filename, 50));
+        $this->assertSame('sed ut perspiciatis unde omnis iste natus error si.zip',
+            shorten_filename($filename . '.zip', 50));
+
+        // Test filename that contains less than 100 characters.
+        $filename = 'sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque';
+        $this->assertSame('sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque',
+            shorten_filename($filename));
+        // Filename contains extension.
+        $this->assertSame('sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.zip',
+            shorten_filename($filename . '.zip'));
+    }
+
     public function test_usergetdate() {
         global $USER, $CFG, $DB;
         $this->resetAfterTest();

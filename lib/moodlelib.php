@@ -115,8 +115,8 @@ define('PARAM_CAPABILITY',   'capability');
 
 /**
  * PARAM_CLEANHTML - cleans submitted HTML code. Note that you almost never want
- * to use this. The normal mode of operation is to use PARAM_RAW when recieving
- * the input (required/optional_param or formslib) and then sanitse the HTML
+ * to use this. The normal mode of operation is to use PARAM_RAW when receiving
+ * the input (required/optional_param or formslib) and then sanitise the HTML
  * using format_text on output. This is for the rare cases when you want to
  * sanitise the HTML on input. This cleaning may also fix xhtml strictness.
  */
@@ -438,6 +438,11 @@ define('FEATURE_SHOW_DESCRIPTION', 'showdescription');
 
 /** True if module uses the question bank */
 define('FEATURE_USES_QUESTIONS', 'usesquestions');
+
+/**
+ * Maximum filename char size
+ */
+define('MAX_FILENAME_SIZE', 100);
 
 /** Unspecified module archetype */
 define('MOD_ARCHETYPE_OTHER', 0);
@@ -2695,24 +2700,24 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
         return;
     }
 
+    // Scripts have a chance to declare that $USER->policyagreed should not be checked.
+    // This is mostly for places where users are actually accepting the policies, to avoid the redirect loop.
+    if (!defined('NO_SITEPOLICY_CHECK')) {
+        define('NO_SITEPOLICY_CHECK', false);
+    }
+
     // Check that the user has agreed to a site policy if there is one - do not test in case of admins.
-    if (!$USER->policyagreed and !is_siteadmin()) {
-        if (!empty($CFG->sitepolicy) and !isguestuser()) {
+    // Do not test if the script explicitly asked for skipping the site policies check.
+    if (!$USER->policyagreed && !is_siteadmin() && !NO_SITEPOLICY_CHECK) {
+        $manager = new \core_privacy\local\sitepolicy\manager();
+        if ($policyurl = $manager->get_redirect_url(isguestuser())) {
             if ($preventredirect) {
-                throw new moodle_exception('sitepolicynotagreed', 'error', '', $CFG->sitepolicy);
+                throw new moodle_exception('sitepolicynotagreed', 'error', '', $policyurl->out());
             }
             if ($setwantsurltome) {
                 $SESSION->wantsurl = qualified_me();
             }
-            redirect($CFG->wwwroot .'/user/policy.php');
-        } else if (!empty($CFG->sitepolicyguest) and isguestuser()) {
-            if ($preventredirect) {
-                throw new moodle_exception('sitepolicynotagreed', 'error', '', $CFG->sitepolicyguest);
-            }
-            if ($setwantsurltome) {
-                $SESSION->wantsurl = qualified_me();
-            }
-            redirect($CFG->wwwroot .'/user/policy.php');
+            redirect($policyurl);
         }
     }
 
@@ -6793,7 +6798,6 @@ function clean_filename($string) {
     return clean_param($string, PARAM_FILE);
 }
 
-
 // STRING TRANSLATION.
 
 /**
@@ -8238,6 +8242,32 @@ function shorten_text($text, $ideal=30, $exact = false, $ending='...') {
     return $truncate;
 }
 
+/**
+ * Shortens a given filename by removing characters positioned after the ideal string length.
+ * When the filename is too long, the file cannot be created on the filesystem due to exceeding max byte size.
+ * Limiting the filename to a certain size (considering multibyte characters) will prevent this.
+ *
+ * @param string $filename file name
+ * @param int $length ideal string length
+ * @return string $shortened shortened file name
+ */
+function shorten_filename($filename, $length = MAX_FILENAME_SIZE) {
+    $shortened = $filename;
+    // Extract a part of the filename if it's char size exceeds the ideal string length.
+    if (core_text::strlen($filename) > $length) {
+        // Exclude extension if present in filename.
+        $mimetypes = get_mimetypes_array();
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        if ($extension && !empty($mimetypes[$extension])) {
+            $basename = pathinfo($filename, PATHINFO_FILENAME);
+            $shortened = core_text::substr($basename, 0, $length);
+            $shortened .= '.' . $extension;
+        } else {
+            $shortened = core_text::substr($filename, 0, $length);
+        }
+    }
+    return $shortened;
+}
 
 /**
  * Given dates in seconds, how many weeks is the date from startdate

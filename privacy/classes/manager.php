@@ -24,7 +24,6 @@
 namespace core_privacy;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\contextlist_collection;
-use core_privacy\local\request\deletion_criteria;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -133,6 +132,20 @@ class manager {
     }
 
     /**
+     * Retrieve the reason for implementing the null provider interface.
+     *
+     * @param  string $component Frankenstyle component name.
+     * @return string The key to retrieve the language string for the null provider reason.
+     */
+    public function get_null_provider_reason(string $component) : string {
+        if ($this->component_implements($component, \core_privacy\local\metadata\null_provider::class)) {
+            return $this->get_provider_classname($component)::get_reason();
+        } else {
+            throw new \coding_exception('Call to undefined method', 'Please only call this method on a null provider.');
+        }
+    }
+
+    /**
      * Get the privacy metadata for all components.
      *
      * @return collection[] The array of collection objects, indexed by frankenstyle component name.
@@ -231,7 +244,7 @@ class manager {
      * @throws \moodle_exception if the contextlist_collection doesn't contain all approved_contextlist items, or if the component
      * for an approved_contextlist isn't a core provider.
      */
-    public function delete_user_data(contextlist_collection $contextlistcollection) {
+    public function delete_data_for_user(contextlist_collection $contextlistcollection) {
         // Delete the data.
         foreach ($contextlistcollection as $approvedcontextlist) {
             if (!$approvedcontextlist instanceof \core_privacy\local\request\approved_contextlist) {
@@ -242,30 +255,30 @@ class manager {
                 if (count($approvedcontextlist)) {
                     // The component knows about data that it has.
                     // Have it delete its own data.
-                    $this->get_provider_classname($approvedcontextlist->get_component())::delete_user_data($approvedcontextlist);
+                    $this->get_provider_classname($approvedcontextlist->get_component())::delete_data_for_user($approvedcontextlist);
                 }
             }
 
             // Delete any shared user data it doesn't know about.
-            local\request\helper::delete_user_data($approvedcontextlist);
+            local\request\helper::delete_data_for_user($approvedcontextlist);
         }
     }
 
     /**
-     * Delete user data for all users using the specified deletion_criteria.
+     * Delete all use data which matches the specified deletion criteria.
      *
-     * @param deletion_criteria $criteria the criteria object dictating what contexts will be deleted.
+     * @param   context         $context   The specific context to delete data for.
      */
-    public function delete_for_context(deletion_criteria $criteria) {
+    public function delete_data_for_all_users_in_context(\context $context) {
         foreach ($this->get_component_list() as $component) {
             if ($this->component_implements($component, \core_privacy\local\request\core_user_data_provider::class)) {
                 // This component knows about specific data that it owns.
                 // Have it delete all of that user data for the context.
-                $this->get_provider_classname($component)::delete_for_context($criteria);
+                $this->get_provider_classname($component)::delete_data_for_all_users_in_context($context);
             }
 
             // Delete any shared user data it doesn't know about.
-            local\request\helper::delete_for_context($component, $criteria);
+            local\request\helper::delete_data_for_all_users_in_context($component, $context);
         }
     }
 
@@ -285,22 +298,9 @@ class manager {
      * @return array the array of frankenstyle component names.
      */
     protected function get_component_list() {
-        $components = [];
-        // Get all plugins.
-        $plugintypes = \core_component::get_plugin_types();
-        foreach ($plugintypes as $plugintype => $typedir) {
-            $plugins = \core_component::get_plugin_list($plugintype);
-            foreach ($plugins as $pluginname => $plugindir) {
-                $components[] = $plugintype . '_' . $pluginname;
-            }
-        }
-        // Get all subsystems.
-        foreach (\core_component::get_core_subsystems() as $name => $path) {
-            if (isset($path)) {
-                $components[] = 'core_' . $name;
-            }
-        }
-        return $components;
+        return array_keys(array_reduce(\core_component::get_component_list(), function($carry, $item) {
+            return array_merge($carry, $item);
+        }, []));
     }
 
     /**
@@ -338,5 +338,38 @@ class manager {
             return $rc->implementsInterface($interface);
         }
         return false;
+    }
+
+    /**
+     * Call the named method with the specified params on any plugintype implementing the relevant interface.
+     *
+     * @param   string  $plugintype The plugingtype to check
+     * @param   string  $interface The interface to implement
+     * @param   string  $methodname The method to call
+     * @param   array   $params The params to call
+     */
+    public static function plugintype_class_callback(string $plugintype, string $interface, string $methodname, array $params) {
+        $components = \core_component::get_plugin_list($plugintype);
+        foreach (array_keys($components) as $component) {
+            static::component_class_callback("{$plugintype}_{$component}", $interface, $methodname, $params);
+        }
+    }
+
+    /**
+     * Call the named method with the specified params on the supplied component if it implements the relevant interface on its provider.
+     *
+     * @param   string  $component The component to call
+     * @param   string  $interface The interface to implement
+     * @param   string  $methodname The method to call
+     * @param   array   $params The params to call
+     * @return  mixed
+     */
+    public static function component_class_callback(string $component, string $interface, string $methodname, array $params) {
+        $classname = static::get_provider_classname_for_component($component);
+        if (class_exists($classname) && is_subclass_of($classname, $interface)) {
+            return component_class_callback($classname, $methodname, $params);
+        }
+
+        return null;
     }
 }
