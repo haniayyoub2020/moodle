@@ -52,6 +52,8 @@ class oci_native_moodle_database extends moodle_database {
     /** @var To store unique_session_id. Needed for temp tables unique naming.*/
     private $unique_session_id;
 
+    private $allowreconnection = true;
+
     /**
      * Detects if all needed PHP stuff installed.
      * Note: can be used before connect()
@@ -216,6 +218,10 @@ class oci_native_moodle_database extends moodle_database {
      * Start a new connection.
      */
     protected function reconnect() {
+        if (!$this->allowreconnection) {
+            return;
+        }
+
         if ($this->oci) {
             oci_close($this->oci);
             $this->oci = null;
@@ -944,6 +950,14 @@ class oci_native_moodle_database extends moodle_database {
         $this->reconnect();
         $this->reset_caches($tablenames);
         return true;
+    }
+
+    public function prevent_reconnection() {
+        $this->allowreconnection = false;
+    }
+
+    public function stop_preventing_reconnection() {
+        $this->allowreconnection = true;
     }
 
     protected function bind_params($stmt, array &$params=null, $tablename=null, array &$descriptors = null) {

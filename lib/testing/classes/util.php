@@ -573,8 +573,10 @@ abstract class testing_util {
                     // reset as fast as possible - alternatively we could use http://stackoverflow.com/questions/51470/how-do-i-reset-a-sequence-in-oracle
                     $seqname = $sequences[$table];
                     $cachesize = $DB->get_manager()->generator->sequence_cache_size;
+                    $DB->prevent_reconnection();
                     $DB->change_database_structure("DROP SEQUENCE $seqname");
                     $DB->change_database_structure("CREATE SEQUENCE $seqname START WITH $nextid INCREMENT BY 1 NOMAXVALUE CACHE $cachesize");
+                    $DB->stop_preventing_reconnection();
                 }
             }
 
