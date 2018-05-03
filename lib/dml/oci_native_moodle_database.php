@@ -158,37 +158,7 @@ class oci_native_moodle_database extends moodle_database {
         $this->store_settings($dbhost, $dbuser, $dbpass, $dbname, $prefix, $dboptions);
         unset($this->dboptions['dbsocket']);
 
-        // NOTE: use of ', ", / and \ is very problematic, even native oracle tools seem to have
-        //       problems with these, so just forget them and do not report problems into tracker...
-
-        if (empty($this->dbhost)) {
-            // old style full address (TNS)
-            $dbstring = $this->dbname;
-        } else {
-            if (empty($this->dboptions['dbport'])) {
-                $this->dboptions['dbport'] = 1521;
-            }
-            $dbstring = '//'.$this->dbhost.':'.$this->dboptions['dbport'].'/'.$this->dbname;
-        }
-
-        ob_start();
-        if (empty($this->dboptions['dbpersist'])) {
-            $this->oci = oci_new_connect($this->dbuser, $this->dbpass, $dbstring, 'AL32UTF8');
-        } else {
-            $this->oci = oci_pconnect($this->dbuser, $this->dbpass, $dbstring, 'AL32UTF8');
-        }
-        $dberr = ob_get_contents();
-        ob_end_clean();
-
-
-        if ($this->oci === false) {
-            $this->oci = null;
-            $e = oci_error();
-            if (isset($e['message'])) {
-                $dberr = $e['message'];
-            }
-            throw new dml_connection_exception($dberr);
-        }
+        $this->_connect();
 
         // Disable logging until we are fully setup.
         $this->query_log_prevent();
@@ -251,14 +221,41 @@ class oci_native_moodle_database extends moodle_database {
             $this->oci = null;
         }
 
-        $this->connect(
-            $this->dbhost,
-            $this->dbuser,
-            $this->dbpass,
-            $this->dbname,
-            $this->prefix,
-            $this->dboptions
-        );
+        $this->_connect();
+    }
+
+    protected function _connect() {
+        // NOTE: use of ', ", / and \ is very problematic, even native oracle tools seem to have
+        //       problems with these, so just forget them and do not report problems into tracker...
+
+        if (empty($this->dbhost)) {
+            // old style full address (TNS)
+            $dbstring = $this->dbname;
+        } else {
+            if (empty($this->dboptions['dbport'])) {
+                $this->dboptions['dbport'] = 1521;
+            }
+            $dbstring = '//'.$this->dbhost.':'.$this->dboptions['dbport'].'/'.$this->dbname;
+        }
+
+        ob_start();
+        if (empty($this->dboptions['dbpersist'])) {
+            $this->oci = oci_new_connect($this->dbuser, $this->dbpass, $dbstring, 'AL32UTF8');
+        } else {
+            $this->oci = oci_pconnect($this->dbuser, $this->dbpass, $dbstring, 'AL32UTF8');
+        }
+        $dberr = ob_get_contents();
+        ob_end_clean();
+
+
+        if ($this->oci === false) {
+            $this->oci = null;
+            $e = oci_error();
+            if (isset($e['message'])) {
+                $dberr = $e['message'];
+            }
+            throw new dml_connection_exception($dberr);
+        }
     }
 
 
