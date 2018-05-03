@@ -221,6 +221,7 @@ class oci_native_moodle_database extends moodle_database {
         if (!$this->allowreconnection) {
             return;
         }
+        debugging("Issuing a reconnect");
 
         if ($this->oci) {
             oci_close($this->oci);
