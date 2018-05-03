@@ -132,6 +132,7 @@ class oci_native_moodle_database extends moodle_database {
      * @throws dml_connection_exception if error
      */
     public function connect($dbhost, $dbuser, $dbpass, $dbname, $prefix, array $dboptions=null) {
+        ini_set('oci8.statement_cache_size', 20);
         if ($prefix == '' and !$this->external) {
             //Enforce prefixes for everybody but mysql
             throw new dml_exception('prefixcannotbeempty', $this->get_dbfamily());
@@ -239,6 +240,25 @@ class oci_native_moodle_database extends moodle_database {
             oci_close($this->oci);
             $this->oci = null;
         }
+    }
+
+    /**
+     * Start a new connection.
+     */
+    protected function reconnect() {
+        if ($this->oci) {
+            oci_close($this->oci);
+            $this->oci = null;
+        }
+
+        $this->connect(
+            $this->dbhost,
+            $this->dbuser,
+            $this->dbpass,
+            $this->dbname,
+            $this->prefix,
+            $this->dboptions
+        );
     }
 
 
@@ -924,6 +944,7 @@ class oci_native_moodle_database extends moodle_database {
             throw $e;
         }
 
+        $this->reconnect();
         $this->reset_caches($tablenames);
         return true;
     }
