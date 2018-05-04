@@ -49,6 +49,11 @@ class block_edit_form extends moodleform {
      * @var moodle_page
      */
     public $page;
+    /**
+     * Data that can not be modified in this form but we still want to return it in get_data()
+     * @var array
+     */
+    protected $fixeddata = [];
 
     function __construct($actionurl, $block, $page) {
         global $CFG;
@@ -92,8 +97,7 @@ class block_edit_form extends moodleform {
         }
 
         $parentcontext = context::instance_by_id($this->block->instance->parentcontextid);
-        $mform->addElement('hidden', 'bui_parentcontextid', $parentcontext->id);
-        $mform->setType('bui_parentcontextid', PARAM_INT);
+        $this->fixeddata['bui_parentcontextid'] = $parentcontext->id;
 
         $mform->addElement('static', 'bui_homecontext', get_string('createdat', 'block'), $parentcontext->get_context_name());
         $mform->addHelpButton('bui_homecontext', 'createdat', 'block');
@@ -118,8 +122,7 @@ class block_edit_form extends moodleform {
         $editingatfrontpage = $ctxconditions && $pageconditions;
 
         // Let the form to know about that, can be useful later
-        $mform->addElement('hidden', 'bui_editingatfrontpage', (int)$editingatfrontpage);
-        $mform->setType('bui_editingatfrontpage', PARAM_INT);
+        $this->fixeddata['bui_editingatfrontpage'] = (int)$editingatfrontpage;
 
         // Front page, show the page-contexts element and set $pagetypelist to 'any page' (*)
         // as unique option. Processign the form will do any change if needed
@@ -135,16 +138,16 @@ class block_edit_form extends moodleform {
         // Any other system context block, hide the page-contexts element,
         // it's always system-wide BUI_CONTEXTS_ENTIRE_SITE
         } else if ($parentcontext->contextlevel == CONTEXT_SYSTEM) {
-            $mform->addElement('hidden', 'bui_contexts', BUI_CONTEXTS_ENTIRE_SITE);
+            $this->fixeddata['bui_contexts'] = BUI_CONTEXTS_ENTIRE_SITE;
 
         } else if ($parentcontext->contextlevel == CONTEXT_COURSE) {
             // 0 means display on current context only, not child contexts
             // but if course managers select mod-* as pagetype patterns, block system will overwrite this option
             // to 1 (display on current context and child contexts)
-            $mform->addElement('hidden', 'bui_contexts', BUI_CONTEXTS_CURRENT);
+            $this->fixeddata['bui_contexts'] = BUI_CONTEXTS_CURRENT;
         } else if ($parentcontext->contextlevel == CONTEXT_MODULE or $parentcontext->contextlevel == CONTEXT_USER) {
             // module context doesn't have child contexts, so display in current context only
-            $mform->addElement('hidden', 'bui_contexts', BUI_CONTEXTS_CURRENT);
+            $this->fixeddata['bui_contexts'] = BUI_CONTEXTS_CURRENT;
         } else {
             $parentcontextname = $parentcontext->get_context_name();
             $contextoptions[BUI_CONTEXTS_CURRENT]      = get_string('showoncontextonly', 'block', $parentcontextname);
@@ -181,8 +184,7 @@ class block_edit_form extends moodleform {
         } else {
             $values = array_keys($pagetypelist);
             $value = array_pop($values);
-            $mform->addElement('hidden', 'bui_pagetypepattern', $value);
-            $mform->setType('bui_pagetypepattern', PARAM_RAW);
+            $this->fixeddata['bui_pagetypepattern'] = $value;
             // Now we are really hiding a lot (both page-contexts and page-type-patterns),
             // specially in some systemcontext pages having only one option (my/user...)
             // so, until it's decided if we are going to add the 'bring-back' pattern to
@@ -206,8 +208,7 @@ class block_edit_form extends moodleform {
 
         if ($this->page->subpage) {
             if ($parentcontext->contextlevel == CONTEXT_USER) {
-                $mform->addElement('hidden', 'bui_subpagepattern', '%@NULL@%');
-                $mform->setType('bui_subpagepattern', PARAM_RAW);
+                $this->fixeddata['bui_subpagepattern'] = '%@NULL@%';
             } else {
                 $subpageoptions = array(
                     '%@NULL@%' => get_string('anypagematchingtheabove', 'block'),
@@ -290,5 +291,20 @@ class block_edit_form extends moodleform {
      */
     protected function specific_definition($mform) {
         // By default, do nothing.
+    }
+
+    /**
+     * Return submitted data if properly submitted or returns NULL if validation fails or
+     * if there is no submitted data.
+     *
+     * note: $slashed param removed
+     *
+     * @return object submitted data; NULL if not valid or not submitted or cancelled
+     */
+    public function get_data() {
+        if (($data = parent::get_data()) && $this->fixeddata) {
+            return (object)($this->fixeddata + (array)$data);
+        }
+        return $data;
     }
 }
