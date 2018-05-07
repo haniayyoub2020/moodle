@@ -194,15 +194,17 @@ class provider implements
                         // No need to do it again here.
                         list($comment, $commentformat, $step) = $qa->get_manual_comment();
 
-                        $comment = writer::with_context($context)
-                            ->rewrite_pluginfile_urls(
-                                $questionnocontext,
-                                'question',
-                                'response_bf_comment',
-                                $step->get_id(),
-                                $comment
-                            );
-                        $data->comment = $behaviour->format_comment($comment, $commentformat);
+                        if (null !== $step) {
+                            $comment = writer::with_context($context)
+                                ->rewrite_pluginfile_urls(
+                                    $questionnocontext,
+                                    'question',
+                                    'response_bf_comment',
+                                    $step->get_id(),
+                                    $comment
+                                );
+                            $data->comment = $behaviour->format_comment($comment, $commentformat);
+                        }
                     }
                 }
 
