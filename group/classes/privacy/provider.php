@@ -147,6 +147,9 @@ class provider implements
         }
 
         $DB->delete_records_select('groups_members', $select, $params);
+
+        // Purge the group and grouping cache for users.
+        \cache_helper::purge_by_definition('core', 'user_group_groupings');
     }
 
     /**
@@ -189,6 +192,9 @@ class provider implements
         }
 
         $DB->delete_records_select('groups_members', $select, $params);
+
+        // Invalidate the group and grouping cache for the user.
+        \cache_helper::invalidate_by_definition('core', 'user_group_groupings', array(), array($userid));
     }
 
     /**
