@@ -130,16 +130,12 @@ class provider implements
             return;
         }
 
-        $groupids = $DB->get_fieldset_select('groups', 'id', 'courseid = ?', [$context->instanceid]);
-
-        if (!$groupids) {
+        if (!$DB->record_exists('groups', ['courseid' => $context->instanceid])) {
             return;
         }
 
-        list($insql, $inparams) = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
-
-        $select = "component = :component AND groupid $insql";
-        $params = ['component' => $component] + $inparams;
+        $select = "component = :component AND groupid IN (SELECT g.id FROM {groups} g WHERE courseid = :courseid)";
+        $params = ['component' => $component, 'courseid' => $context->instanceid];
 
         if ($itemid) {
             $select .= ' AND itemid = :itemid';
@@ -172,19 +168,17 @@ class provider implements
 
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
         $contextparams += ['contextcourse' => CONTEXT_COURSE];
-        $groupids = $DB->get_fieldset_sql("SELECT g.id
-                                             FROM {groups} g
-                                             JOIN {context} ctx ON g.courseid = ctx.instanceid AND ctx.contextlevel = :contextcourse
-                                            WHERE ctx.id $contextsql", $contextparams);
+        $groupselect = "SELECT g.id
+                         FROM {groups} g
+                         JOIN {context} ctx ON g.courseid = ctx.instanceid AND ctx.contextlevel = :contextcourse
+                        WHERE ctx.id $contextsql";
 
-        if (!$groupids) {
+        if (!$DB->record_exists_sql($groupselect, $contextparams)) {
             return;
         }
 
-        list($insql, $inparams) = $DB->get_in_or_equal($groupids, SQL_PARAMS_NAMED);
-
-        $select = "userid = :userid AND component = :component AND groupid $insql";
-        $params = ['userid' => $userid, 'component' => $component] + $inparams;
+        $select = "userid = :userid AND component = :component AND groupid IN ({$groupselect})";
+        $params = ['userid' => $userid, 'component' => $component] + $contextparams;
 
         if ($itemid) {
             $select .= ' AND itemid = :itemid';
