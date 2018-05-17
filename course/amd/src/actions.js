@@ -169,7 +169,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/notification', 'core/str'
             // Open action menu if the original element had data-keepopen.
             if (openmenu) {
                 // We must use YUI click simulate here so the toggle works in Clean theme. This toggle is not
-                // needed in Boost because we use standard bootstrapbase action menu.
+                // needed in Boost because we use standard bootstrap action menu.
                 var toggle = Y.one('#' + elementid + ' ' + SELECTOR.MENU).one(SELECTOR.TOGGLE);
                 if (toggle && toggle.simulate) {
                     toggle.simulate('click');

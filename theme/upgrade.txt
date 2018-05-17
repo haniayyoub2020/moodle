@@ -1,6 +1,11 @@
 This files describes API changes in /theme/* themes,
 information provided here is intended especially for theme designer.
 
+=== 3.6 ===
+
+* The bootstrapbase, clean, and more themes have been removed from core.
+  Themes which depend on these themes should either upgrade, or ensure that they are downloaded from the plugin repository.
+
 === 3.4 ===
 
 * There was a mustache template login.mustache in /lib/templates/ rendering the login form
