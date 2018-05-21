@@ -28,10 +28,11 @@
 
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
-use Behat\Mink\Exception\DriverException,
-    Behat\Mink\Exception\ExpectationException as ExpectationException,
-    Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException,
-    Behat\Mink\Element\NodeElement as NodeElement;
+use Behat\Mink\Exception\DriverException;
+use Behat\Mink\Exception\ExpectationException;
+use Behat\Mink\Exception\ElementNotFoundException;
+use Behat\Mink\Element\NodeElement;
+use Behat\Mink\Session;
 
 /**
  * Steps definitions base class.
@@ -710,8 +711,6 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * Waits for all the JS to be loaded.
      *
      * @throws \Exception
-     * @throws NoSuchWindow
-     * @throws UnknownError
      * @return bool True or false depending whether all the JS is loaded or not.
      */
     public function wait_for_pending_js() {
@@ -720,12 +719,22 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             return;
         }
 
+        return static::wait_for_pending_js_in_session($this->getSession());
+    }
+
+    /**
+     * Waits for all the JS to be loaded.
+     *
+     * @param   Session $session The Mink Session where JS can be run
+     * @return  bool True or false depending whether all the JS is loaded or not.
+     */
+    public static function wait_for_pending_js_in_session(Session $session) {
         // We don't use behat_base::spin() here as we don't want to end up with an exception
         // if the page & JSs don't finish loading properly.
         for ($i = 0; $i < self::EXTENDED_TIMEOUT * 10; $i++) {
             $pending = '';
             try {
-                $jscode = '
+                $jscode = trim(preg_replace('/\s+/', ' ', '
                     return (function() {
                         if (typeof M === "undefined") {
                             if (document.readyState === "complete") {
@@ -740,8 +749,8 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
                         } else {
                             return "incomplete"
                         }
-                    }());';
-                $pending = $this->getSession()->evaluateScript($jscode);
+                    }());'));
+                $pending = $session->evaluateScript($jscode);
             } catch (NoSuchWindow $nsw) {
                 // We catch an exception here, in case we just closed the window we were interacting with.
                 // No javascript is running if there is no window right?

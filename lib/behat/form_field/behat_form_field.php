@@ -173,6 +173,15 @@ class behat_form_field {
     }
 
     /**
+     * Waits for all the JS activity to be completed.
+     *
+     * @return bool Whether any JS is still pending completion.
+     */
+    protected function wait_for_pending_js() {
+        behat_base::wait_for_pending_js_in_session($this->session);
+    }
+
+    /**
      * Gets the field internal id used by selenium wire protocol.
      *
      * Only available when running_javascript().

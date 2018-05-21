@@ -18,6 +18,7 @@ Feature: Manage tokens
     And I follow "Add"
     And I set the field "User" to "Joe Bloggs"
     And I set the field "IP restriction" to "127.0.0.1"
+    And I set the field "Service" to "Moodle mobile web service"
     When I press "Save changes"
     Then I should see "Joe Bloggs"
     And I should see "127.0.0.1"
