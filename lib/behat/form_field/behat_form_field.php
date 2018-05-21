@@ -166,10 +166,24 @@ class behat_form_field {
     /**
      * Returns whether the scenario is running in a browser that can run Javascript or not.
      *
-     * @return bool
+     * @return  bool
      */
     protected function running_javascript() {
         return get_class($this->session->getDriver()) !== 'Behat\Mink\Driver\GoutteDriver';
+    }
+
+    /**
+     * Waits for all the JS activity to be completed.
+     *
+     * @return  bool Whether any JS is still pending completion.
+     */
+    protected function wait_for_pending_js() {
+        if (!$this->running_javascript()) {
+            // JS is not available therefore there is nothing to wait for.
+            return false;
+        }
+
+        return behat_base::wait_for_pending_js_in_session($this->session);
     }
 
     /**
