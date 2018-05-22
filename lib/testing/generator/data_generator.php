@@ -1163,4 +1163,23 @@ EOD;
 
         return $event->properties();
     }
+
+    /**
+     * Create a new user, and enrol them in the specified course as the supplied role.
+     *
+     * @param   \stdClass   $course The course to enrol in
+     * @param   string      $role The role to give within the course
+     * @param   \stdClass   $userparams User parameters
+     * @return  \stdClass   The created user
+     */
+    public function create_and_enrol($course, $role = 'student', $userparams = null) {
+        global $DB;
+
+        $user = $this->create_user($userparams);
+        $roleid = $DB->get_field('role', 'id', ['shortname' => $role ]);
+
+        $this->enrol_user($user->id, $course->id, $roleid);
+
+        return $user;
+    }
 }
