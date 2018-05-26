@@ -226,6 +226,7 @@ class behat_hooks extends behat_base {
      */
     public static function after_feature(AfterFeatureScope $scope) {
         if (!defined('BEHAT_FEATURE_TIMING_FILE')) {
+            error_log('No feature file defined :( ' . __LINE__);
             return;
         }
         $file = $scope->getFeature()->getFile();
@@ -234,6 +235,7 @@ class behat_hooks extends behat_base {
         if (self::$timings[$file] < 1) {
             unset(self::$timings[$file]);
         }
+        file_put_contents('/shared/foo.json', json_encode(self::$timings, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -244,6 +246,7 @@ class behat_hooks extends behat_base {
      */
     public static function after_suite(AfterSuiteScope $scope) {
         if (!defined('BEHAT_FEATURE_TIMING_FILE')) {
+            error_log('No feature file defined :( ' . __LINE__);
             return;
         }
         $realroot = realpath(__DIR__.'/../../../').'/';
