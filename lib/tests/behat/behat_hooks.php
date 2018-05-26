@@ -255,7 +255,8 @@ class behat_hooks extends behat_base {
             self::$timings[$new] = round($v, 1);
             unset(self::$timings[$k]);
         }
-        if ($existing = @json_decode(file_get_contents(BEHAT_FEATURE_TIMING_FILE), true)) {
+        file_put_contents('/shared/bar.json', json_encode(self::$timings, JSON_PRETTY_PRINT));
+        if ($existing = json_decode(file_get_contents(BEHAT_FEATURE_TIMING_FILE), true)) {
             self::$timings = array_merge($existing, self::$timings);
         }
         arsort(self::$timings);
