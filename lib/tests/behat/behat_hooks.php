@@ -256,7 +256,8 @@ class behat_hooks extends behat_base {
             self::$timings = array_merge($existing, self::$timings);
         }
         arsort(self::$timings);
-        @file_put_contents(BEHAT_FEATURE_TIMING_FILE, json_encode(self::$timings, JSON_PRETTY_PRINT));
+        error_log("Writing to " . BEHAT_FEATURE_TIMING_FILE);
+        file_put_contents(BEHAT_FEATURE_TIMING_FILE, json_encode(self::$timings, JSON_PRETTY_PRINT));
     }
 
     /**
