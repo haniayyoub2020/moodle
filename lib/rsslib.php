@@ -339,11 +339,7 @@ function rss_add_items($items) {
             $result .= rss_full_tag('pubDate',3,false,gmdate('D, d M Y H:i:s',$item->pubdate).' GMT');  # MDL-12563
             //Include the author if exists
             if (isset($item->author) && !empty($item->author)) {
-                //$result .= rss_full_tag('author',3,false,$item->author);
-                //We put it in the description instead because it's more important
-                //for moodle than most other feeds, and most rss software seems to ignore
-                //the author field ...
-                $item->description = get_string('byname','',$item->author).'. &nbsp;<p>'.$item->description.'</p>';
+                $result .= rss_full_tag('author', 3, false, $item->author);
             }
             $result .= rss_full_tag('description',3,false,$item->description);
             $result .= rss_full_tag('guid',3,false,$item->link,array('isPermaLink' => 'true'));
