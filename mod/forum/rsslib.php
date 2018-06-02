@@ -182,7 +182,7 @@ function forum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $forumsort = "d.timemodified DESC";
     $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
-    $userpicturefields = user_picture::fields('u', null, 'userid');
+    $userpicturefields = user_picture::fields('u', null, 'userid, email');
 
     $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid,
                    d.timestart, d.timeend, $userpicturefields
@@ -232,6 +232,7 @@ function forum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                  d.timestart,
                  d.timeend,
                  u.id AS userid,
+                 u.email,
                  $usernamefields,
                  p.subject AS postsubject,
                  p.message AS postmessage,
@@ -360,7 +361,14 @@ function forum_rss_feed_contents($forum, $sql, $params, $context) {
                     //we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
                     $item->title = format_string($forum->name.' '.userdate($rec->postcreated,get_string('strftimedatetimeshort', 'langconfig')));
                 }
-                $item->author = fullname($rec);
+
+                $extrafields = get_extra_user_fields($context);
+                if (false !== array_search('email', $extrafields)) {
+                    $item->author = sprintf("%s (%s)", $rec->email, fullname($rec));
+                } else {
+                    $item->author = fullname($rec);
+                }
+
                 $message = file_rewrite_pluginfile_urls($rec->postmessage, 'pluginfile.php', $context->id,
                         'mod_forum', 'post', $rec->postid);
                 $formatoptions->trusted = $rec->posttrust;
