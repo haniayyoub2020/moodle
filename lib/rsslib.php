@@ -333,17 +333,17 @@ function rss_add_items($items) {
                     $result .= rss_full_tag('category', 3, false, $tag, $attributes);
                 }
             }
-            $result .= rss_full_tag('title',3,false,strip_tags($item->title));
-            $result .= rss_full_tag('link',3,false,$item->link);
+            $result .= rss_full_tag('title', 3, false, strip_tags($item->title));
+            $result .= rss_full_tag('link', 3, false, $item->link);
             $result .= rss_add_enclosures($item);
-            $result .= rss_full_tag('pubDate',3,false,gmdate('D, d M Y H:i:s',$item->pubdate).' GMT');  # MDL-12563
+            $result .= rss_full_tag('pubDate', 3, false, gmdate('D, d M Y H:i:s', $item->pubdate).' GMT');  # MDL-12563
             //Include the author if exists
             if (isset($item->author) && !empty($item->author)) {
                 $result .= rss_full_tag('author', 3, false, $item->author);
             }
-            $result .= rss_full_tag('description',3,false,$item->description);
-            $result .= rss_full_tag('guid',3,false,$item->link,array('isPermaLink' => 'true'));
-            $result .= rss_end_tag('item',2,true);
+            $result .= rss_full_tag('description', 3, false, $item->description);
+            $result .= rss_full_tag('guid', 3, false, $item->link, ['isPermaLink' => 'true']);
+            $result .= rss_end_tag('item', 2, true);
 
         }
     } else {
