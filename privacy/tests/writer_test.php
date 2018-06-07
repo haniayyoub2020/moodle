@@ -84,6 +84,6 @@ class writer_test extends advanced_testcase {
 
         writer::export_user_preference('core_test', 'key', 'value', 'description');
 
-        $this->assertSame(\context_system::instance(), $writer->get_current_context());
+        $this->assertEquals(\context_system::instance(), $writer->get_current_context());
     }
 }

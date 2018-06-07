@@ -2658,10 +2658,6 @@ function xmldb_main_upgrade($oldversion) {
         $field = new xmldb_field('predictionsprocessor', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'timesplitting');
 
         // Conditionally launch add field predictionsprocessor.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
         // Main savepoint reached.
         upgrade_main_savepoint(true, 2018102900.00);
     }
@@ -2670,6 +2666,28 @@ function xmldb_main_upgrade($oldversion) {
         // Show course images by default.
         set_config('showcourseimages', 1, 'moodlecourse');
         upgrade_main_savepoint(true, 2018102900.01);
+    }
+
+    if ($oldversion < 2018110100.00) {
+        // Define field locked to be added to context.
+        $table = new xmldb_table('context');
+        $field = new xmldb_field('locked', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'depth');
+
+        // Conditionally launch add field locked.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field locked to be added to context_temp.
+        $table = new xmldb_table('context_temp');
+        $field = new xmldb_field('locked', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'depth');
+
+        // Conditionally launch add field locked.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_main_savepoint(true, 2018110100.00);
     }
 
     return true;
