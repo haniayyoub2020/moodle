@@ -834,6 +834,36 @@ class navigation_node implements renderable {
         }
         return $this->action;
     }
+
+    protected function add_context_locking_node($node, $context) {
+        global $CFG;
+        // Manage context locking.
+        if (!empty($CFG->contextlocking) && has_capability('moodle/site:managecontextlocks', $context)) {
+            $parentcontext = $context->get_parent_context();
+            if (empty($parentcontext) || !$parentcontext->locked) {
+                $lockstring = get_string('managecontextlock', 'admin');
+                if ($context->locked) {
+                    $lockicon = 'i/unlock';
+                } else {
+                    $lockicon = 'i/lock';
+                }
+                $node->add(
+                    $lockstring,
+                    new moodle_url(
+                        '/admin/lock.php',
+                        [
+                            'id' => $context->id,
+                        ]
+                    ),
+                    self::TYPE_SETTING,
+                    null,
+                    'contextlocking',
+                     new pix_icon($lockicon, '')
+                );
+            }
+        }
+
+    }
 }
 
 /**
@@ -4371,6 +4401,9 @@ class settings_navigation extends navigation_node {
                 null, 'gradebooksetup', new pix_icon('i/settings', ''));
         }
 
+        // Add the context locking node.
+        $this->add_context_locking_node($coursenode, $coursecontext);
+
         //  Add outcome if permitted
         if ($adminoptions->outcomes) {
             $url = new moodle_url('/grade/edit/outcome/course.php', array('id'=>$course->id));
@@ -4507,6 +4540,10 @@ class settings_navigation extends navigation_node {
             $url = new moodle_url('/'.$CFG->admin.'/roles/check.php', array('contextid'=>$this->page->cm->context->id));
             $modulenode->add(get_string('checkpermissions', 'role'), $url, self::TYPE_SETTING, null, 'rolecheck');
         }
+
+        // Add the context locking node.
+        $this->add_context_locking_node($modulenode, $this->page->cm->context);
+
         // Manage filters
         if (has_capability('moodle/filter:manage', $this->page->cm->context) && count(filter_get_available_in_context($this->page->cm->context))>0) {
             $url = new moodle_url('/filter/manage.php', array('contextid'=>$this->page->cm->context->id));
@@ -5087,6 +5124,9 @@ class settings_navigation extends navigation_node {
                 'checkpermissions', new pix_icon('i/checkpermissions', ''));
         }
 
+        // Add the context locking node.
+        $this->add_context_locking_node($blocknode, $this->context);
+
         return $blocknode;
     }
 
@@ -5148,6 +5188,9 @@ class settings_navigation extends navigation_node {
             $url = new moodle_url('/'.$CFG->admin.'/roles/check.php', array('contextid' => $catcontext->id));
             $categorynode->add(get_string('checkpermissions', 'role'), $url, self::TYPE_SETTING, null, 'checkpermissions', new pix_icon('i/checkpermissions', ''));
         }
+
+        // Add the context locking node.
+        $this->add_context_locking_node($categorynode, $catcontext);
 
         // Cohorts
         if (has_any_capability(array('moodle/cohort:view', 'moodle/cohort:manage'), $catcontext)) {

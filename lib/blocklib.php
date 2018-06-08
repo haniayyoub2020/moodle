@@ -1378,6 +1378,29 @@ class block_manager {
             );
         }
 
+        if (!empty($CFG->contextlocking) && has_capability('moodle/site:managecontextlocks', $block->context)) {
+            $parentcontext = $block->context->get_parent_context();
+            if (empty($parentcontext) || empty($parentcontext->locked)) {
+                $lockstring = get_string('managecontextlock', 'admin');
+                if ($block->context->locked) {
+                    $lockicon = 'i/unlock';
+                } else {
+                    $lockicon = 'i/lock';
+                }
+                $controls[] = new action_menu_link_secondary(
+                    new moodle_url(
+                        '/admin/lock.php',
+                        [
+                            'id' => $block->context->id,
+                        ]
+                    ),
+                    new pix_icon($lockicon, $lockstring, 'moodle', array('class' => 'iconsmall', 'title' => '')),
+                    $lockstring,
+                    ['class' => 'editing_lock']
+                );
+            }
+        }
+
         return $controls;
     }
 
