@@ -446,6 +446,7 @@ class mod_forum_external extends external_api {
         $forum = $DB->get_record('forum', array('id' => $forumid), '*', MUST_EXIST);
         $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+        $instance = \mod_forum\factory::get_forum_by_record($forum);
 
         // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
         $modcontext = context_module::instance($cm->id);
@@ -468,15 +469,14 @@ class mod_forum_external extends external_api {
                 }
             }
             // The forum function returns the replies for all the discussions in a given forum.
-            $replies = forum_count_discussion_replies($forumid, $sort, -1, $page, $perpage);
+            $replies = $instance->count_discussion_replies($sort, -1, $page, $perpage);
 
             foreach ($alldiscussions as $discussion) {
-
                 // This function checks for qanda forums.
                 // Note that the forum_get_discussions returns as id the post id, not the discussion id so we need to do this.
                 $discussionrec = clone $discussion;
                 $discussionrec->id = $discussion->discussion;
-                if (!forum_user_can_see_discussion($forum, $discussionrec, $modcontext)) {
+                if (!$instance->can_see_discussion($discussionrec)) {
                     $warning = array();
                     // Function forum_get_discussions returns forum_posts ids not forum_discussions ones.
                     $warning['item'] = 'post';
@@ -519,7 +519,7 @@ class mod_forum_external extends external_api {
                 $discussion->locked = forum_discussion_is_locked($forum, $discussion);
                 $discussion->canreply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-                if (forum_is_author_hidden($discussion, $forum)) {
+                if ($instance->is_author_hidden($discussion)) {
                     $discussion->userid = null;
                     $discussion->userfullname = null;
                     $discussion->userpictureurl = null;
@@ -1144,29 +1144,28 @@ class mod_forum_external extends external_api {
      */
     public static function can_add_discussion($forumid, $groupid = null) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
-        $params = self::validate_parameters(self::can_add_discussion_parameters(),
-                                            array(
-                                                'forumid' => $forumid,
-                                                'groupid' => $groupid,
-                                            ));
-        $warnings = array();
+        $params = self::validate_parameters(self::can_add_discussion_parameters(), [
+                'forumid' => $forumid,
+                'groupid' => $groupid,
+            ]);
+
+        $warnings = [];
 
         // Request and permission validation.
-        $forum = $DB->get_record('forum', array('id' => $params['forumid']), '*', MUST_EXIST);
-        list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
+        $record = $DB->get_record('forum', array('id' => $params['forumid']), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($record, 'forum');
 
-        $context = context_module::instance($cm->id);
-        self::validate_context($context);
+        $forum = \mod_forum\factory::get_forum_by_cm_info_with_record($cm, $record);
 
-        $status = forum_user_can_post_discussion($forum, $params['groupid'], -1, $cm, $context);
+        self::validate_context($forum->get_context());
 
         $result = array();
-        $result['status'] = $status;
-        $result['canpindiscussions'] = has_capability('mod/forum:pindiscussions', $context);
-        $result['cancreateattachment'] = forum_can_create_attachment($forum, $context);
+        $result['status'] = $forum->can_create_discussion($params['groupid']);
+        $result['canpindiscussions'] = has_capability('mod/forum:pindiscussions', $forum->get_context());
+        $result['cancreateattachment'] = $forum->can_create_attachment();
         $result['warnings'] = $warnings;
+
         return $result;
     }
 
@@ -1189,4 +1188,135 @@ class mod_forum_external extends external_api {
         );
     }
 
+    /**
+     * Set the subscription state.
+     *
+     * @param   int     $forumid
+     * @param   int     $discussionid
+     * @param   bool    $targetstate
+     * @param   bool    $includetext
+     * @return  \stdClass
+     */
+    public static function set_subscription_state($forumid, $discussionid, $targetstate, $includetext) {
+        global $DB, $PAGE;
+
+        $params = self::validate_parameters(self::set_subscription_state_parameters(), [
+            'forumid' => $forumid,
+            'discussionid' => $discussionid,
+            'targetstate' => $targetstate,
+            'includetext' => $includetext,
+        ]);
+
+        $forum = \mod_forum\factory::get_forum_by_id($params['forumid']);
+
+        self::validate_context($forum->get_context());
+
+        if (!$forum->can_subscribe()) {
+            // Nothing to do. We won't actually output any content here though.
+            throw new \moodle_exception('cannotsubscribe', 'mod_forum');
+        }
+
+        $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
+        $forum->set_subscription_state($discussion, $targetstate);
+
+        $renderer = $PAGE->get_renderer('mod_forum');
+
+        return (new \mod_forum\output\discussion_subscription_toggle($forum, $discussion, $includetext))
+            ->export_for_template($renderer);
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function set_subscription_state_parameters() {
+        return new external_function_parameters(
+            [
+                'forumid' => new external_value(PARAM_INT, 'Forum that the discussion is in', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                'discussionid' => new external_value(PARAM_INT, 'The discussion to subscribe or unsubscribe', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                'targetstate' => new external_value(PARAM_INT, 'The target state', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                'includetext' => new external_value(PARAM_BOOL, 'Whether to include the state in text form', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+            ]
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description
+     */
+    public static function set_subscription_state_returns() {
+        return new external_single_structure([
+            'can_subscribe' => new external_value(PARAM_BOOL, 'Whether the user can subscribe or not'),
+            'is_subscribed' => new external_value(PARAM_BOOL, 'Whether the user is currently subscribed'),
+            'include_text' => new external_value(PARAM_BOOL, 'Whether to include the state in text form'),
+            'forumid' => new external_value(PARAM_INT, 'The Forum ID'),
+            'discussionid' => new external_value(PARAM_INT, 'The Discussion ID'),
+        ]);
+    }
+
+    /**
+     * Set the pin state.
+     *
+     * @param   int     $forumid
+     * @param   int     $discussionid
+     * @param   bool    $targetstate
+     * @return  \stdClass
+     */
+    public static function set_pin_state($forumid, $discussionid, $targetstate) {
+        global $DB, $PAGE;
+
+        $params = self::validate_parameters(self::set_pin_state_parameters(), [
+            'forumid' => $forumid,
+            'discussionid' => $discussionid,
+            'targetstate' => $targetstate,
+        ]);
+
+        $forum = \mod_forum\factory::get_forum_by_id($params['forumid']);
+
+        self::validate_context($forum->get_context());
+
+        if (!$forum->can_subscribe()) {
+            // Nothing to do. We won't actually output any content here though.
+            throw new \moodle_exception('cannotsubscribe', 'mod_forum');
+        }
+
+        $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
+        $forum->set_discussion_pin($discussion, $targetstate);
+
+        $renderer = $PAGE->get_renderer('mod_forum');
+
+        return (new \mod_forum\output\discussion_pin_toggle($forum, $discussion))
+            ->export_for_template($renderer);
+    }
+
+    /**
+     * Returns description of method parameters.
+     *
+     * @return external_function_parameters
+     */
+    public static function set_pin_state_parameters() {
+        return new external_function_parameters(
+            [
+                'forumid' => new external_value(PARAM_INT, 'Forum that the discussion is in', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                'discussionid' => new external_value(PARAM_INT, 'The discussion to pin or unpin', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+                'targetstate' => new external_value(PARAM_INT, 'The target state', VALUE_REQUIRED, null, NULL_NOT_ALLOWED),
+            ]
+        );
+    }
+
+    /**
+     * Returns description of method result value.
+     *
+     * @return external_description
+     */
+    public static function set_pin_state_returns() {
+        return new external_single_structure([
+            'can_pin' => new external_value(PARAM_BOOL, 'Whether the user can pin this discussion or not'),
+            'is_pinned' => new external_value(PARAM_BOOL, 'Whether the user is currently pinned'),
+            'forumid' => new external_value(PARAM_INT, 'The Forum ID'),
+            'discussionid' => new external_value(PARAM_INT, 'The Discussion ID'),
+        ]);
+    }
 }

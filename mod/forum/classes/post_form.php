@@ -84,11 +84,12 @@ class mod_forum_post_form extends moodleform {
 
         $mform =& $this->_form;
 
+        $forum = $this->_customdata['forum'];
+        $instance = \mod_forum\factory::get_forum_by_record($forum);
         $course = $this->_customdata['course'];
         $cm = $this->_customdata['cm'];
         $coursecontext = $this->_customdata['coursecontext'];
         $modcontext = $this->_customdata['modcontext'];
-        $forum = $this->_customdata['forum'];
         $post = $this->_customdata['post'];
         $subscribe = $this->_customdata['subscribe'];
         $edit = $this->_customdata['edit'];
@@ -133,7 +134,7 @@ class mod_forum_post_form extends moodleform {
             $mform->addHelpButton('discussionsubscribe', 'discussionsubscription', 'forum');
         }
 
-        if (forum_can_create_attachment($forum, $modcontext)) {
+        if ($instance->can_create_attachment()) {
             $mform->addElement('filemanager', 'attachments', get_string('attachment', 'forum'), null, self::attachment_options($forum));
             $mform->addHelpButton('attachments', 'attachment', 'forum');
         }
@@ -154,7 +155,7 @@ class mod_forum_post_form extends moodleform {
             foreach ($groupdata as $groupid => $group) {
                 // Check whether this user can post in this group.
                 // We must make this check because all groups are returned for a visible grouped activity.
-                if (forum_user_can_post_discussion($forum, $groupid, null, $cm, $modcontext)) {
+                if ($instance->can_create_discussion($groupid)) {
                     // Build the data for the groupinfo select.
                     $groupinfo[$groupid] = $group->name;
                 } else {

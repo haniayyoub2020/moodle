@@ -1,0 +1,104 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_forum/discussion_list_entry
+
+    Template to display one discussion in the list.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * TODO
+
+    Example context (json):
+    {
+    }
+}}
+<tr>
+    <td scope="col" class="pinned p-0 text-center align-middle">
+        {{#pinned}}
+            {{#pix}}i/pinned, mod_forum, {{#str}}discussionpinned, mod_forum{{/str}}{{/pix}}
+        {{/pinned}}
+    </td>
+    <td scope="col" class="topic p-0">
+        <a class="p-3 p-l-0 w-100 h-100 d-block" href="{{url}}">{{subject}}</a>
+    </td>
+    <td scope="col" class="author">
+        {{#author}}
+            {{>mod_forum/user_detail}}
+        {{/author}}
+    </td>
+    {{#has_any_group}}
+        {{> mod_forum/discussion_list_entry_group}}
+    {{/has_any_group}}
+    {{#can_see_discussions}}
+        <td scope="col" class="p-0 text-center">
+            <a href="{{url}}" class="p-3 w-100 h-100 d-block">
+                {{replies}}
+            </a>
+        </td>
+        {{#can_track_reads}}
+            <td scope="col" class=p-0 "text-center">
+                {{#unread}}
+                    {{! TODO Rewrite as AJAX}}
+                    <a href="" class="p-3 w-100 h-100 d-block">{{unread}} {{#pix}}t/markasread, core, {{#str}}markallread, mod_forum{{/str}}{{/pix}}</a>
+                {{/unread}}
+                {{^unread}}
+                    <span class="p-3 w-100 h-100 d-block">
+                        0
+                    </span>
+                {{/unread}}
+            </td>
+        {{/can_track_reads}}
+    {{/can_see_discussions}}
+    <td scope="col" class="text-left">
+        {{#modifier}}
+            <div class="d-flex flex-row">
+                <div class="align-middle p-0">
+                    <a href="{{profileurl}}">
+                        <img {{!
+                            }} class="h-auto rounded-circle" {{!
+                            }} src="{{profileurl}}" {{!
+                            }} alt="{{#str}}pictureof, moodle, {{fullname}}{{/str}}" {{!
+                            }}>
+                    </a>
+                </div>
+                <div class="p-2 p-t-0 p-b-0 d-inline-flex flex-column">
+                    <div>
+                        <a href="{{profileurl}}">{{fullname}}</a>
+                    </div>
+                    <div>
+                        <a href="{{url}}">{{#userdate}}
+                            {{timemodified}}, {{#str}}strftimerecentfull{{/str}}
+                        {{/userdate}}</a>
+                    </div>
+                </div>
+            </div>
+        {{/modifier}}
+    </td>
+    {{#can_subscribe}}
+        <td scope="col" class="p-0 align-middle">
+            {{#subscription_toggle_form}}
+                {{> mod_forum/discussion_subscription_toggle}}
+            {{/subscription_toggle_form}}
+        </td>
+    {{/can_subscribe}}
+</tr>

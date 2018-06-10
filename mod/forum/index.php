@@ -229,7 +229,8 @@ if ($generalforums) {
         $cm      = $modinfo->instances['forum'][$forum->id];
         $context = context_module::instance($cm->id);
 
-        $count = forum_count_discussions($forum, $cm, $course);
+        $instance = \mod_forum\factory::get_forum_by_cm_info($cm);
+        $count = $instance->count_discussions();
 
         if ($usetracking) {
             if ($forum->trackingtype == FORUM_TRACKING_OFF) {

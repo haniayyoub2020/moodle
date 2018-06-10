@@ -3232,17 +3232,17 @@ class mod_forum_lib_testcase extends advanced_testcase {
     public function forum_discussion_is_locked_provider() {
         return [
             'Unlocked: lockdiscussionafter is unset' => [
-                (object) [],
+                (object) ['type' => 'standard'],
                 (object) [],
                 false
             ],
             'Unlocked: lockdiscussionafter is false' => [
-                (object) ['lockdiscussionafter' => false],
+                (object) ['lockdiscussionafter' => false, 'type' => 'standard'],
                 (object) [],
                 false
             ],
             'Unlocked: lockdiscussionafter is null' => [
-                (object) ['lockdiscussionafter' => null],
+                (object) ['lockdiscussionafter' => null, 'type' => 'standard'],
                 (object) [],
                 false
             ],

@@ -100,7 +100,7 @@ class external extends external_api {
             $templatestr = self::strip_template_comments($templatestr);
         }
 
-        return $templatestr;
+        return trim($templatestr);
     }
 
     /**

@@ -1331,225 +1331,7 @@ function forum_user_complete($course, $user, $mod, $forum) {
 }
 
 /**
- * Filters the forum discussions according to groups membership and config.
- *
- * @deprecated since 3.3
- * @todo The final deprecation of this function will take place in Moodle 3.7 - see MDL-57487.
- * @since  Moodle 2.8, 2.7.1, 2.6.4
- * @param  array $discussions Discussions with new posts array
- * @return array Forums with the number of new posts
- */
-function forum_filter_user_groups_discussions($discussions) {
-
-    debugging('The function forum_filter_user_groups_discussions() is now deprecated.', DEBUG_DEVELOPER);
-
-    // Group the remaining discussions posts by their forumid.
-    $filteredforums = array();
-
-    // Discard not visible groups.
-    foreach ($discussions as $discussion) {
-
-        // Course data is already cached.
-        $instances = get_fast_modinfo($discussion->course)->get_instances();
-        $forum = $instances['forum'][$discussion->forum];
-
-        // Continue if the user should not see this discussion.
-        if (!forum_is_user_group_discussion($forum, $discussion->groupid)) {
-            continue;
-        }
-
-        // Grouping results by forum.
-        if (empty($filteredforums[$forum->instance])) {
-            $filteredforums[$forum->instance] = new stdClass();
-            $filteredforums[$forum->instance]->id = $forum->id;
-            $filteredforums[$forum->instance]->count = 0;
-        }
-        $filteredforums[$forum->instance]->count += $discussion->count;
-
-    }
-
-    return $filteredforums;
-}
-
-/**
- * Returns whether the discussion group is visible by the current user or not.
- *
- * @since Moodle 2.8, 2.7.1, 2.6.4
- * @param cm_info $cm The discussion course module
- * @param int $discussiongroupid The discussion groupid
- * @return bool
- */
-function forum_is_user_group_discussion(cm_info $cm, $discussiongroupid) {
-
-    if ($discussiongroupid == -1 || $cm->effectivegroupmode != SEPARATEGROUPS) {
-        return true;
-    }
-
-    if (isguestuser()) {
-        return false;
-    }
-
-    if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id)) ||
-            in_array($discussiongroupid, $cm->get_modinfo()->get_groups($cm->groupingid))) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * @deprecated since 3.3
- * @todo The final deprecation of this function will take place in Moodle 3.7 - see MDL-57487.
- * @global object
- * @global object
- * @global object
- * @param array $courses
- * @param array $htmlarray
- */
-function forum_print_overview($courses,&$htmlarray) {
-    global $USER, $CFG, $DB, $SESSION;
-
-    debugging('The function forum_print_overview() is now deprecated.', DEBUG_DEVELOPER);
-
-    if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-        return array();
-    }
-
-    if (!$forums = get_all_instances_in_courses('forum',$courses)) {
-        return;
-    }
-
-    // Courses to search for new posts
-    $coursessqls = array();
-    $params = array();
-    foreach ($courses as $course) {
-
-        // If the user has never entered into the course all posts are pending
-        if ($course->lastaccess == 0) {
-            $coursessqls[] = '(d.course = ?)';
-            $params[] = $course->id;
-
-        // Only posts created after the course last access
-        } else {
-            $coursessqls[] = '(d.course = ? AND p.created > ?)';
-            $params[] = $course->id;
-            $params[] = $course->lastaccess;
-        }
-    }
-    $params[] = $USER->id;
-    $coursessql = implode(' OR ', $coursessqls);
-
-    $sql = "SELECT d.id, d.forum, d.course, d.groupid, COUNT(*) as count "
-                .'FROM {forum_discussions} d '
-                .'JOIN {forum_posts} p ON p.discussion = d.id '
-                ."WHERE ($coursessql) "
-                .'AND p.deleted <> 1 '
-                .'AND p.userid != ? '
-                .'AND (d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?)) '
-                .'GROUP BY d.id, d.forum, d.course, d.groupid '
-                .'ORDER BY d.course, d.forum';
-    $params[] = time();
-    $params[] = time();
-
-    // Avoid warnings.
-    if (!$discussions = $DB->get_records_sql($sql, $params)) {
-        $discussions = array();
-    }
-
-    $forumsnewposts = forum_filter_user_groups_discussions($discussions);
-
-    // also get all forum tracking stuff ONCE.
-    $trackingforums = array();
-    foreach ($forums as $forum) {
-        if (forum_tp_can_track_forums($forum)) {
-            $trackingforums[$forum->id] = $forum;
-        }
-    }
-
-    if (count($trackingforums) > 0) {
-        $cutoffdate = isset($CFG->forum_oldpostdays) ? (time() - ($CFG->forum_oldpostdays*24*60*60)) : 0;
-        $sql = 'SELECT d.forum,d.course,COUNT(p.id) AS count '.
-            ' FROM {forum_posts} p '.
-            ' JOIN {forum_discussions} d ON p.discussion = d.id '.
-            ' LEFT JOIN {forum_read} r ON r.postid = p.id AND r.userid = ? WHERE p.deleted <> 1 AND (';
-        $params = array($USER->id);
-
-        foreach ($trackingforums as $track) {
-            $sql .= '(d.forum = ? AND (d.groupid = -1 OR d.groupid = 0 OR d.groupid = ?)) OR ';
-            $params[] = $track->id;
-            if (isset($SESSION->currentgroup[$track->course])) {
-                $groupid =  $SESSION->currentgroup[$track->course];
-            } else {
-                // get first groupid
-                $groupids = groups_get_all_groups($track->course, $USER->id);
-                if ($groupids) {
-                    reset($groupids);
-                    $groupid = key($groupids);
-                    $SESSION->currentgroup[$track->course] = $groupid;
-                } else {
-                    $groupid = 0;
-                }
-                unset($groupids);
-            }
-            $params[] = $groupid;
-        }
-        $sql = substr($sql,0,-3); // take off the last OR
-        $sql .= ') AND p.modified >= ? AND r.id is NULL ';
-        $sql .= 'AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)) ';
-        $sql .= 'GROUP BY d.forum,d.course';
-        $params[] = $cutoffdate;
-        $params[] = time();
-        $params[] = time();
-
-        if (!$unread = $DB->get_records_sql($sql, $params)) {
-            $unread = array();
-        }
-    } else {
-        $unread = array();
-    }
-
-    if (empty($unread) and empty($forumsnewposts)) {
-        return;
-    }
-
-    $strforum = get_string('modulename','forum');
-
-    foreach ($forums as $forum) {
-        $str = '';
-        $count = 0;
-        $thisunread = 0;
-        $showunread = false;
-        // either we have something from logs, or trackposts, or nothing.
-        if (array_key_exists($forum->id, $forumsnewposts) && !empty($forumsnewposts[$forum->id])) {
-            $count = $forumsnewposts[$forum->id]->count;
-        }
-        if (array_key_exists($forum->id,$unread)) {
-            $thisunread = $unread[$forum->id]->count;
-            $showunread = true;
-        }
-        if ($count > 0 || $thisunread > 0) {
-            $str .= '<div class="overview forum"><div class="name">'.$strforum.': <a title="'.$strforum.'" href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'">'.
-                $forum->name.'</a></div>';
-            $str .= '<div class="info"><span class="postsincelogin">';
-            $str .= get_string('overviewnumpostssince', 'forum', $count)."</span>";
-            if (!empty($showunread)) {
-                $str .= '<div class="unreadposts">'.get_string('overviewnumunread', 'forum', $thisunread).'</div>';
-            }
-            $str .= '</div></div>';
-        }
-        if (!empty($str)) {
-            if (!array_key_exists($forum->course,$htmlarray)) {
-                $htmlarray[$forum->course] = array();
-            }
-            if (!array_key_exists('forum',$htmlarray[$forum->course])) {
-                $htmlarray[$forum->course]['forum'] = ''; // initialize, avoid warnings
-            }
-            $htmlarray[$forum->course]['forum'] .= $str;
-        }
-    }
-}
-
-/**
+ * TODO MOve to renderer.
  * Given a course and a date, prints a summary of all the new
  * messages posted in the course since that date
  *
@@ -1665,6 +1447,7 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
  * @return array array of grades, false if none
  */
 function forum_get_user_grades($forum, $userid = 0) {
+    // TODO REplace with type::get_user_grades
     global $CFG;
 
     require_once($CFG->dirroot.'/rating/lib.php');
@@ -1779,7 +1562,7 @@ function forum_grade_item_delete($forum) {
  * @param int $scaleid negative number
  * @return bool
  */
-function forum_scale_used ($forumid,$scaleid) {
+function forum_scale_used($forumid,$scaleid) {
     global $DB;
     $return = false;
 
@@ -2158,6 +1941,7 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
 /**
  * Returns a list of all new posts that have not been mailed yet
  *
+ * TODO - will be deprecated by MDL-46881
  * @param int $starttime posts created after this time
  * @param int $endtime posts created before this
  * @param int $now used for timed discussions only
@@ -2306,40 +2090,6 @@ function forum_get_user_involved_discussions($forumid, $userid) {
 }
 
 /**
- * Get all the posts for a user in a forum suitable for forum_print_post
- *
- * @global object
- * @global object
- * @param int $forumid
- * @param int $userid
- * @return array of counts or false
- */
-function forum_count_user_posts($forumid, $userid) {
-    global $CFG, $DB;
-
-    $timedsql = "";
-    $params = array($forumid, $userid);
-    if (!empty($CFG->forum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , context_module::instance($cm->id))) {
-            $now = time();
-            $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
-            $params[] = $now;
-            $params[] = $now;
-        }
-    }
-
-    return $DB->get_record_sql("SELECT COUNT(p.id) AS postcount, MAX(p.modified) AS lastpost
-                             FROM {forum} f
-                                  JOIN {forum_discussions} d ON d.forum = f.id
-                                  JOIN {forum_posts} p       ON p.discussion = d.id
-                                  JOIN {user} u              ON u.id = p.userid
-                            WHERE f.id = ?
-                                  AND p.userid = ?
-                                  $timedsql", $params);
-}
-
-/**
  * Given a log entry, return the forum post details for it.
  *
  * @global object
@@ -2379,24 +2129,6 @@ function forum_get_post_from_log($log) {
                                   AND f.id = d.forum", array($log->info));
     }
     return NULL;
-}
-
-/**
- * Given a discussion id, return the first post from the discussion
- *
- * @global object
- * @global object
- * @param int $dicsussionid
- * @return array
- */
-function forum_get_firstpost_from_discussion($discussionid) {
-    global $CFG, $DB;
-
-    return $DB->get_record_sql("SELECT p.*
-                             FROM {forum_discussions} d,
-                                  {forum_posts} p
-                            WHERE d.id = ?
-                              AND d.firstpost = p.id ", array($discussionid));
 }
 
 /**
@@ -2455,93 +2187,6 @@ function forum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $pag
 }
 
 /**
- * @global object
- * @global object
- * @global object
- * @staticvar array $cache
- * @param object $forum
- * @param object $cm
- * @param object $course
- * @return mixed
- */
-function forum_count_discussions($forum, $cm, $course) {
-    global $CFG, $DB, $USER;
-
-    static $cache = array();
-
-    $now = floor(time() / 60) * 60; // DB Cache Friendly.
-
-    $params = array($course->id);
-
-    if (!isset($cache[$course->id])) {
-        if (!empty($CFG->forum_enabletimedposts)) {
-            $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
-            $params[] = $now;
-            $params[] = $now;
-        } else {
-            $timedsql = "";
-        }
-
-        $sql = "SELECT f.id, COUNT(d.id) as dcount
-                  FROM {forum} f
-                       JOIN {forum_discussions} d ON d.forum = f.id
-                 WHERE f.course = ?
-                       $timedsql
-              GROUP BY f.id";
-
-        if ($counts = $DB->get_records_sql($sql, $params)) {
-            foreach ($counts as $count) {
-                $counts[$count->id] = $count->dcount;
-            }
-            $cache[$course->id] = $counts;
-        } else {
-            $cache[$course->id] = array();
-        }
-    }
-
-    if (empty($cache[$course->id][$forum->id])) {
-        return 0;
-    }
-
-    $groupmode = groups_get_activity_groupmode($cm, $course);
-
-    if ($groupmode != SEPARATEGROUPS) {
-        return $cache[$course->id][$forum->id];
-    }
-
-    if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id))) {
-        return $cache[$course->id][$forum->id];
-    }
-
-    require_once($CFG->dirroot.'/course/lib.php');
-
-    $modinfo = get_fast_modinfo($course);
-
-    $mygroups = $modinfo->get_groups($cm->groupingid);
-
-    // add all groups posts
-    $mygroups[-1] = -1;
-
-    list($mygroups_sql, $params) = $DB->get_in_or_equal($mygroups);
-    $params[] = $forum->id;
-
-    if (!empty($CFG->forum_enabletimedposts)) {
-        $timedsql = "AND d.timestart < $now AND (d.timeend = 0 OR d.timeend > $now)";
-        $params[] = $now;
-        $params[] = $now;
-    } else {
-        $timedsql = "";
-    }
-
-    $sql = "SELECT COUNT(d.id)
-              FROM {forum_discussions} d
-             WHERE d.groupid $mygroups_sql AND d.forum = ?
-                   $timedsql";
-
-    return $DB->get_field_sql($sql, $params);
-}
-
-/**
  * Get all discussions in a forum
  *
  * @global object
@@ -2561,6 +2206,7 @@ function forum_count_discussions($forum, $cm, $course) {
  *                     Use FORUM_POSTS_ALL_USER_GROUPS for all the user groups
  * @param int $updatedsince retrieve only discussions updated since the given time
  * @return array
+ * TODO Deprecate - largely replaced by get_discussions().
  */
 function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $limit=-1,
                                 $userlastmodified=false, $page=-1, $perpage=0, $groupid = -1,
@@ -2643,8 +2289,8 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
                 if (empty($mygroups)) {
                      $groupselect = "AND d.groupid = -1";
                 } else {
-                    list($insqlgroups, $inparamsgroups) = $DB->get_in_or_equal($mygroups);
-                    $groupselect = "AND (d.groupid = -1 OR d.groupid $insqlgroups)";
+                    list($insqlgroups, $inparamsgroups) = $db->get_in_or_equal($mygroups);
+                    $groupselect = "and (d.groupid = -1 or d.groupid $insqlgroups)";
                     $params = array_merge($params, $inparamsgroups);
                 }
             } else if ($currentgroup) {
@@ -5063,29 +4709,20 @@ function forum_get_subscribe_link($forum, $context, $messages = array(), $cantac
 /**
  * Returns true if user created new discussion already.
  *
+ * TODO Move to qanda type.
+ * This is _only_ used for qanda forums at this time.
  * @param int $forumid  The forum to check for postings
  * @param int $userid   The user to check for postings
  * @param int $groupid  The group to restrict the check to
  * @return bool
  */
 function forum_user_has_posted_discussion($forumid, $userid, $groupid = null) {
-    global $CFG, $DB;
-
-    $sql = "SELECT 'x'
-              FROM {forum_discussions} d, {forum_posts} p
-             WHERE d.forum = ? AND p.discussion = d.id AND p.parent = 0 AND p.userid = ?";
-
-    $params = [$forumid, $userid];
-
-    if ($groupid) {
-        $sql .= " AND d.groupid = ?";
-        $params[] = $groupid;
-    }
-
-    return $DB->record_exists_sql($sql, $params);
+    $forum = \mod_forum\factory::get_forum_by_id($forumid, \core_user::get_user_by_id($userid));
+    return $forum->has_user_created_discussion($groupid);
 }
 
 /**
+ * TODO Move to qanda type.
  * @global object
  * @global object
  * @param int $forumid
@@ -5128,383 +4765,6 @@ function forum_user_has_posted($forumid, $did, $userid) {
         return $DB->record_exists('forum_posts', array('discussion'=>$did,'userid'=>$userid));
     }
 }
-
-/**
- * Returns creation time of the first user's post in given discussion
- * @global object $DB
- * @param int $did Discussion id
- * @param int $userid User id
- * @return int|bool post creation time stamp or return false
- */
-function forum_get_user_posted_time($did, $userid) {
-    global $DB;
-
-    $posttime = $DB->get_field('forum_posts', 'MIN(created)', array('userid'=>$userid, 'discussion'=>$did));
-    if (empty($posttime)) {
-        return false;
-    }
-    return $posttime;
-}
-
-/**
- * @global object
- * @param object $forum
- * @param object $currentgroup
- * @param int $unused
- * @param object $cm
- * @param object $context
- * @return bool
- */
-function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, $cm=NULL, $context=NULL) {
-// $forum is an object
-    global $USER;
-
-    // shortcut - guest and not-logged-in users can not post
-    if (isguestuser() or !isloggedin()) {
-        return false;
-    }
-
-    if (!$cm) {
-        debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
-            print_error('invalidcoursemodule');
-        }
-    }
-
-    if (!$context) {
-        $context = context_module::instance($cm->id);
-    }
-
-    if ($currentgroup === null) {
-        $currentgroup = groups_get_activity_group($cm);
-    }
-
-    $groupmode = groups_get_activity_groupmode($cm);
-
-    if ($forum->type == 'news') {
-        $capname = 'mod/forum:addnews';
-    } else if ($forum->type == 'qanda') {
-        $capname = 'mod/forum:addquestion';
-    } else {
-        $capname = 'mod/forum:startdiscussion';
-    }
-
-    if (!has_capability($capname, $context)) {
-        return false;
-    }
-
-    if ($forum->type == 'single') {
-        return false;
-    }
-
-    if ($forum->type == 'eachuser') {
-        if (forum_user_has_posted_discussion($forum->id, $USER->id, $currentgroup)) {
-            return false;
-        }
-    }
-
-    if (!$groupmode or has_capability('moodle/site:accessallgroups', $context)) {
-        return true;
-    }
-
-    if ($currentgroup) {
-        return groups_is_member($currentgroup);
-    } else {
-        // no group membership and no accessallgroups means no new discussions
-        // reverted to 1.7 behaviour in 1.9+,  buggy in 1.8.0-1.9.0
-        return false;
-    }
-}
-
-/**
- * This function checks whether the user can reply to posts in a forum
- * discussion. Use forum_user_can_post_discussion() to check whether the user
- * can start discussions.
- *
- * @global object
- * @global object
- * @uses DEBUG_DEVELOPER
- * @uses CONTEXT_MODULE
- * @uses VISIBLEGROUPS
- * @param object $forum forum object
- * @param object $discussion
- * @param object $user
- * @param object $cm
- * @param object $course
- * @param object $context
- * @return bool
- */
-function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=NULL, $context=NULL) {
-    global $USER, $DB;
-    if (empty($user)) {
-        $user = $USER;
-    }
-
-    // shortcut - guest and not-logged-in users can not post
-    if (isguestuser($user) or empty($user->id)) {
-        return false;
-    }
-
-    if (!isset($discussion->groupid)) {
-        debugging('incorrect discussion parameter', DEBUG_DEVELOPER);
-        return false;
-    }
-
-    if (!$cm) {
-        debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
-            print_error('invalidcoursemodule');
-        }
-    }
-
-    if (!$course) {
-        debugging('missing course', DEBUG_DEVELOPER);
-        if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
-            print_error('invalidcourseid');
-        }
-    }
-
-    if (!$context) {
-        $context = context_module::instance($cm->id);
-    }
-
-    // Check whether the discussion is locked.
-    if (forum_discussion_is_locked($forum, $discussion)) {
-        if (!has_capability('mod/forum:canoverridediscussionlock', $context)) {
-            return false;
-        }
-    }
-
-    // normal users with temporary guest access can not post, suspended users can not post either
-    if (!is_viewing($context, $user->id) and !is_enrolled($context, $user->id, '', true)) {
-        return false;
-    }
-
-    if ($forum->type == 'news') {
-        $capname = 'mod/forum:replynews';
-    } else {
-        $capname = 'mod/forum:replypost';
-    }
-
-    if (!has_capability($capname, $context, $user->id)) {
-        return false;
-    }
-
-    if (!$groupmode = groups_get_activity_groupmode($cm, $course)) {
-        return true;
-    }
-
-    if (has_capability('moodle/site:accessallgroups', $context)) {
-        return true;
-    }
-
-    if ($groupmode == VISIBLEGROUPS) {
-        if ($discussion->groupid == -1) {
-            // allow students to reply to all participants discussions - this was not possible in Moodle <1.8
-            return true;
-        }
-        return groups_is_member($discussion->groupid);
-
-    } else {
-        //separate groups
-        if ($discussion->groupid == -1) {
-            return false;
-        }
-        return groups_is_member($discussion->groupid);
-    }
-}
-
-/**
-* Check to ensure a user can view a timed discussion.
-*
-* @param object $discussion
-* @param object $user
-* @param object $context
-* @return boolean returns true if they can view post, false otherwise
-*/
-function forum_user_can_see_timed_discussion($discussion, $user, $context) {
-    global $CFG;
-
-    // Check that the user can view a discussion that is normally hidden due to access times.
-    if (!empty($CFG->forum_enabletimedposts)) {
-        $time = time();
-        if (($discussion->timestart != 0 && $discussion->timestart > $time)
-            || ($discussion->timeend != 0 && $discussion->timeend < $time)) {
-            if (!has_capability('mod/forum:viewhiddentimedposts', $context, $user->id)) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-/**
-* Check to ensure a user can view a group discussion.
-*
-* @param object $discussion
-* @param object $cm
-* @param object $context
-* @return boolean returns true if they can view post, false otherwise
-*/
-function forum_user_can_see_group_discussion($discussion, $cm, $context) {
-
-    // If it's a grouped discussion, make sure the user is a member.
-    if ($discussion->groupid > 0) {
-        $groupmode = groups_get_activity_groupmode($cm);
-        if ($groupmode == SEPARATEGROUPS) {
-            return groups_is_member($discussion->groupid) || has_capability('moodle/site:accessallgroups', $context);
-        }
-    }
-
-    return true;
-}
-
-/**
- * @global object
- * @global object
- * @uses DEBUG_DEVELOPER
- * @param object $forum
- * @param object $discussion
- * @param object $context
- * @param object $user
- * @return bool
- */
-function forum_user_can_see_discussion($forum, $discussion, $context, $user=NULL) {
-    global $USER, $DB;
-
-    if (empty($user) || empty($user->id)) {
-        $user = $USER;
-    }
-
-    // retrieve objects (yuk)
-    if (is_numeric($forum)) {
-        debugging('missing full forum', DEBUG_DEVELOPER);
-        if (!$forum = $DB->get_record('forum',array('id'=>$forum))) {
-            return false;
-        }
-    }
-    if (is_numeric($discussion)) {
-        debugging('missing full discussion', DEBUG_DEVELOPER);
-        if (!$discussion = $DB->get_record('forum_discussions',array('id'=>$discussion))) {
-            return false;
-        }
-    }
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
-        print_error('invalidcoursemodule');
-    }
-
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
-        return false;
-    }
-
-    if (!forum_user_can_see_timed_discussion($discussion, $user, $context)) {
-        return false;
-    }
-
-    if (!forum_user_can_see_group_discussion($discussion, $cm, $context)) {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * Check whether a user can see the specified post.
- *
- * @param   \stdClass $forum The forum to chcek
- * @param   \stdClass $discussion The discussion the post is in
- * @param   \stdClass $post The post in question
- * @param   \stdClass $user The user to test - if not specified, the current user is checked.
- * @param   \stdClass $cm The Course Module that the forum is in (required).
- * @param   bool      $checkdeleted Whether to check the deleted flag on the post.
- * @return  bool
- */
-function forum_user_can_see_post($forum, $discussion, $post, $user = null, $cm = null, $checkdeleted = true) {
-    global $CFG, $USER, $DB;
-
-    // retrieve objects (yuk)
-    if (is_numeric($forum)) {
-        debugging('missing full forum', DEBUG_DEVELOPER);
-        if (!$forum = $DB->get_record('forum',array('id'=>$forum))) {
-            return false;
-        }
-    }
-
-    if (is_numeric($discussion)) {
-        debugging('missing full discussion', DEBUG_DEVELOPER);
-        if (!$discussion = $DB->get_record('forum_discussions',array('id'=>$discussion))) {
-            return false;
-        }
-    }
-    if (is_numeric($post)) {
-        debugging('missing full post', DEBUG_DEVELOPER);
-        if (!$post = $DB->get_record('forum_posts',array('id'=>$post))) {
-            return false;
-        }
-    }
-
-    if (!isset($post->id) && isset($post->parent)) {
-        $post->id = $post->parent;
-    }
-
-    if ($checkdeleted && !empty($post->deleted)) {
-        return false;
-    }
-
-    if (!$cm) {
-        debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
-            print_error('invalidcoursemodule');
-        }
-    }
-
-    // Context used throughout function.
-    $modcontext = context_module::instance($cm->id);
-
-    if (empty($user) || empty($user->id)) {
-        $user = $USER;
-    }
-
-    $canviewdiscussion = (isset($cm->cache) && !empty($cm->cache->caps['mod/forum:viewdiscussion']))
-        || has_capability('mod/forum:viewdiscussion', $modcontext, $user->id);
-    if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
-        return false;
-    }
-
-    if (isset($cm->uservisible)) {
-        if (!$cm->uservisible) {
-            return false;
-        }
-    } else {
-        if (!\core_availability\info_module::is_user_visible($cm, $user->id, false)) {
-            return false;
-        }
-    }
-
-    if (!forum_user_can_see_timed_discussion($discussion, $user, $modcontext)) {
-        return false;
-    }
-
-    if (!forum_user_can_see_group_discussion($discussion, $cm, $modcontext)) {
-        return false;
-    }
-
-    if ($forum->type == 'qanda') {
-        if (has_capability('mod/forum:viewqandawithoutposting', $modcontext, $user->id) || $post->userid == $user->id
-                || (isset($discussion->firstpost) && $discussion->firstpost == $post->id)) {
-            return true;
-        }
-        $firstpost = forum_get_firstpost_from_discussion($discussion->id);
-        if ($firstpost->userid == $user->id) {
-            return true;
-        }
-        $userfirstpost = forum_get_user_posted_time($discussion->id, $user->id);
-        return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)));
-    }
-    return true;
-}
-
 
 /**
  * Prints the discussion view screen for a forum.
@@ -6464,73 +5724,6 @@ function forum_tp_mark_post_read($userid, $post, $unused = null) {
 }
 
 /**
- * Marks a whole forum as read, for a given user
- *
- * @global object
- * @global object
- * @param object $user
- * @param int $forumid
- * @param int|bool $groupid
- * @return bool
- */
-function forum_tp_mark_forum_read($user, $forumid, $groupid=false) {
-    global $CFG, $DB;
-
-    $cutoffdate = time() - ($CFG->forum_oldpostdays*24*60*60);
-
-    $groupsel = "";
-    $params = array($user->id, $forumid, $cutoffdate);
-
-    if ($groupid !== false) {
-        $groupsel = " AND (d.groupid = ? OR d.groupid = -1)";
-        $params[] = $groupid;
-    }
-
-    $sql = "SELECT p.id
-              FROM {forum_posts} p
-                   LEFT JOIN {forum_discussions} d ON d.id = p.discussion
-                   LEFT JOIN {forum_read} r        ON (r.postid = p.id AND r.userid = ?)
-             WHERE d.forum = ?
-                   AND p.modified >= ? AND r.id is NULL
-                   $groupsel";
-
-    if ($posts = $DB->get_records_sql($sql, $params)) {
-        $postids = array_keys($posts);
-        return forum_tp_mark_posts_read($user, $postids);
-    }
-
-    return true;
-}
-
-/**
- * Marks a whole discussion as read, for a given user
- *
- * @global object
- * @global object
- * @param object $user
- * @param int $discussionid
- * @return bool
- */
-function forum_tp_mark_discussion_read($user, $discussionid) {
-    global $CFG, $DB;
-
-    $cutoffdate = time() - ($CFG->forum_oldpostdays*24*60*60);
-
-    $sql = "SELECT p.id
-              FROM {forum_posts} p
-                   LEFT JOIN {forum_read} r ON (r.postid = p.id AND r.userid = ?)
-             WHERE p.discussion = ?
-                   AND p.modified >= ? AND r.id is NULL";
-
-    if ($posts = $DB->get_records_sql($sql, array($user->id, $discussionid, $cutoffdate))) {
-        $postids = array_keys($posts);
-        return forum_tp_mark_posts_read($user, $postids);
-    }
-
-    return true;
-}
-
-/**
  * @global object
  * @param int $userid
  * @param object $post
@@ -7396,6 +6589,7 @@ function forum_get_layout_modes() {
  * Returns array of forum types chooseable on the forum editing form
  *
  * @return array
+ * TODO switch to using subplugin functins.
  */
 function forum_get_forum_types() {
     return array ('general'  => get_string('generalforum', 'forum'),
@@ -7409,6 +6603,7 @@ function forum_get_forum_types() {
  * Returns array of all forum layout modes
  *
  * @return array
+ * TODO switch to using subplugin functins.
  */
 function forum_get_forum_types_all() {
     return array ('news'     => get_string('namenews','forum'),
@@ -8157,9 +7352,9 @@ function forum_get_context($forumid, $context = null) {
  * @param  stdClass $cm      course module object
  * @param  stdClass $context context object
  * @since Moodle 2.9
+ * TODO deprecate
  */
 function forum_view($forum, $course, $cm, $context) {
-
     // Completion.
     $completion = new completion_info($course);
     $completion->set_module_viewed($cm);
@@ -8187,63 +7382,8 @@ function forum_view($forum, $course, $cm, $context) {
  * @since Moodle 2.9
  */
 function forum_discussion_view($modcontext, $forum, $discussion) {
-    $params = array(
-        'context' => $modcontext,
-        'objectid' => $discussion->id,
-    );
-
-    $event = \mod_forum\event\discussion_viewed::create($params);
-    $event->add_record_snapshot('forum_discussions', $discussion);
-    $event->add_record_snapshot('forum', $forum);
-    $event->trigger();
-}
-
-/**
- * Set the discussion to pinned and trigger the discussion pinned event
- *
- * @param  stdClass $modcontext module context object
- * @param  stdClass $forum      forum object
- * @param  stdClass $discussion discussion object
- * @since Moodle 3.1
- */
-function forum_discussion_pin($modcontext, $forum, $discussion) {
-    global $DB;
-
-    $DB->set_field('forum_discussions', 'pinned', FORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
-
-    $params = array(
-        'context' => $modcontext,
-        'objectid' => $discussion->id,
-        'other' => array('forumid' => $forum->id)
-    );
-
-    $event = \mod_forum\event\discussion_pinned::create($params);
-    $event->add_record_snapshot('forum_discussions', $discussion);
-    $event->trigger();
-}
-
-/**
- * Set discussion to unpinned and trigger the discussion unpin event
- *
- * @param  stdClass $modcontext module context object
- * @param  stdClass $forum      forum object
- * @param  stdClass $discussion discussion object
- * @since Moodle 3.1
- */
-function forum_discussion_unpin($modcontext, $forum, $discussion) {
-    global $DB;
-
-    $DB->set_field('forum_discussions', 'pinned', FORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
-
-    $params = array(
-        'context' => $modcontext,
-        'objectid' => $discussion->id,
-        'other' => array('forumid' => $forum->id)
-    );
-
-    $event = \mod_forum\event\discussion_unpinned::create($params);
-    $event->add_record_snapshot('forum_discussions', $discussion);
-    $event->trigger();
+    $instance = \mod_forum\factory::get_forum_by_record($forum);
+    $instance->trigger_event_discussion_viewed($discussion);
 }
 
 /**
@@ -8283,27 +7423,6 @@ function mod_forum_myprofile_navigation(core_user\output\myprofile\tree $tree, $
 }
 
 /**
- * Checks whether the author's name and picture for a given post should be hidden or not.
- *
- * @param object $post The forum post.
- * @param object $forum The forum object.
- * @return bool
- * @throws coding_exception
- */
-function forum_is_author_hidden($post, $forum) {
-    if (!isset($post->parent)) {
-        throw new coding_exception('$post->parent must be set.');
-    }
-    if (!isset($forum->type)) {
-        throw new coding_exception('$forum->type must be set.');
-    }
-    if ($forum->type === 'single' && empty($post->parent)) {
-        return true;
-    }
-    return false;
-}
-
-/**
  * Manage inplace editable saves.
  *
  * @param   string      $itemtype       The type of item.
@@ -8328,76 +7447,6 @@ function mod_forum_inplace_editable($itemtype, $itemid, $newvalue) {
         $renderer = $PAGE->get_renderer('mod_forum');
         return $renderer->render_digest_options($forum, $newvalue);
     }
-}
-
-/**
- * Determine whether the specified discussion is time-locked.
- *
- * @param   stdClass    $forum          The forum that the discussion belongs to
- * @param   stdClass    $discussion     The discussion to test
- * @return  bool
- */
-function forum_discussion_is_locked($forum, $discussion) {
-    if (empty($forum->lockdiscussionafter)) {
-        return false;
-    }
-
-    if ($forum->type === 'single') {
-        // It does not make sense to lock a single discussion forum.
-        return false;
-    }
-
-    if (($discussion->timemodified + $forum->lockdiscussionafter) < time()) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * Check if the module has any update that affects the current user since a given time.
- *
- * @param  cm_info $cm course module data
- * @param  int $from the time to check updates from
- * @param  array $filter  if we need to check only specific updates
- * @return stdClass an object with the different type of areas indicating if they were updated or not
- * @since Moodle 3.2
- */
-function forum_check_updates_since(cm_info $cm, $from, $filter = array()) {
-
-    $context = $cm->context;
-    $updates = new stdClass();
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
-        return $updates;
-    }
-
-    $updates = course_check_module_updates_since($cm, $from, array(), $filter);
-
-    // Check if there are new discussions in the forum.
-    $updates->discussions = (object) array('updated' => false);
-    $discussions = forum_get_discussions($cm, '', false, -1, -1, true, -1, 0, FORUM_POSTS_ALL_USER_GROUPS, $from);
-    if (!empty($discussions)) {
-        $updates->discussions->updated = true;
-        $updates->discussions->itemids = array_keys($discussions);
-    }
-
-    return $updates;
-}
-
-/**
- * Check if the user can create attachments in a forum.
- * @param  stdClass $forum   forum object
- * @param  stdClass $context context object
- * @return bool true if the user can create attachments, false otherwise
- * @since  Moodle 3.3
- */
-function forum_can_create_attachment($forum, $context) {
-    // If maxbytes == 1 it means no attachments at all.
-    if (empty($forum->maxattachments) || $forum->maxbytes == 1 ||
-            !has_capability('mod/forum:createattachment', $context)) {
-        return false;
-    }
-    return true;
 }
 
 /**

@@ -1,0 +1,104 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_forum/discussion_view
+
+    Template to display a forum discussion.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * TODO
+
+    Example context (json):
+    {
+    }
+}}
+<div id="{{uniqid}}">
+    {{#can_subscribe}}
+        <div class="d-flex flex-row-reverse">
+            <div class="p-2">
+                {{#subscription_toggle_form}}
+                    {{> mod_forum/discussion_subscription_toggle}}
+                {{/subscription_toggle_form}}
+            </div>
+        </div>
+    {{/can_subscribe}}
+
+    {{!TODO}}
+    {{{neighbour_links}}}
+
+    <div class="discussioncontrols clearfix">
+        <div class="controlscontainer m-b-1">
+            {{#can_export_to_portfolio}}
+                <div class="discussioncontrol exporttoportfolio {{^portfolio_link}}notavailable{{/portfolio_link}}">
+                    {{{portfolio_link}}}
+                </div>
+            {{/can_export_to_portfolio}}
+            {{^can_export_to_portfolio}}
+                <div class="discussioncontrol nullcontrol">
+                </div>
+            {{/can_export_to_portfolio}}
+
+            {{#has_display_modes}}
+                <div class="discussioncontrol displaymode">
+                    {{# display_mode_selector}}
+                        {{> core/single_select}}
+                    {{/ display_mode_selector}}
+                </div>
+            {{/has_display_modes}}
+
+            {{#has_available_move_destinations}}
+                <div class="discussioncontrol movediscussion">
+                    {{#move_target_selector}}
+                        {{> core/url_select}}
+                    {{/move_target_selector}}
+                </div>
+            {{/has_available_move_destinations}}
+
+            {{#pin_toggle_form}}
+                {{> mod_forum/discussion_pin_toggle}}
+            {{/pin_toggle_form}}
+        </div>
+    </div>
+
+    {{#is_discussion_locked}}
+        {{!Show the notification}}
+    {{/is_discussion_locked}}
+
+    {{#is_throttled}}
+        {{!Show the notification}}
+    {{/is_throttled}}
+
+    {{#can_see_posts}}
+        {{#post_structure}}
+            {{> mod_forum/discussion_view_posts}}
+        {{/post_structure}}
+        {{{posts}}}
+    {{/can_see_posts}}
+
+    {{{neighbour_links}}}
+</div>
+{{#js}}
+require(['mod_forum/discussion_view'], function(Discussion) {
+    Discussion.init("{{uniqid}}");
+});
+{{/js}}

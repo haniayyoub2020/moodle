@@ -70,6 +70,8 @@ class reply_handler extends \core\message\inbound\handler {
         global $DB, $USER;
 
         // Load the post being replied to.
+        $instance = \mod_forum\factory::get_forum_by_postid($record->datavalue);
+
         $post = $DB->get_record('forum_posts', array('id' => $record->datavalue));
         if (!$post) {
             mtrace("--> Unable to find a post matching with id {$record->datavalue}");
@@ -91,25 +93,8 @@ class reply_handler extends \core\message\inbound\handler {
         $usercontext = \context_user::instance($USER->id);
 
         // Make sure user can post in this discussion.
-        $canpost = true;
-        if (!forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
-            $canpost = false;
-        }
-
-        if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
-            $groupmode = $cm->groupmode;
-        } else {
-            $groupmode = $course->groupmode;
-        }
-        if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
-            if ($discussion->groupid == -1) {
-                $canpost = false;
-            } else {
-                if (!groups_is_member($discussion->groupid)) {
-                    $canpost = false;
-                }
-            }
-        }
+        // TODO really check this - I just removed a lot of code!
+        $canpost = $instance->can_post_to_discussion($discussion);
 
         if (!$canpost) {
             $data = new \stdClass();
@@ -118,6 +103,7 @@ class reply_handler extends \core\message\inbound\handler {
         }
 
         // And check the availability.
+        // TODO - move this before canpost?
         if (!\core_availability\info_module::is_user_visible($cm)) {
             $data = new \stdClass();
             $data->forum = $forum;
@@ -185,7 +171,7 @@ class reply_handler extends \core\message\inbound\handler {
         // Add attachments to the post.
         if ($attachments) {
             $attachmentcount = count($attachments);
-            if (!forum_can_create_attachment($forum, $modcontext)) {
+            if (!$instance->can_create_attachment()) {
                 // Attachments are not allowed.
                 mtrace("--> User does not have permission to attach files in this forum. Rejecting e-mail.");
 

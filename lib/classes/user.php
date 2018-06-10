@@ -1148,4 +1148,23 @@ class core_user {
         }
     }
 
+    public static function get_users_for_display_in_context($userids, \context $context, \stdClass $course) {
+        global $DB;
+
+        list($insql, $inparams) = $DB->get_in_or_equal($userids);;
+        $otherfields = get_all_user_name_fields('u');
+        $sql = "
+            SELECT DISTINCT u.*, {$otherfields}
+              FROM {user} u
+             WHERE u.id {$insql}
+            ";
+        $res = $DB->get_recordset_sql($sql, $inparams);
+        $users = [];
+        foreach ($res as $user) {
+            //$user->picture = new user_picture($user);
+            $users[$user->id] = $user;
+        }
+
+        return $users;
+    }
 }

@@ -53,7 +53,8 @@ $sitecontext = context_system::instance();
 if (!isloggedin() or isguestuser()) {
 
     if (!isloggedin() and !get_local_referer()) {
-        // No referer+not logged in - probably coming in via email  See MDL-9052.
+        // No referer and not logged in - probably coming in via email.
+        // See MDL-9052.
         require_login();
     }
 
@@ -96,7 +97,11 @@ if (!isloggedin() or isguestuser()) {
 
 require_login(0, false);   // Script is useless unless they're logged in.
 
-if (!empty($forum)) {      // User is starting a new discussion in a forum.
+if (!empty($forum)) {
+    // User is starting a new discussion in a forum
+    $instance = \mod_forum\factory::get_forum_by_id($forum);
+
+    // TODO Kill
     if (! $forum = $DB->get_record("forum", array("id" => $forum))) {
         print_error('invalidforumid', 'forum');
     }
@@ -111,39 +116,44 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     $modcontext    = context_module::instance($cm->id);
     $coursecontext = context_course::instance($course->id);
 
-    if (! forum_user_can_post_discussion($forum, $groupid, -1, $cm)) {
+    if (!$instance->can_create_discussion($groupid)) {
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {
                 if (enrol_selfenrol_available($course->id)) {
                     $SESSION->wantsurl = qualified_me();
                     $SESSION->enrolcancel = get_local_referer(false);
-                    redirect(new moodle_url('/enrol/index.php', array('id' => $course->id,
-                        'returnurl' => '/mod/forum/view.php?f=' . $forum->id)),
-                        get_string('youneedtoenrol'));
+                    redirect(new moodle_url('/enrol/index.php', [
+                            'id' => $course->id,
+                            'returnurl' => $instance->get_forum_view_url(),
+                        ]),
+                        get_string('youneedtoenrol')
+                    );
                 }
             }
         }
+
         print_error('nopostforum', 'forum');
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
+    if (!$instance->is_visible_to_user()) {
         print_error("activityiscurrentlyhidden");
     }
 
     $SESSION->fromurl = get_local_referer(false);
 
     // Load up the $post variable.
-
-    $post = new stdClass();
-    $post->course        = $course->id;
-    $post->forum         = $forum->id;
-    $post->discussion    = 0;           // Ie discussion # not defined yet.
-    $post->parent        = 0;
-    $post->subject       = '';
-    $post->userid        = $USER->id;
-    $post->message       = '';
-    $post->messageformat = editors_get_preferred_format();
-    $post->messagetrust  = 0;
+    $post = (object) [
+        'course'        => $instance->get_course_id(),
+        'forum'         => $instance->get_forum_id(),
+        'userid'        => $USER->id,
+        // Discussion is not defined - these are the defaults.
+        'discussion'    => 0,
+        'parent'        => 0,
+        'subject'       => '',
+        'message'       => '',
+        'messageformat' => editors_get_preferred_format(),
+        'messagetrust'  => 0,
+    ];
 
     if (isset($groupid)) {
         $post->groupid = $groupid;
@@ -154,8 +164,11 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     // Unsetting this will allow the correct return URL to be calculated later.
     unset($SESSION->fromdiscussion);
 
-} else if (!empty($reply)) {      // User is writing a new reply.
+} else if (!empty($reply)) {
+    // User is writing a new reply
+    $instance = \mod_forum\factory::get_forum_by_postid($reply);
 
+    // TODO  - remove?
     if (! $parent = forum_get_post_full($reply)) {
         print_error('invalidparentpostid', 'forum');
     }
@@ -179,14 +192,18 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     $modcontext    = context_module::instance($cm->id);
     $coursecontext = context_course::instance($course->id);
 
-    if (! forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
+    if (!$instance->can_post_to_discussion($discussion)) {
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {  // User is a guest here!
                 $SESSION->wantsurl = qualified_me();
                 $SESSION->enrolcancel = get_local_referer(false);
-                redirect(new moodle_url('/enrol/index.php', array('id' => $course->id,
-                    'returnurl' => '/mod/forum/view.php?f=' . $forum->id)),
-                    get_string('youneedtoenrol'));
+
+                redirect(new moodle_url('/enrol/index.php', [
+                        'id' => $course->id,
+                        'returnurl' => $instance->get_forum_view_url()
+                    ]),
+                    get_string('youneedtoenrol')
+                );
             }
         }
         print_error('nopostforum', 'forum');
@@ -208,21 +225,22 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         }
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
+    if (!$instance->is_visible_to_user()) {
         print_error("activityiscurrentlyhidden");
     }
 
     // Load up the $post variable.
+    $post = (object) [
+        'course'        => $instance->get_course_id(),
+        'forum'         => $instance->get_forum_id(),
+        'discussion'    => $parent->discussion,
+        'parent'        => $parent->id,
+        'subject'       => $parent->subject,
+        'userid'        => $USER->id,
+        'message'       => '',
+    ];
 
-    $post = new stdClass();
-    $post->course      = $course->id;
-    $post->forum       = $forum->id;
-    $post->discussion  = $parent->discussion;
-    $post->parent      = $parent->id;
-    $post->subject     = $parent->subject;
-    $post->userid      = $USER->id;
-    $post->message     = '';
-
+    // TODO - can this be improved?
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
 
     $strre = get_string('re', 'forum');
@@ -233,7 +251,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     // Unsetting this will allow the correct return URL to be calculated later.
     unset($SESSION->fromdiscussion);
 
-} else if (!empty($edit)) {  // User is editing their own post.
+} else if (!empty($edit)) {
+    // User is editing their own post
 
     if (! $post = forum_get_post_full($edit)) {
         print_error('invalidpostid', 'forum');
@@ -284,7 +303,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     // Unsetting this will allow the correct return URL to be calculated later.
     unset($SESSION->fromdiscussion);
 
-} else if (!empty($delete)) {  // User is deleting a post.
+} else if (!empty($delete)) {
+    // User is deleting a post
 
     if (! $post = forum_get_post_full($delete)) {
         print_error('invalidpostid', 'forum');
@@ -557,19 +577,13 @@ if (!isset($coursecontext)) {
 
 // From now on user must be logged on properly.
 
-if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) { // For the logs.
-    print_error('invalidcoursemodule');
-}
+$instance = \mod_forum\factory::get_forum_by_id($forum->id);
 $modcontext = context_module::instance($cm->id);
-require_login($course, false, $cm);
+require_login($instance->get_course(), false, $instance->get_cm());
 
 if (isguestuser()) {
     // Just in case.
     print_error('noguest');
-}
-
-if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field to the forum table.
-    $forum->maxattachments = 3;
 }
 
 $thresholdwarning = forum_check_throttling($forum, $cm);

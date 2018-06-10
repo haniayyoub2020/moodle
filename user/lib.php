@@ -244,7 +244,7 @@ function user_get_default_fields() {
         'address', 'phone1', 'phone2', 'icq', 'skype', 'yahoo', 'aim', 'msn', 'department',
         'institution', 'interests', 'firstaccess', 'lastaccess', 'auth', 'confirmed',
         'idnumber', 'lang', 'theme', 'timezone', 'mailformat', 'description', 'descriptionformat',
-        'city', 'url', 'country', 'profileimageurlsmall', 'profileimageurl', 'customfields',
+        'city', 'url', 'country', 'profilelink', 'profileimageurlsmall', 'profileimageurl', 'customfields',
         'groups', 'roles', 'preferences', 'enrolledcourses', 'suspended'
     );
 }
@@ -329,6 +329,13 @@ function user_get_user_details($user, $course = null, array $userfields = array(
     $userdetails = array();
     $userdetails['id'] = $user->id;
 
+    $otherfields = get_all_user_name_fields();
+    foreach ($otherfields as $otherfield) {
+        if (isset($user->$otherfield)) {
+            $userdetails[$otherfield] = $user->$otherfield;
+        }
+    }
+
     if (in_array('username', $userfields)) {
         if ($currentuser or has_capability('moodle/user:viewalldetails', $context)) {
             $userdetails['username'] = $user->username;
@@ -385,6 +392,18 @@ function user_get_user_details($user, $course = null, array $userfields = array(
         }
         $userpicture->size = 0; // Size f2.
         $userdetails['profileimageurlsmall'] = $userpicture->get_url($PAGE)->out(false);
+    }
+
+    if (in_array('profilelink', $userfields)) {
+        $profilelink = new moodle_url('/user/view.php', [
+            'id' => $user->id,
+        ]);
+
+        if (!empty($course)) {
+            $profilelink->param('course', $course->id);
+        }
+
+        $userdetails['profilelink'] = $profilelink->out(false);
     }
 
     // Hidden user field.
