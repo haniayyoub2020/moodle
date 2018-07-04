@@ -728,9 +728,19 @@ abstract class backup_cron_automated_helper {
      * intentional, since we cannot reliably determine if any modification was made or not.
      */
     protected static function is_course_modified($courseid, $since) {
+        global $DB;
+        $DB->set_debug(true);
         $logmang = get_log_manager();
+        echo "Log manager:<pre>";
+        var_dump($logmang);
+        echo '</pre>#########';
         $readers = $logmang->get_readers('core\log\sql_reader');
         $params = array('courseid' => $courseid, 'since' => $since);
+
+
+        echo "Readers:<pre>";
+        var_dump($readers);
+        echo "</pre>#########Course ID: $courseid, since: $since###";
 
         foreach ($readers as $readerpluginname => $reader) {
             $where = "courseid = :courseid and timecreated > :since and crud <> 'r'";
@@ -740,10 +750,16 @@ abstract class backup_cron_automated_helper {
                 $where .= " and target <> 'course_backup'";
             }
 
-            if ($reader->get_events_select_count($where, $params)) {
+            $selectcount = $reader->get_events_select_count($where, $params);
+            echo 'Select count: <pre>';
+            var_dump($selectcount);
+            echo '</pre>';
+            if ($selectcount) {
+                $DB->set_debug(false);
                 return true;
             }
         }
+        $DB->set_debug(false);
         return false;
     }
 }
