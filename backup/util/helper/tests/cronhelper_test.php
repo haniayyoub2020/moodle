@@ -334,6 +334,7 @@ class backup_cron_helper_testcase extends advanced_testcase {
         set_config('logguests', 1, 'logstore_standard');
 
         $course = $this->getDataGenerator()->create_course();
+        $this->waitForSecond();
 
         // New courses should be backed up.
         $this->assertTrue(testable_backup_cron_automated_helper::testable_is_course_modified($course->id, 0));
