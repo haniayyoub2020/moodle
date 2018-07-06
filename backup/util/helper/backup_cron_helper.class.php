@@ -731,16 +731,17 @@ abstract class backup_cron_automated_helper {
         global $DB;
         $DB->set_debug(true);
         $logmang = get_log_manager();
-        echo "Log manager:<pre>";
+        var_dump("Log manager");
         var_dump($logmang);
-        echo '</pre>#########';
         $readers = $logmang->get_readers('core\log\sql_reader');
         $params = array('courseid' => $courseid, 'since' => $since);
 
 
-        echo "Readers:<pre>";
+        vr_dump("Readers");
         var_dump($readers);
-        echo "</pre>#########Course ID: $courseid, since: $since###";
+
+        var_dump("Course: '{$courseid}'");
+        var_dump("Since '{$since}'\n");
 
         foreach ($readers as $readerpluginname => $reader) {
             $where = "courseid = :courseid and timecreated > :since and crud <> 'r'";
@@ -751,9 +752,7 @@ abstract class backup_cron_automated_helper {
             }
 
             $selectcount = $reader->get_events_select_count($where, $params);
-            echo 'Select count: <pre>';
-            var_dump($selectcount);
-            echo '</pre>';
+            var_dump("Select count: '{$selectcount}'");
             if ($selectcount) {
                 $DB->set_debug(false);
                 return true;
