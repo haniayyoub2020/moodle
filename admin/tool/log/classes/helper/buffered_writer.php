@@ -61,7 +61,10 @@ trait buffered_writer {
     public function write(\core\event\base $event) {
         global $PAGE;
 
+        var_dump("Writing a new event: " . get_class($event));
+
         if ($this->is_event_ignored($event)) {
+            var_dump("Ignoring this event");
             return;
         }
 
