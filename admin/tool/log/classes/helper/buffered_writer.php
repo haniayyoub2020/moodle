@@ -60,7 +60,6 @@ trait buffered_writer {
      */
     public function write(\core\event\base $event) {
         global $PAGE;
-        throw new \moodle_exception('watf');
 
         var_dump("Writing a new event: " . get_class($event));
 
