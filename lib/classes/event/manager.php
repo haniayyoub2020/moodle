@@ -158,6 +158,8 @@ class manager {
                         }
                     }
 
+                    var_dump("Writing with callable: " . get_class($observer));
+                    var_dump($observer);
                     if (isset($observer->includefile) and file_exists($observer->includefile)) {
                         include_once($observer->includefile);
                     }
