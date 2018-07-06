@@ -90,6 +90,9 @@ trait buffered_writer {
      * Flush event buffer.
      */
     public function flush() {
+        var_dump("Flushing");
+        var_dump($this->count);
+        ob_flush();
         if ($this->count == 0) {
             return;
         }
