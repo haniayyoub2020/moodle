@@ -138,6 +138,7 @@ class store implements \tool_log\log\writer, \core\log\sql_internal_table_reader
 
     public function get_events_select_count($selectwhere, array $params) {
         global $DB;
+        print_object($DB->get_records('logstore_standard_log'));
         return $DB->count_records_select('logstore_standard_log', $selectwhere, $params);
     }
 
