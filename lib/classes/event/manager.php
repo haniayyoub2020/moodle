@@ -68,6 +68,7 @@ class manager {
         self::$buffer[] = $event;
 
         if (self::$dispatching) {
+            var_dump("Already dispatching");
             return;
         }
 
@@ -103,6 +104,7 @@ class manager {
         self::init_all_observers();
 
         while (self::$buffer or self::$extbuffer) {
+            var_dump("Processing buffer...");
 
             $fromextbuffer = false;
             $addedtoextbuffer = false;
@@ -117,6 +119,7 @@ class manager {
                 unset(self::$buffer[key(self::$buffer)]);
 
             } else {
+                var_dump("Early return at " . __LINE__);
                 return;
             }
 
