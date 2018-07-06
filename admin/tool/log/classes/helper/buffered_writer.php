@@ -82,8 +82,16 @@ trait buffered_writer {
         }
 
         if ($this->count >= $this->buffersize) {
+            var_dump("Am flushing");
             $this->flush();
+        } else {
+            var_dump("Buffer not full yet - not flushing");
+            var_dump($this->count);
+            var_dump($this->buffersize);
         }
+
+        var_dump("Buffer size is ");
+        var_dump($this->buffersize);
     }
 
     /**
@@ -92,7 +100,6 @@ trait buffered_writer {
     public function flush() {
         var_dump("Flushing");
         var_dump($this->count);
-        ob_flush();
         if ($this->count == 0) {
             return;
         }
