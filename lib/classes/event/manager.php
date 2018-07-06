@@ -132,6 +132,9 @@ class manager {
             }
 
             $observingclasses = self::get_observing_classes($event);
+            var_dump('----------------------------------------------------------------------------');
+            var_dump($observingclasses);
+            var_dump('----------------------------------------------------------------------------');
             foreach ($observingclasses as $observingclass) {
                 if (!isset(self::$allobservers[$observingclass])) {
                     continue;
@@ -242,6 +245,7 @@ class manager {
                     continue;
                 }
                 self::add_observers($observers, "$fulldir/db/events.php", $plugintype, $plugin);
+                var_dump($observers);
             }
         }
 
@@ -327,7 +331,6 @@ class manager {
      */
     public static function get_all_observers() {
         self::init_all_observers();
-        var_dump(self::$allobservers);
         return self::$allobservers;
     }
 
