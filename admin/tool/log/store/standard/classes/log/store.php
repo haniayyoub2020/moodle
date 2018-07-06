@@ -61,7 +61,6 @@ class store implements \tool_log\log\writer, \core\log\sql_internal_table_reader
      * @param array $evententries raw event data
      */
     protected function insert_event_entries($evententries) {
-        throw new \moodle_exception('trace');
         global $DB;
 
         $DB->insert_records('logstore_standard_log', $evententries);
