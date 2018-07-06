@@ -831,6 +831,7 @@ abstract class base implements \IteratorAggregate {
             return;
         }
 
+        var_dump(get_class($this));
         \core\event\manager::dispatch($this);
 
         $this->dispatched = true;
