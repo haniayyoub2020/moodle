@@ -737,7 +737,7 @@ abstract class backup_cron_automated_helper {
         $params = array('courseid' => $courseid, 'since' => $since);
 
 
-        vr_dump("Readers");
+        var_dump("Readers");
         var_dump($readers);
 
         var_dump("Course: '{$courseid}'");

@@ -337,7 +337,7 @@ class backup_cron_helper_testcase extends advanced_testcase {
         $DB->set_debug(true);
         var_dump("----------------------------------------------------------------------------");
         $course = $this->getDataGenerator()->create_course();
-        $DB->set_debug(flse);
+        $DB->set_debug(false);
         var_dump("----------------------------------------------------------------------------");
         print_object($DB->get_records('logstore_standard_log'));
         var_dump("----------------------------------------------------------------------------");
@@ -364,6 +364,7 @@ class backup_cron_helper_testcase extends advanced_testcase {
 
         // If the only action since last backup was a backup then no backup.
         $this->assertFalse(testable_backup_cron_automated_helper::testable_is_course_modified($course->id, $timepriortobackup));
+        return;
 
         $course->groupmode = SEPARATEGROUPS;
         $course->groupmodeforce = true;
