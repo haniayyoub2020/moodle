@@ -334,7 +334,7 @@ class backup_cron_helper_testcase extends advanced_testcase {
         set_config('logguests', 1, 'logstore_standard');
 
         global $DB;
-        $DB->set_debug(true);
+        //$DB->set_debug(true);
         var_dump("----------------------------------------------------------------------------");
         $course = $this->getDataGenerator()->create_course();
         $DB->set_debug(false);
