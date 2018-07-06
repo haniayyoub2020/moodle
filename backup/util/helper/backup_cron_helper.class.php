@@ -729,7 +729,7 @@ abstract class backup_cron_automated_helper {
      */
     protected static function is_course_modified($courseid, $since) {
         global $DB;
-        $DB->set_debug(true);
+        //$DB->set_debug(true);
         $logmang = get_log_manager();
         $readers = $logmang->get_readers('core\log\sql_reader');
         $params = array('courseid' => $courseid, 'since' => $since);
