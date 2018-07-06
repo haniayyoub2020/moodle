@@ -731,14 +731,8 @@ abstract class backup_cron_automated_helper {
         global $DB;
         $DB->set_debug(true);
         $logmang = get_log_manager();
-        var_dump("Log manager");
-        var_dump($logmang);
         $readers = $logmang->get_readers('core\log\sql_reader');
         $params = array('courseid' => $courseid, 'since' => $since);
-
-
-        var_dump("Readers");
-        var_dump($readers);
 
         var_dump("Course: '{$courseid}'");
         var_dump("Since '{$since}'\n");

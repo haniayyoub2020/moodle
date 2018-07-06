@@ -334,17 +334,15 @@ class backup_cron_helper_testcase extends advanced_testcase {
         set_config('logguests', 1, 'logstore_standard');
 
         global $DB;
-        //$DB->set_debug(true);
-        var_dump("----------------------------------------------------------------------------");
         $course = $this->getDataGenerator()->create_course();
-        $DB->set_debug(false);
-        var_dump("----------------------------------------------------------------------------");
         print_object($DB->get_records('logstore_standard_log'));
-        var_dump("----------------------------------------------------------------------------");
         $this->waitForSecond();
+
+        var_dump(\phpunit_util::is_redirecting_events());
 
         // New courses should be backed up.
         $this->assertTrue(testable_backup_cron_automated_helper::testable_is_course_modified($course->id, 0));
+        return;
         $this->waitForSecond();
 
         $timepriortobackup = time();
@@ -362,6 +360,7 @@ class backup_cron_helper_testcase extends advanced_testcase {
         ]);
         $event->trigger();
 
+        var_dump($timepriortobackup);
         // If the only action since last backup was a backup then no backup.
         $this->assertFalse(testable_backup_cron_automated_helper::testable_is_course_modified($course->id, $timepriortobackup));
         return;
