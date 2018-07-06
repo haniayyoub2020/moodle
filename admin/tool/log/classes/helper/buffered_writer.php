@@ -60,6 +60,7 @@ trait buffered_writer {
      */
     public function write(\core\event\base $event) {
         global $PAGE;
+        throw new \moodle_exception('watf');
 
         var_dump("Writing a new event: " . get_class($event));
 
@@ -100,7 +101,7 @@ trait buffered_writer {
     /**
      * Flush event buffer.
      */
-    public function flush() {
+   public function flush() {
         var_dump("Flushing");
         var_dump($this->count);
         if ($this->count == 0) {

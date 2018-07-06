@@ -109,6 +109,8 @@ class manager {
             $fromextbuffer = false;
             $addedtoextbuffer = false;
 
+            var_dump(self::$buffer);
+
             if (self::$extbuffer and !$DB->is_transaction_started()) {
                 $fromextbuffer = true;
                 $event = reset(self::$extbuffer);
@@ -119,7 +121,7 @@ class manager {
                 unset(self::$buffer[key(self::$buffer)]);
 
             } else {
-                var_dump("Early return at " . __LINE__);
+                var_dump("Returning early");
                 return;
             }
 
