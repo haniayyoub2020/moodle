@@ -158,8 +158,8 @@ class manager {
                         }
                     }
 
-                    var_dump("Writing with callable: " . get_class($observer));
-                    var_dump($observer);
+                    //var_dump("Writing with callable: " . get_class($observer));
+                    //var_dump($observer);
                     if (isset($observer->includefile) and file_exists($observer->includefile)) {
                         include_once($observer->includefile);
                     }
@@ -185,6 +185,7 @@ class manager {
 
     /**
      * Returns list of classes related to this event.
+     *
      * @param \core\event\base $event
      * @return array
      */
@@ -326,6 +327,7 @@ class manager {
      */
     public static function get_all_observers() {
         self::init_all_observers();
+        var_dump(self::$allobservers);
         return self::$allobservers;
     }
 
