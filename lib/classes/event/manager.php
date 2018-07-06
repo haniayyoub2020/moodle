@@ -109,7 +109,13 @@ class manager {
             $fromextbuffer = false;
             $addedtoextbuffer = false;
 
-            var_dump(self::$buffer);
+            //var_dump(self::$buffer);
+            var_dump(count(self::$buffer));
+            if (self::$buffer) {
+                var_dump(__LINE__);
+            } else {
+                var_dump(__LINE__);
+            }
 
             if (self::$extbuffer and !$DB->is_transaction_started()) {
                 $fromextbuffer = true;
