@@ -333,7 +333,14 @@ class backup_cron_helper_testcase extends advanced_testcase {
         set_config('buffersize', 0, 'logstore_standard');
         set_config('logguests', 1, 'logstore_standard');
 
+        global $DB;
+        $DB->set_debug(true);
+        var_dump("----------------------------------------------------------------------------");
         $course = $this->getDataGenerator()->create_course();
+        $DB->set_debug(flse);
+        var_dump("----------------------------------------------------------------------------");
+        print_object($DB->get_records('logstore_standard_log'));
+        var_dump("----------------------------------------------------------------------------");
         $this->waitForSecond();
 
         // New courses should be backed up.
