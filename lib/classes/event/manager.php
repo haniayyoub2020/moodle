@@ -104,18 +104,8 @@ class manager {
         self::init_all_observers();
 
         while (self::$buffer or self::$extbuffer) {
-            var_dump("Processing buffer...");
-
             $fromextbuffer = false;
             $addedtoextbuffer = false;
-
-            //var_dump(self::$buffer);
-            var_dump(count(self::$buffer));
-            if (self::$buffer) {
-                var_dump(__LINE__);
-            } else {
-                var_dump(__LINE__);
-            }
 
             if (self::$extbuffer and !$DB->is_transaction_started()) {
                 $fromextbuffer = true;
@@ -127,16 +117,16 @@ class manager {
                 unset(self::$buffer[key(self::$buffer)]);
 
             } else {
-                var_dump("Returning early");
+                // It looks like we are processign the buffers twice somehow.
+                //var_dump("Returning early");
                 return;
             }
 
+            var_dump("Checking for observers of " . get_class($event));
             $observingclasses = self::get_observing_classes($event);
-            var_dump('----------------------------------------------------------------------------');
-            var_dump($observingclasses);
-            var_dump('----------------------------------------------------------------------------');
             foreach ($observingclasses as $observingclass) {
                 if (!isset(self::$allobservers[$observingclass])) {
+                    var_dump("Nothing found for {$observingclass}");
                     continue;
                 }
                 foreach (self::$allobservers[$observingclass] as $observer) {
@@ -148,6 +138,7 @@ class manager {
                         }
                     } else {
                         if ($DB->is_transaction_started()) {
+                            var_dump("Hmmm... we're in a transaction");
                             if ($fromextbuffer) {
                                 // Weird!
                                 continue;
@@ -245,7 +236,6 @@ class manager {
                     continue;
                 }
                 self::add_observers($observers, "$fulldir/db/events.php", $plugintype, $plugin);
-                var_dump($observers);
             }
         }
 

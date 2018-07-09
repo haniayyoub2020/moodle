@@ -1703,11 +1703,19 @@ function print_object($object) {
     // we may need a lot of memory here
     raise_memory_limit(MEMORY_EXTRA);
 
-    if (CLI_SCRIPT) {
-        fwrite(STDERR, print_r($object, true));
-        fwrite(STDERR, PHP_EOL);
+    if (empty($object)) {
+        echo ("=================\n\n");
+        $value = var_export($object, true);
+        var_dump($value);
+        echo ("=================\n\n");
     } else {
-        echo html_writer::tag('pre', s(print_r($object, true)), array('class' => 'notifytiny'));
+        $value = print_r($object, true);
+    }
+
+    if (CLI_SCRIPT) {
+        fwrite(STDERR, $value . PHP_EOL);
+    } else {
+        echo html_writer::tag('pre', s($value), array('class' => 'notifytiny'));
     }
 }
 

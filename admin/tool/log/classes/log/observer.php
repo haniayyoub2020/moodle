@@ -35,6 +35,7 @@ class observer {
      */
     public static function store(\core\event\base $event) {
         $logmanager = get_log_manager();
+        var_dump("Storing an event");
         if (get_class($logmanager) === 'tool_log\log\manager') {
             /** @var \tool_log\log\manager $logmanager */
             $logmanager->process($event);
