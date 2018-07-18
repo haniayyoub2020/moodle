@@ -2297,14 +2297,18 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2018071700.03);
     }
 
-    if ($oldversion < 2018071700.04) {
+    if ($oldversion < 2018071800.00) {
+        // Define index contextididnumber (not unique) to be added to question_categories.
         $table = new xmldb_table('question_categories');
-        $index = new xmldb_index('contextididnumber', XMLDB_INDEX_UNIQUE, array('contextid, idnumber'));
+        $index = new xmldb_index('contextididnumber', XMLDB_INDEX_NOTUNIQUE, ['contextid', 'idnumber']);
+
+        // Conditionally launch add index contextididnumber.
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
+
         // Main savepoint reached.
-        upgrade_main_savepoint(true, 2018071700.04);
+        upgrade_main_savepoint(true, 2018071800.00);
     }
 
     return true;

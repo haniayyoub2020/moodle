@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="lib/db" VERSION="20180618" COMMENT="XMLDB file for core Moodle tables"
+<XMLDB PATH="lib/db" VERSION="20180718" COMMENT="XMLDB file for core Moodle tables"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../lib/xmldb/xmldb.xsd"
 >
@@ -1342,7 +1342,7 @@
       <INDEXES>
         <INDEX NAME="contextid" UNIQUE="false" FIELDS="contextid" COMMENT="links to context table"/>
         <INDEX NAME="contextidstamp" UNIQUE="true" FIELDS="contextid, stamp"/>
-        <INDEX NAME="contextididnumber" UNIQUE="true" FIELDS="contextid, idnumber"/>
+        <INDEX NAME="contextididnumber" UNIQUE="false" FIELDS="contextid, idnumber"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="question" COMMENT="The questions themselves">
