@@ -213,12 +213,6 @@
     <version>1.0.0</version>
   </library>
   <library>
-    <location>scssphp</location>
-    <name>scssphp</name>
-    <license>MIT</license>
-    <version>0.7.5</version>
-  </library>
-  <library>
     <location>amd/src/chartjs-lazy.js</location>
     <name>Chart.js</name>
     <license>MIT</license>
