@@ -189,12 +189,6 @@
     <version>1.5.1</version>
   </library>
   <library>
-    <location>mustache</location>
-    <name>Mustache</name>
-    <license>MIT</license>
-    <version>2.12.0</version>
-  </library>
-  <library>
     <location>amd/src/mustache.js</location>
     <name>Mustache.js</name>
     <license>MIT</license>
