@@ -111,14 +111,12 @@ nav ul {
   margin: 0;
   padding: 0;
   list-style: none; }
-
-nav li {
-  display: inline-block; }
-
-nav a {
-  display: block;
-  padding: 6px 12px;
-  text-decoration: none; }
+  nav li {
+    display: inline-block; }
+  nav a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none; }
 
 CSS
             ]
@@ -149,6 +147,6 @@ CSS
         $this->resetAfterTest();
         set_config('pathtosassc', PHPUNIT_PATH_TO_SASSC);
         $compiler = new core_scss();
-        $this->assertSame($compiler->compile($scss), $expectedcss);
+        $this->assertSame($expectedcss, $compiler->compile($scss));
     }
 }
