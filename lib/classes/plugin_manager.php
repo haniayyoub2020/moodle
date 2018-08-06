@@ -302,7 +302,11 @@ class core_plugin_manager {
                 $module = new stdClass();
                 $plugin = new stdClass();
                 $plugin->version = null;
-                include($fullplug.'/version.php');
+                $versionfile = "{$fullplug}/version.php";
+                if (!file_exists($versionfile)) {
+                    continue;
+                }
+                include($versionfile);
 
                 // Check if the legacy $module syntax is still used.
                 if (!is_object($module) or (count((array)$module) > 0)) {

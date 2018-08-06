@@ -1166,7 +1166,11 @@ $cache = '.var_export($cache, true).';
                 $plugin = new stdClass();
                 $plugin->version = null;
                 $module = $plugin;
-                include($fullplug.'/version.php');
+                $versionfile = "{$fullplug}/version.php";
+                if (!file_exists($versionfile)) {
+                    continue;
+                }
+                include($versionfile);
                 $versions[$type.'_'.$plug] = $plugin->version;
             }
         }
