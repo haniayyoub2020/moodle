@@ -1003,7 +1003,7 @@ class core_cache_testcase extends advanced_testcase {
         $timefile = $CFG->dataroot."/cache/cachestore_file/default_application/phpunit_eventinvalidationtest/las-cache/lastinvalidation-$hash.cache";
         // Make sure the file is correct.
         $this->assertTrue(file_exists($timefile));
-        $timecont = serialize(cache::now() - 60); // Back 60sec in the past to force it to re-invalidate.
+        $timecont = serialize(cache::now(true) - 60); // Back 60sec in the past to force it to re-invalidate.
         make_writable_directory(dirname($timefile));
         file_put_contents($timefile, $timecont);
         $this->assertTrue(file_exists($timefile));
@@ -1048,7 +1048,7 @@ class core_cache_testcase extends advanced_testcase {
         // Make a new cache class.  This should should invalidate testkey2.
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         // Timestamp should have updated to cache::now().
-        $this->assertEquals(cache::now(), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
 
         // Set testkey2 data.
         $cache->set('testkey2', 'test data 2');
@@ -1056,14 +1056,14 @@ class core_cache_testcase extends advanced_testcase {
         $invalidationcache = cache::make('core', 'eventinvalidation');
         $invalidationcache->set('crazyevent', array('testkey2' => cache::now() - 30));
         // Lastinvalidation should already be cache::now().
-        $this->assertEquals(cache::now(), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
         // Set it to 15 seconds ago so that we know if it changes.
-        $cache->set('lastinvalidation', cache::now() - 15);
+        $cache->set('lastinvalidation', cache::now(true) - 15);
         // Make a new cache class.  This should not invalidate anything.
         cache_factory::instance()->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         // Lastinvalidation shouldn't change since it was already newer than invalidation event.
-        $this->assertEquals(cache::now() - 15, $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::now(true) - 15, $cache->get('lastinvalidation'));
 
         // Now set the event invalidation to newer than the lastinvalidation time.
         $invalidationcache->set('crazyevent', array('testkey2' => cache::now() - 5));
@@ -1071,18 +1071,18 @@ class core_cache_testcase extends advanced_testcase {
         cache_factory::instance()->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         // Lastinvalidation timestamp should have updated to cache::now().
-        $this->assertEquals(cache::now(), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
 
         // Now simulate a purge_by_event 5 seconds ago.
         $invalidationcache = cache::make('core', 'eventinvalidation');
-        $invalidationcache->set('crazyevent', array('purged' => cache::now() - 5));
+        $invalidationcache->set('crazyevent', array('purged' => cache::now(true) - 5));
         // Set our lastinvalidation timestamp to 15 seconds ago.
-        $cache->set('lastinvalidation', cache::now() - 15);
+        $cache->set('lastinvalidation', cache::now(true) - 15);
         // Make a new cache class.  This should invalidate the cache.
         cache_factory::instance()->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         // Lastinvalidation timestamp should have updated to cache::now().
-        $this->assertEquals(cache::now(), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
 
     }
 

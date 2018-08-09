@@ -267,7 +267,7 @@ class cache_helper {
                     }
                     // Add our keys to them with the current cache timestamp.
                     foreach ($keys as $key) {
-                        $data[$key] = cache::now();
+                        $data[$key] = cache::now(true);
                     }
                     // Set that data back to the cache.
                     $cache->set($event, $data);
@@ -339,7 +339,7 @@ class cache_helper {
                     $cache = cache::make('core', 'eventinvalidation');
                     // Create a key to invalidate all.
                     $data = array(
-                        'purged' => cache::now()
+                        'purged' => cache::now(true)
                     );
                     // Set that data back to the cache.
                     $cache->set($event, $data);

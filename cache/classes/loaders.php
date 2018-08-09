@@ -290,9 +290,9 @@ class cache implements cache_loader {
         if ($lastinvalidation === false) {
             // This is a new cache or purged globally, there won't be anything to invalidate.
             // Set the time of the last invalidation and move on.
-            $this->set('lastinvalidation', self::now());
+            $this->set('lastinvalidation', self::now(true));
             return;
-        } else if ($lastinvalidation == self::now()) {
+        } else if ($lastinvalidation == self::now(true)) {
             // We've already invalidated during this request.
             return;
         }
@@ -330,7 +330,7 @@ class cache implements cache_loader {
         }
         // Set the time of the last invalidation.
         if ($purgeall || !empty($todelete)) {
-            $this->set('lastinvalidation', self::now());
+            $this->set('lastinvalidation', self::now(true));
         }
     }
 
@@ -1186,13 +1186,19 @@ class cache implements cache_loader {
      * This stamp needs to be used for all ttl and time based operations to ensure that we don't end up with
      * timing issues.
      *
-     * @return int
+     * @param   bool    $float Whether to use floating precision accuracy.
+     * @return  int|float
      */
-    public static function now() {
+    public static function now($float = false) {
         if (self::$now === null) {
-            self::$now = time();
+            self::$now = microtime(true);
         }
-        return self::$now;
+
+        if ($float) {
+            return self::$now;
+        } else {
+            return (int) self::$now;
+        }
     }
 }
 
