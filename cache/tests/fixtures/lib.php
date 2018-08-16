@@ -535,3 +535,10 @@ class cache_phpunit_factory extends cache_factory {
         parent::disable();
     }
 }
+
+class cache_dummy extends cache {
+    public static function reset_for_session() {
+        self::$now = null;
+        self::$purgetoken = null;
+    }
+}

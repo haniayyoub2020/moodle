@@ -266,8 +266,9 @@ class cache_helper {
                         $data = array();
                     }
                     // Add our keys to them with the current cache timestamp.
+                    $purgetoken = cache::get_purge_token(true);
                     foreach ($keys as $key) {
-                        $data[$key] = cache::now(true);
+                        $data[$key] = $purgetoken;
                     }
                     // Set that data back to the cache.
                     $cache->set($event, $data);
@@ -338,8 +339,9 @@ class cache_helper {
                     // Get the event invalidation cache.
                     $cache = cache::make('core', 'eventinvalidation');
                     // Create a key to invalidate all.
+                    $purgetoken = cache::get_purge_token(true);
                     $data = array(
-                        'purged' => cache::now(true)
+                        'purged' => cache::get_purge_token(),
                     );
                     // Set that data back to the cache.
                     $cache->set($event, $data);

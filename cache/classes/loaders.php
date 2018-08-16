@@ -49,6 +49,7 @@ class cache implements cache_loader {
      * @var int
      */
     protected static $now;
+    protected static $purgetoken;
 
     /**
      * The definition used when loading this cache if there was one.
@@ -281,18 +282,23 @@ class cache implements cache_loader {
      * Identifiers and event invalidation are not compatible with each other at this time.
      * As a result the cache does not need to consider identifiers when working out what to invalidate.
      */
+
     protected function handle_invalidation_events() {
         if (!$this->definition->has_invalidation_events()) {
             return;
         }
 
+
         $lastinvalidation = $this->get('lastinvalidation');
+        error_log("Last inval is {$lastinvalidation}");
         if ($lastinvalidation === false) {
             // This is a new cache or purged globally, there won't be anything to invalidate.
-            // Set the time of the last invalidation and move on.
-            $this->set('lastinvalidation', self::now(true));
+            // Set the toekn of the last invalidation and move on.
+            $this->set('lastinvalidation', self::get_purge_token());
+            error_log("==> Now " . $this->get('lastinvalidation'));
             return;
-        } else if ($lastinvalidation == self::now(true)) {
+        } else if ($lastinvalidation == self::get_purge_token()) {
+            error_log("==> We have a match");
             // We've already invalidated during this request.
             return;
         }
@@ -300,25 +306,30 @@ class cache implements cache_loader {
         // Get the event invalidation cache.
         $cache = self::make('core', 'eventinvalidation');
         $events = $cache->get_many($this->definition->get_invalidation_events());
+        error_log("Foo:");
         $todelete = array();
         $purgeall = false;
         // Iterate the returned data for the events.
         foreach ($events as $event => $keys) {
+            error_log("Event name check: {$event}");
             if ($keys === false) {
                 // No data to be invalidated yet.
                 continue;
             }
+
             // Look at each key and check the timestamp.
-            foreach ($keys as $key => $timestamp) {
+            foreach ($keys as $key => $purgetoken) {
+                error_log("{$key} => {$purgetoken}");
                 // If the timestamp of the event is more than or equal to the last invalidation (happened between the last
                 // invalidation and now)then we need to invaliate the key.
-                if ($timestamp >= $lastinvalidation) {
+                if (self::compare_purge_token($purgetoken, $lastinvalidation)) {
                     if ($key === 'purged') {
                         $purgeall = true;
                         break;
                     } else {
                         $todelete[] = $key;
                     }
+                } else {
                 }
             }
         }
@@ -330,7 +341,7 @@ class cache implements cache_loader {
         }
         // Set the time of the last invalidation.
         if ($purgeall || !empty($todelete)) {
-            $this->set('lastinvalidation', self::now(true));
+            $this->set('lastinvalidation', self::get_purge_token(true));
         }
     }
 
@@ -1192,6 +1203,7 @@ class cache implements cache_loader {
     public static function now($float = false) {
         if (self::$now === null) {
             self::$now = microtime(true);
+            //self::$now = time();
         }
 
         if ($float) {
@@ -1199,6 +1211,35 @@ class cache implements cache_loader {
         } else {
             return (int) self::$now;
         }
+    }
+
+    public static function get_purge_token($reset = false) {
+        return cache::now();
+        if (self::$purgetoken === null || $reset) {
+            self::$purgetoken = cache::now(true) . '-' . substr(md5(uniqid()), 0, 16);
+        }
+
+        return self::$purgetoken;
+    }
+
+    public static function compare_purge_token($invalidationtoken, $cachetoken) {
+        error_log("Comparing {$cachetoken} to {$invalidationtoken}");
+        if ($cachetoken === $invalidationtoken) {
+            return false;
+        }
+
+        // The token for when the cache was last invalidated.
+        list($itt, $itm) = explode('-', "{$invalidationtoken}-", 2);
+
+        // The token for this cache.
+        list($ctt, $ctm) = explode('-', "{$cachetoken}-", 2);
+
+        if ($itt >= $ctt) {
+            // There is a newer invalidation event.
+            return true;
+        }
+
+        return false;
     }
 }
 

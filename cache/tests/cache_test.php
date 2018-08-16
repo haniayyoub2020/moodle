@@ -47,6 +47,7 @@ class core_cache_testcase extends advanced_testcase {
     public function setUp() {
         parent::setUp();
         cache_factory::reset();
+            //cache_dummy::reset_for_session();
         cache_config_testing::create_default_configuration();
     }
 
@@ -1015,6 +1016,7 @@ class core_cache_testcase extends advanced_testcase {
         $this->assertTrue(file_exists($datafile));
 
         // Test 1: Rebuild without the event and test its there.
+        /*
         cache_factory::reset();
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/eventinvalidationtest', array(
@@ -1026,9 +1028,12 @@ class core_cache_testcase extends advanced_testcase {
         ));
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         $this->assertEquals('test data 1', $cache->get('testkey1'));
+*/
 
         // Test 2: Rebuild and test the invalidation of the event via the invalidation cache.
         cache_factory::reset();
+        //cache_dummy::reset_for_session();
+
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/eventinvalidationtest', array(
             'mode' => cache_store::MODE_APPLICATION,
@@ -1040,6 +1045,7 @@ class core_cache_testcase extends advanced_testcase {
                 'crazyevent'
             )
         ));
+
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         $this->assertFalse($cache->get('testkey1'));
 
@@ -1047,21 +1053,27 @@ class core_cache_testcase extends advanced_testcase {
 
         // Make a new cache class.  This should should invalidate testkey2.
         $cache = cache::make('phpunit', 'eventinvalidationtest');
-        // Timestamp should have updated to cache::now().
-        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
+
+        // Invalidation token should have been reset.
+        $this->assertEquals(cache::get_purge_token(), $cache->get('lastinvalidation'));
 
         // Set testkey2 data.
         $cache->set('testkey2', 'test data 2');
+
         // Backdate the event invalidation time by 30 seconds.
         $invalidationcache = cache::make('core', 'eventinvalidation');
         $invalidationcache->set('crazyevent', array('testkey2' => cache::now() - 30));
+
         // Lastinvalidation should already be cache::now().
-        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::get_purge_token(), $cache->get('lastinvalidation'));
+
         // Set it to 15 seconds ago so that we know if it changes.
         $cache->set('lastinvalidation', cache::now(true) - 15);
+
         // Make a new cache class.  This should not invalidate anything.
         cache_factory::instance()->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventinvalidationtest');
+
         // Lastinvalidation shouldn't change since it was already newer than invalidation event.
         $this->assertEquals(cache::now(true) - 15, $cache->get('lastinvalidation'));
 
@@ -1071,7 +1083,7 @@ class core_cache_testcase extends advanced_testcase {
         cache_factory::instance()->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         // Lastinvalidation timestamp should have updated to cache::now().
-        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::get_purge_token(), $cache->get('lastinvalidation'));
 
         // Now simulate a purge_by_event 5 seconds ago.
         $invalidationcache = cache::make('core', 'eventinvalidation');
@@ -1082,7 +1094,7 @@ class core_cache_testcase extends advanced_testcase {
         cache_factory::instance()->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         // Lastinvalidation timestamp should have updated to cache::now().
-        $this->assertEquals(cache::now(true), $cache->get('lastinvalidation'));
+        $this->assertEquals(cache::get_purge_token(), $cache->get('lastinvalidation'));
 
     }
 
@@ -1186,6 +1198,53 @@ class core_cache_testcase extends advanced_testcase {
         // Check things have been removed.
         $this->assertFalse($cache->get('testkey1'));
         $this->assertFalse($cache->get('testkey2'));
+    }
+
+    /**
+     * Tests multiple session cache event purges.
+     */
+    public function test_session_event_purge_multiple() {
+        $instance = cache_config_testing::instance();
+        $instance->phpunit_add_definition('phpunit/eventpurgetest', [
+            'mode' => cache_store::MODE_SESSION,
+            'component' => 'phpunit',
+            'area' => 'eventpurgetest',
+            'invalidationevents' => [
+                'crazyevent',
+            ]
+        ]);
+
+        $factory = cache_factory::instance();
+        $cache = cache::make('phpunit', 'eventpurgetest');
+
+        $this->assertTrue($cache->set('testkey1', 'test data 1'));
+        $this->assertEquals('test data 1', $cache->get('testkey1'));
+
+        // Purge the event.
+        error_log("Purging");
+        cache_helper::purge_by_event('crazyevent');
+        error_log("=> Finished purging");
+
+        // Check things have been removed.
+        $this->assertFalse($cache->get('testkey1'));
+
+        // Set and check them again.
+        $this->assertTrue($cache->set('testkey1', 'test data 1'));
+        $this->assertEquals('test data 1', $cache->get('testkey1'));
+
+        // Reset the factory definitions to force a new cache init.
+        $factory->reset_cache_instances();
+        $cache = cache::make('phpunit', 'eventpurgetest');
+        $this->assertEquals('test data 1', $cache->get('testkey1'));
+
+        // Reset the factory definitions to force a new cache init, and the 'now' value to simulate a newer request on the
+        // same session.
+        error_log("New request");
+        $factory->reset_cache_instances();
+        cache_dummy::reset_for_session();
+
+        $cache = cache::make('phpunit', 'eventpurgetest');
+        $this->assertEquals('test data 1', $cache->get('testkey1'));
     }
 
     /**
