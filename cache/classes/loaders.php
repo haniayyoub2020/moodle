@@ -1214,7 +1214,6 @@ class cache implements cache_loader {
     }
 
     public static function get_purge_token($reset = false) {
-        return cache::now();
         if (self::$purgetoken === null || $reset) {
             self::$purgetoken = cache::now(true) . '-' . substr(md5(uniqid()), 0, 16);
         }

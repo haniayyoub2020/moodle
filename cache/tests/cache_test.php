@@ -1204,6 +1204,7 @@ class core_cache_testcase extends advanced_testcase {
      * Tests multiple session cache event purges.
      */
     public function test_session_event_purge_multiple() {
+        error_log(time());
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/eventpurgetest', [
             'mode' => cache_store::MODE_SESSION,
@@ -1236,6 +1237,7 @@ class core_cache_testcase extends advanced_testcase {
         $factory->reset_cache_instances();
         $cache = cache::make('phpunit', 'eventpurgetest');
         $this->assertEquals('test data 1', $cache->get('testkey1'));
+        cache_helper::purge_by_event('crazyevent');
 
         // Reset the factory definitions to force a new cache init, and the 'now' value to simulate a newer request on the
         // same session.
@@ -1244,7 +1246,7 @@ class core_cache_testcase extends advanced_testcase {
         cache_dummy::reset_for_session();
 
         $cache = cache::make('phpunit', 'eventpurgetest');
-        $this->assertEquals('test data 1', $cache->get('testkey1'));
+        $this->assertFalse($cache->get('testkey1'));
     }
 
     /**
