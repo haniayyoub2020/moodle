@@ -541,4 +541,9 @@ class cache_dummy extends cache {
         self::$now = null;
         self::$purgetoken = null;
     }
+
+    public static function bump_time() {
+        self::$now += 1;
+        self::$purgetoken = null;
+    }
 }

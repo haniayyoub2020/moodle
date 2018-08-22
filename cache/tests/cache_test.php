@@ -1016,7 +1016,6 @@ class core_cache_testcase extends advanced_testcase {
         $this->assertTrue(file_exists($datafile));
 
         // Test 1: Rebuild without the event and test its there.
-        /*
         cache_factory::reset();
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/eventinvalidationtest', array(
@@ -1028,11 +1027,9 @@ class core_cache_testcase extends advanced_testcase {
         ));
         $cache = cache::make('phpunit', 'eventinvalidationtest');
         $this->assertEquals('test data 1', $cache->get('testkey1'));
-*/
 
         // Test 2: Rebuild and test the invalidation of the event via the invalidation cache.
         cache_factory::reset();
-        //cache_dummy::reset_for_session();
 
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/eventinvalidationtest', array(
@@ -1198,55 +1195,6 @@ class core_cache_testcase extends advanced_testcase {
         // Check things have been removed.
         $this->assertFalse($cache->get('testkey1'));
         $this->assertFalse($cache->get('testkey2'));
-    }
-
-    /**
-     * Tests multiple session cache event purges.
-     */
-    public function test_session_event_purge_multiple() {
-        error_log(time());
-        $instance = cache_config_testing::instance();
-        $instance->phpunit_add_definition('phpunit/eventpurgetest', [
-            'mode' => cache_store::MODE_SESSION,
-            'component' => 'phpunit',
-            'area' => 'eventpurgetest',
-            'invalidationevents' => [
-                'crazyevent',
-            ]
-        ]);
-
-        $factory = cache_factory::instance();
-        $cache = cache::make('phpunit', 'eventpurgetest');
-
-        $this->assertTrue($cache->set('testkey1', 'test data 1'));
-        $this->assertEquals('test data 1', $cache->get('testkey1'));
-
-        // Purge the event.
-        error_log("Purging");
-        cache_helper::purge_by_event('crazyevent');
-        error_log("=> Finished purging");
-
-        // Check things have been removed.
-        $this->assertFalse($cache->get('testkey1'));
-
-        // Set and check them again.
-        $this->assertTrue($cache->set('testkey1', 'test data 1'));
-        $this->assertEquals('test data 1', $cache->get('testkey1'));
-
-        // Reset the factory definitions to force a new cache init.
-        $factory->reset_cache_instances();
-        $cache = cache::make('phpunit', 'eventpurgetest');
-        $this->assertEquals('test data 1', $cache->get('testkey1'));
-        cache_helper::purge_by_event('crazyevent');
-
-        // Reset the factory definitions to force a new cache init, and the 'now' value to simulate a newer request on the
-        // same session.
-        error_log("New request");
-        $factory->reset_cache_instances();
-        cache_dummy::reset_for_session();
-
-        $cache = cache::make('phpunit', 'eventpurgetest');
-        $this->assertFalse($cache->get('testkey1'));
     }
 
     /**
@@ -2333,4 +2281,58 @@ class core_cache_testcase extends advanced_testcase {
         $this->assertArrayNotHasKey($sessionid, $endstats);
         $this->assertArrayNotHasKey($requestid, $endstats);
     }
+
+    /**
+     * Tests session cache event purge
+     */
+    public function test_session_event_purge_same_second() {
+        $instance = cache_config_testing::instance();
+        $instance->phpunit_add_definition('phpunit/eventpurgetest', array(
+            'mode' => cache_store::MODE_SESSION,
+            'component' => 'phpunit',
+            'area' => 'eventpurgetest',
+            'invalidationevents' => array(
+                'crazyevent',
+            )
+        ));
+        $cache = cache::make('phpunit', 'eventpurgetest');
+
+        $cache->set('testkey1', 'test data 1');
+        $this->assertEquals('test data 1', $cache->get('testkey1'));
+
+        // Purge the event.
+        #error_log("Purging");
+        cache_helper::purge_by_event('crazyevent');
+
+        // Check things have been removed.
+        $this->assertFalse($cache->get('testkey1'));
+
+        $factory = \cache_factory::instance();
+        #error_log("Resetting");
+        $factory->reset_cache_instances();
+        #error_log("Creating");
+        $cache = cache::make('phpunit', 'eventpurgetest');
+        #error_log("Done");
+
+        // Add them back.
+        $cache->set('testkey1', 'test data 1');
+
+        #error_log("============================================================================");
+        #error_log("Last invaidation: " . $cache->get('lastinvalidation'));
+        // Sleep for a second.
+        #error_log("cache::\$now: " . cache::now());
+        //cache_dummy::reset_for_session();
+        cache_dummy::bump_time();
+        #error_log("cache::\$now: " . cache::now());
+
+        #error_log("Creating");
+        $factory = \cache_factory::instance();
+        $factory->reset_cache_instances();
+        #error_log("Creating");
+        $cache = cache::make('phpunit', 'eventpurgetest');
+        #error_log("Done");
+        #error_log("Last invaidation: " . $cache->get('lastinvalidation'));
+        $this->assertEquals('test data 1', $cache->get('testkey1'));
+    }
+
 }

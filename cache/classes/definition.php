@@ -139,7 +139,7 @@ class cache_definition {
      * The identifier for the definition
      * @var string
      */
-    protected $id;
+    public $id;
 
     /**
      * The mode for the defintion. One of cache_store::MODE_*
