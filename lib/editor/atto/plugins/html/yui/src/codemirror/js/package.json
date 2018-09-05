@@ -1,0 +1,12 @@
+{
+  "name": "moodle-atto_htmlplus-codemirror",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {},
+  "author": "",
+  "license": "GPLv3",
+  "dependencies": {
+    "codemirror": "^5.37.0"
+  }
+}
