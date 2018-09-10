@@ -56,6 +56,9 @@ abstract class util {
      * @return array
      */
     public static function connection_string_to_memcache_servers($str) {
+        debugging('The connection_string_to_memcache_servers function has been deprecated and has not been replaced.',
+            DEBUG_DEVELOPER);
+
         $servers = array();
         $parts   = explode(',', $str);
         foreach ($parts as $part) {
