@@ -29,8 +29,16 @@ require_once("$CFG->libdir/clilib.php");
 require_once("$CFG->libdir/cronlib.php");
 
 list($options, $unrecognized) = cli_get_params(
-    array('help' => false, 'list' => false, 'execute' => false, 'showsql' => false, 'showdebugging' => false),
-    array('h' => 'help')
+    [
+        'help'          => false,
+        'list'          => false,
+        'execute'       => false,
+        'showsql'       => false,
+        'showdebugging' => false,
+        'dryrun'        => false,
+    ], [
+        'h'             => 'help',
+    ]
 );
 
 if ($unrecognized) {
@@ -47,6 +55,7 @@ Options:
 --list                List all scheduled tasks
 --showsql             Show sql queries before they are executed
 --showdebugging       Show developer level debugging information
+--dryrun              Dry run
 -h, --help            Print out this help
 
 Example:
@@ -64,6 +73,9 @@ if ($options['showdebugging']) {
 
 if ($options['showsql']) {
     $DB->set_debug(true);
+}
+if ($options['dryrun']) {
+    $transaction = $DB->start_delegated_transaction();
 }
 if ($options['list']) {
     cli_heading("List of scheduled tasks ($CFG->wwwroot)");
@@ -161,6 +173,11 @@ if ($execute = $options['execute']) {
         mtrace('Scheduled task complete: ' . $fullname);
         \core\task\manager::scheduled_task_complete($task);
         get_mailer('close');
+
+        if (!empty($transaction)) {
+            $DB->rollback_delegated_transaction($transaction, new \coding_exception("Performed a dry-run."));
+        }
+
         exit(0);
     } catch (Exception $e) {
         if ($DB->is_transaction_started()) {
