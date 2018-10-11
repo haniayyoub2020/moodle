@@ -479,8 +479,10 @@ function has_capability($capability, context $context, $user = null, $doanything
     }
 
     // Check whether context locking is enabled.
-    if ($capinfo->captype === 'write' && $context->locked) {
-        return (strpos($capinfo->name, 'moodle/site:managecontextlocks') !== false);
+    if ($CFG->contextlocking) {
+        if ($capinfo->captype === 'write' && $context->locked && $capinfo->name !== 'moodle/site:managecontextlocks') {
+            return false;
+        }
     }
 
     // somehow make sure the user is not deleted and actually exists
@@ -4901,13 +4903,21 @@ abstract class context extends stdClass implements IteratorAggregate {
             return;
         }
 
-        $record = new stdClass();
-        $record->id           = $rec->ctxid;       unset($rec->ctxid);
-        $record->contextlevel = $rec->ctxlevel;    unset($rec->ctxlevel);
-        $record->instanceid   = $rec->ctxinstance; unset($rec->ctxinstance);
-        $record->path         = $rec->ctxpath;     unset($rec->ctxpath);
-        $record->depth        = $rec->ctxdepth;    unset($rec->ctxdepth);
-        $record->locked       = $rec->ctxlocked;   unset($rec->ctxlocked);
+        $record = (object) [
+            'id'            => $rec->ctxid,
+            'contextlevel'  => $rec->ctxlevel,
+            'instanceid'    => $rec->ctxinstance,
+            'path'          => $rec->ctxpath,
+            'depth'         => $rec->ctxdepth,
+            'locked'        => $rec->ctxlocked,
+        ];
+
+        unset($rec->ctxid);
+        unset($rec->ctxlevel);
+        unset($rec->ctxinstance);
+        unset($rec->ctxpath);
+        unset($rec->ctxdepth);
+        unset($rec->ctxlocked);
 
         return context::create_instance_from_record($record);
     }
@@ -4931,12 +4941,18 @@ abstract class context extends stdClass implements IteratorAggregate {
      */
     public function __get($name) {
         switch ($name) {
-            case 'id':           return $this->_id;
-            case 'contextlevel': return $this->_contextlevel;
-            case 'instanceid':   return $this->_instanceid;
-            case 'path':         return $this->_path;
-            case 'depth':        return $this->_depth;
-            case 'locked':       return $this->is_locked();
+            case 'id':
+                return $this->_id;
+            case 'contextlevel':
+                return $this->_contextlevel;
+            case 'instanceid':
+                return $this->_instanceid;
+            case 'path':
+                return $this->_path;
+            case 'depth':
+                return $this->_depth;
+            case 'locked':
+                return $this->is_locked();
 
             default:
                 debugging('Invalid context property accessed! '.$name);
@@ -4951,16 +4967,22 @@ abstract class context extends stdClass implements IteratorAggregate {
      */
     public function __isset($name) {
         switch ($name) {
-            case 'id':           return isset($this->_id);
-            case 'contextlevel': return isset($this->_contextlevel);
-            case 'instanceid':   return isset($this->_instanceid);
-            case 'path':         return isset($this->_path);
-            case 'depth':        return isset($this->_depth);
-            case 'depth':        return true;
-
-            default: return false;
+            case 'id':
+                return isset($this->_id);
+            case 'contextlevel':
+                return isset($this->_contextlevel);
+            case 'instanceid':
+                return isset($this->_instanceid);
+            case 'path':
+                return isset($this->_path);
+            case 'depth':
+                return isset($this->_depth);
+            case 'locked':
+                // Locked is always set.
+                return true;
+            default:
+                return false;
         }
-
     }
 
     /**
@@ -6023,7 +6045,6 @@ class context_system extends context {
             return context::$systemcontext;
         }
 
-
         try {
             // We ignore the strictness completely because system context must exist except during install.
             $record = $DB->get_record('context', array('contextlevel'=>CONTEXT_SYSTEM), '*', MUST_EXIST);
@@ -6041,7 +6062,7 @@ class context_system extends context {
             $record->contextlevel = CONTEXT_SYSTEM;
             $record->instanceid   = 0;
             $record->depth        = 1;
-            $record->path         = null; //not known before insert
+            $record->path         = null; // Not known before insert.
             $record->locked       = 0;
 
             try {

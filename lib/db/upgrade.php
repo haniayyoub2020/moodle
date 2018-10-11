@@ -2687,6 +2687,7 @@ function xmldb_main_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
+        // Note: This change also requires a bump in is_major_upgrade_required.
         upgrade_main_savepoint(true, 2018110100.00);
     }
 
