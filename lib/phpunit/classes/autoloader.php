@@ -178,7 +178,23 @@ class phpunit_autoloader implements \PHPUnit\Runner\TestSuiteLoader {
                 if (realpath($includePathFilename) === realpath($class->getFileName())) {
                     $candidates[] = $loadedClass;
                 }
+
+                $parent = $class->getParentClass();
+                while (!$parent->isAbstract()) {
+                    $methods = $parent->getMethods();
+                    foreach ($methods as $method) {
+                        if (strpos($method->getName(), 'test_', 0) === 0 && $method->isPublic()) {
+                            throw new PHPUnit\Framework\Exception(sprintf(
+                                    "%s Testcase %s in file '%s' extends %s which also contains tests.",
+                                    $method->getName(), $class->getName(), $file, $parent->getName()
+                                ));
+                        }
+                    }
+
+                    $parent = $class->getParentClass();
+                }
             }
+
         }
 
         if (count($candidates) == 0) {
