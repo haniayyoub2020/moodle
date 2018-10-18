@@ -958,15 +958,17 @@ class provider implements
                 'userid' => $userid,
             ];
 
-            // Update the subject.
-            $DB->set_field_select('forum_posts', 'subject', '', $postsql, $postparams);
+            $DB->set_fields_select('forum_posts', [
+                    // Empty the subject.
+                    'subject' => '',
 
-            // Update the message and its format.
-            $DB->set_field_select('forum_posts', 'message', '', $postsql, $postparams);
-            $DB->set_field_select('forum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $postparams);
+                    // Empty the message and reset the message format.
+                    'message' => '',
+                    'messageformat' => FORMAT_PLAIN,
 
-            // Mark the post as deleted.
-            $DB->set_field_select('forum_posts', 'deleted', 1, $postsql, $postparams);
+                    // Mark the post as deleted.
+                    'deleted' => 1,
+                ], $postsql, $postparams);
 
             // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
             // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
