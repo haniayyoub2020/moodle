@@ -3,6 +3,11 @@ information provided here is intended especially for developers.
 
 === 3.6 ===
 
+* Database (DML) layer:
+  - New functions were added for `$DB->set_fields()` and `$DB->set_fields_select()` to allow multiple fields to be
+    updated for a single select.
+    The existing implementation of `$DB->set_field()` and `$DB->set_field_select()` have been updated to use the new implementation instead.
+    Where you need to perform multiple field updates, you are encouraged to use these new functions.
 * A new token-based version of pluginfile.php has been added which can be used for out-of-session file serving by
   setting the `$includetoken` parameter to true on the `moodle_url::make_pluginfile_url()`, and
   `moodle_url::make_file_url()` functions.

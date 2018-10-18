@@ -274,25 +274,30 @@ class core_dml_testcase extends database_driver_testcase {
     }
 
     public function test_fix_table_names() {
-        $DB = new moodle_database_for_testing();
+        $DB = $this->getMockForAbstractClass(\moodle_database::class);
+
+        $rc = new \ReflectionClass(\moodle_database::class);
+        $rcm = $rc->getMethod('fix_table_names');
+        $rcm->setAccessible(true);
+
         $prefix = $DB->get_prefix();
 
         // Simple placeholder.
         $placeholder = "{user_123}";
-        $this->assertSame($prefix."user_123", $DB->public_fix_table_names($placeholder));
+        $this->assertSame($prefix."user_123", $rcm->invoke($DB, $placeholder));
 
         // Wrong table name.
         $placeholder = "{user-a}";
-        $this->assertSame($placeholder, $DB->public_fix_table_names($placeholder));
+        $this->assertSame($placeholder, $rcm->invoke($DB, $placeholder));
 
         // Wrong table name.
         $placeholder = "{123user}";
-        $this->assertSame($placeholder, $DB->public_fix_table_names($placeholder));
+        $this->assertSame($placeholder, $rcm->invoke($DB, $placeholder));
 
         // Full SQL.
         $sql = "SELECT * FROM {user}, {funny_table_name}, {mdl_stupid_table} WHERE {user}.id = {funny_table_name}.userid";
         $expected = "SELECT * FROM {$prefix}user, {$prefix}funny_table_name, {$prefix}mdl_stupid_table WHERE {$prefix}user.id = {$prefix}funny_table_name.userid";
-        $this->assertSame($expected, $DB->public_fix_table_names($sql));
+        $this->assertSame($expected, $rcm->invoke($DB, $sql));
     }
 
     public function test_fix_sql_params() {
@@ -3116,6 +3121,72 @@ class core_dml_testcase extends database_driver_testcase {
         }
     }
 
+    public function test_set_fields() {
+        $DB = $this->tdb;
+        $dbman = $DB->get_manager();
+
+        $table = $this->get_test_table();
+        $tablename = $table->getName();
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('course', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('onechar', XMLDB_TYPE_CHAR, '100', null, null, null);
+        $table->add_field('onetext', XMLDB_TYPE_TEXT, 'big', null, null, null);
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $dbman->create_table($table);
+
+        // Simple set_fields.
+        $id1 = $DB->insert_record($tablename, array('course' => 1, 'onechar' => 'A'));
+        $id2 = $DB->insert_record($tablename, array('course' => 1, 'onechar' => 'A'));
+        $id3 = $DB->insert_record($tablename, array('course' => 3, 'onechar' => 'C'));
+        $this->assertTrue($DB->set_fields($tablename, ['course' => 2, 'onechar' => 'B'], array('id' => $id1)));
+        $this->assertEquals(2, $DB->get_field($tablename, 'course', array('id' => $id1)));
+        $this->assertEquals(1, $DB->get_field($tablename, 'course', array('id' => $id2)));
+        $this->assertEquals(3, $DB->get_field($tablename, 'course', array('id' => $id3)));
+        $this->assertEquals('B', $DB->get_field($tablename, 'onechar', array('id' => $id1)));
+        $this->assertEquals('A', $DB->get_field($tablename, 'onechar', array('id' => $id2)));
+        $this->assertEquals('C', $DB->get_field($tablename, 'onechar', array('id' => $id3)));
+        $DB->delete_records($tablename, array());
+
+        // Multiple fields affected.
+        $id1 = $DB->insert_record($tablename, array('course' => 1, 'onechar' => 'A'));
+        $id2 = $DB->insert_record($tablename, array('course' => 1, 'onechar' => 'B'));
+        $id3 = $DB->insert_record($tablename, array('course' => 3, 'onechar' => 'C'));
+        $DB->set_fields($tablename, ['course' => '5', 'onechar' => 'D'], array('course' => 1));
+        $this->assertEquals(5, $DB->get_field($tablename, 'course', array('id' => $id1)));
+        $this->assertEquals(5, $DB->get_field($tablename, 'course', array('id' => $id2)));
+        $this->assertEquals(3, $DB->get_field($tablename, 'course', array('id' => $id3)));
+        $this->assertEquals('D', $DB->get_field($tablename, 'onechar', array('id' => $id1)));
+        $this->assertEquals('D', $DB->get_field($tablename, 'onechar', array('id' => $id2)));
+        $this->assertEquals('C', $DB->get_field($tablename, 'onechar', array('id' => $id3)));
+        $DB->delete_records($tablename, array());
+
+        // No field affected.
+        $id1 = $DB->insert_record($tablename, array('course' => 1, 'onechar' => 'A'));
+        $id2 = $DB->insert_record($tablename, array('course' => 1, 'onechar' => 'B'));
+        $id3 = $DB->insert_record($tablename, array('course' => 3, 'onechar' => 'C'));
+        $DB->set_fields($tablename, ['course' => '5', 'onechar' => 'D'], array('course' => 0));
+        $this->assertEquals(1, $DB->get_field($tablename, 'course', array('id' => $id1)));
+        $this->assertEquals(1, $DB->get_field($tablename, 'course', array('id' => $id2)));
+        $this->assertEquals(3, $DB->get_field($tablename, 'course', array('id' => $id3)));
+        $this->assertEquals('A', $DB->get_field($tablename, 'onechar', array('id' => $id1)));
+        $this->assertEquals('B', $DB->get_field($tablename, 'onechar', array('id' => $id2)));
+        $this->assertEquals('C', $DB->get_field($tablename, 'onechar', array('id' => $id3)));
+        $DB->delete_records($tablename, array());
+
+        // All fields - no condition.
+        $id1 = $DB->insert_record($tablename, array('course' => 1));
+        $id2 = $DB->insert_record($tablename, array('course' => 1));
+        $id3 = $DB->insert_record($tablename, array('course' => 3));
+        $DB->set_fields($tablename, ['course' => 5, 'onechar' => 'X'], array());
+        $this->assertEquals(5, $DB->get_field($tablename, 'course', array('id' => $id1)));
+        $this->assertEquals(5, $DB->get_field($tablename, 'course', array('id' => $id2)));
+        $this->assertEquals(5, $DB->get_field($tablename, 'course', array('id' => $id3)));
+        $this->assertEquals('X', $DB->get_field($tablename, 'onechar', array('id' => $id1)));
+        $this->assertEquals('X', $DB->get_field($tablename, 'onechar', array('id' => $id2)));
+        $this->assertEquals('X', $DB->get_field($tablename, 'onechar', array('id' => $id3)));
+    }
+
     public function test_count_records() {
         $DB = $this->tdb;
 
@@ -5687,55 +5758,6 @@ class core_dml_testcase extends database_driver_testcase {
         $dbman->drop_table($table);
     }
 }
-
-/**
- * This class is not a proper subclass of moodle_database. It is
- * intended to be used only in unit tests, in order to gain access to the
- * protected methods of moodle_database, and unit test them.
- */
-class moodle_database_for_testing extends moodle_database {
-    protected $prefix = 'mdl_';
-
-    public function public_fix_table_names($sql) {
-        return $this->fix_table_names($sql);
-    }
-
-    public function driver_installed() {}
-    public function get_dbfamily() {}
-    protected function get_dbtype() {}
-    protected function get_dblibrary() {}
-    public function get_name() {}
-    public function get_configuration_help() {}
-    public function connect($dbhost, $dbuser, $dbpass, $dbname, $prefix, array $dboptions=null) {}
-    public function get_server_info() {}
-    protected function allowed_param_types() {}
-    public function get_last_error() {}
-    public function get_tables($usecache=true) {}
-    public function get_indexes($table) {}
-    public function get_columns($table, $usecache=true) {}
-    protected function normalise_value($column, $value) {}
-    public function set_debug($state) {}
-    public function get_debug() {}
-    public function change_database_structure($sql, $tablenames = null) {}
-    public function execute($sql, array $params=null) {}
-    public function get_recordset_sql($sql, array $params=null, $limitfrom=0, $limitnum=0) {}
-    public function get_records_sql($sql, array $params=null, $limitfrom=0, $limitnum=0) {}
-    public function get_fieldset_sql($sql, array $params=null) {}
-    public function insert_record_raw($table, $params, $returnid=true, $bulk=false, $customsequence=false) {}
-    public function insert_record($table, $dataobject, $returnid=true, $bulk=false) {}
-    public function import_record($table, $dataobject) {}
-    public function update_record_raw($table, $params, $bulk=false) {}
-    public function update_record($table, $dataobject, $bulk=false) {}
-    public function set_field_select($table, $newfield, $newvalue, $select, array $params=null) {}
-    public function delete_records_select($table, $select, array $params=null) {}
-    public function sql_concat() {}
-    public function sql_concat_join($separator="' '", $elements=array()) {}
-    public function sql_substr($expr, $start, $length=false) {}
-    public function begin_transaction() {}
-    public function commit_transaction() {}
-    public function rollback_transaction() {}
-}
-
 
 /**
  * Dumb test class with toString() returning 1.

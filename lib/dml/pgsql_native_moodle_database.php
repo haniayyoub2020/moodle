@@ -1214,18 +1214,16 @@ class pgsql_native_moodle_database extends moodle_database {
     }
 
     /**
-     * Set a single field in every table record which match a particular WHERE clause.
+     * Set several fields in every table record which match a particular WHERE clause.
      *
-     * @param string $table The database table to be checked against.
-     * @param string $newfield the field to set.
-     * @param string $newvalue the value to set the field to.
-     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
-     * @param array $params array of sql parameters
-     * @return bool true
-     * @throws dml_exception A DML specific exception is thrown for any errors.
+     * @param   string $table The database table to be checked against.
+     * @param   string[] $newfieldvalues A mapping of field => new value.
+     * @param   string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param   array $params array of sql parameters
+     * @return  bool true
+     * @throws  dml_exception A DML specific exception is thrown for any errors.
      */
-    public function set_field_select($table, $newfield, $newvalue, $select, array $params=null) {
-
+    public function set_fields_select(string $table, array $newfieldvalues, string $select, array $params = null) : bool {
         if ($select) {
             $select = "WHERE $select";
         }
@@ -1233,17 +1231,23 @@ class pgsql_native_moodle_database extends moodle_database {
             $params = array();
         }
         list($select, $params, $type) = $this->fix_sql_params($select, $params);
-        $i = count($params)+1;
 
         // Get column metadata
         $columns = $this->get_columns($table);
-        $column = $columns[$newfield];
 
-        $normalisedvalue = $this->normalise_value($column, $newvalue);
+        // Set and normalise all of the values.
+        $setfields = [];
+        $i = count($params);
+        foreach ($newfieldvalues as $newfield => $newvalue) {
+            $i++;
+            $column = $columns[$newfield];
+            $params[] = $this->normalise_value($column, $newvalue);
+            $setfields[] = "$newfield = \$" . $i;
 
-        $newfield = "$newfield = \$" . $i;
-        $params[] = $normalisedvalue;
-        $sql = "UPDATE {$this->prefix}$table SET $newfield $select";
+        }
+
+        $setfieldssql = implode(', ', $setfields);
+        $sql = "UPDATE {$this->prefix}$table SET $setfieldssql $select";
 
         $this->query_start($sql, $params, SQL_QUERY_UPDATE);
         $result = pg_query_params($this->pgsql, $sql, $params);

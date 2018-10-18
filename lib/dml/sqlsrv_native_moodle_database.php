@@ -1241,17 +1241,16 @@ class sqlsrv_native_moodle_database extends moodle_database {
     }
 
     /**
-     * Set a single field in every table record which match a particular WHERE clause.
+     * Set several fields in every table record which match a particular WHERE clause.
      *
-     * @param string $table The database table to be checked against.
-     * @param string $newfield the field to set.
-     * @param string $newvalue the value to set the field to.
-     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
-     * @param array $params array of sql parameters
-     * @return bool true
-     * @throws dml_exception A DML specific exception is thrown for any errors.
+     * @param   string $table The database table to be checked against.
+     * @param   string[] $newfieldvalues A mapping of field => new value.
+     * @param   string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param   array $params array of sql parameters
+     * @return  bool true
+     * @throws  dml_exception A DML specific exception is thrown for any errors.
      */
-    public function set_field_select($table, $newfield, $newvalue, $select, array $params = null) {
+    public function set_fields_select(string $table, array $newfieldvalues, string $select, array $params = null) : bool {
         if ($select) {
             $select = "WHERE $select";
         }
@@ -1265,17 +1264,26 @@ class sqlsrv_native_moodle_database extends moodle_database {
 
         // Get column metadata
         $columns = $this->get_columns($table);
-        $column = $columns[$newfield];
 
-        $newvalue = $this->normalise_value($column, $newvalue);
+        // Set and normalise all of the values.
+        $setfields = [];
+        $i = 0;
+        foreach ($newfieldvalues as $newfield => $newvalue) {
+            $column = $columns[$newfield];
+            $normalisedvalue = $this->normalise_value($column, $newvalue);
 
-        if (is_null($newvalue)) {
-            $newfield = "$newfield = NULL";
-        } else {
-            $newfield = "$newfield = ?";
-            array_unshift($params, $newvalue);
+            if (is_null($normalisedvalue)) {
+                $newfieldsql = "$newfield = NULL";
+            } else {
+                $newfieldsql = "$newfield = ?";
+                array_splice($params, $i, 0, [$normalisedvalue]);
+                $i++;
+            }
+            $setfields[] = $newfieldsql;
         }
-        $sql = "UPDATE {".$table."} SET $newfield $select";
+
+        $setfieldssql = implode(', ', $setfields);
+        $sql = "UPDATE {".$table."} SET $setfieldssql $select";
 
         $this->do_query($sql, $params, SQL_QUERY_UPDATE);
 

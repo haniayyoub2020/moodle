@@ -1440,49 +1440,58 @@ class oci_native_moodle_database extends moodle_database {
     }
 
     /**
-     * Set a single field in every table record which match a particular WHERE clause.
+     * Set several fields in every table record which match a particular WHERE clause.
      *
-     * @param string $table The database table to be checked against.
-     * @param string $newfield the field to set.
-     * @param string $newvalue the value to set the field to.
-     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
-     * @param array $params array of sql parameters
-     * @return bool true
-     * @throws dml_exception A DML specific exception is thrown for any errors.
+     * @param   string $table The database table to be checked against.
+     * @param   string[] $newfieldvalues A mapping of field => new value.
+     * @param   string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param   array $params array of sql parameters
+     * @return  bool true
+     * @throws  dml_exception A DML specific exception is thrown for any errors.
      */
-    public function set_field_select($table, $newfield, $newvalue, $select, array $params=null) {
-
+    public function set_fields_select(string $table, array $newfieldvalues, string $select, array $params = null) : bool {
         if ($select) {
             $select = "WHERE $select";
         }
         if (is_null($params)) {
             $params = array();
         }
+        list($select, $params, $type) = $this->fix_sql_params($select, $params);
 
         // Get column metadata
         $columns = $this->get_columns($table);
-        $column = $columns[$newfield];
 
-        $newvalue = $this->normalise_value($column, $newvalue);
+        // Set and normalise all of the values.
+        $setfields = [];
+        $i = count($params);
+        foreach ($newfieldvalues as $newfield => $newvalue) {
+            $i++;
+            $column = $columns[$newfield];
+            $normalisedvalue = $this->normalise_value($column, $newvalue);
 
-        list($select, $params, $type) = $this->fix_sql_params($select, $params);
+            if (is_bool($normalisedvalue)) {
+                $normalisedvalue = (int) $normalisedvalue; // Prevent "false" problems.
+            }
 
-        if (is_bool($newvalue)) {
-            $newvalue = (int)$newvalue; // prevent "false" problems
+            if (is_null($normalisedvalue)) {
+                $newfieldsql = "$newfield = NULL";
+            } else {
+                // Set the param to array ($newfield => $newvalue) and key to 'newfieldtoset'
+                // name in the build sql. Later, bind_params() will detect the value array and
+                // perform the needed modifications to allow the query to work. Note that
+                // 'newfieldtoset' is one arbitrary name that hopefully won't be used ever
+                // in order to avoid problems where the same field is used both in the set clause and in
+                // the conditions. This was breaking badly in drivers using NAMED params like oci.
+                $params["newfieldtoset{$i}"] = array($newfield => $normalisedvalue);
+                $newfieldsql = "$newfield = :newfieldtoset{$i}";
+            }
+            $setfields[] = $newfieldsql;
         }
-        if (is_null($newvalue)) {
-            $newsql = "$newfield = NULL";
-        } else {
-            // Set the param to array ($newfield => $newvalue) and key to 'newfieldtoset'
-            // name in the build sql. Later, bind_params() will detect the value array and
-            // perform the needed modifications to allow the query to work. Note that
-            // 'newfieldtoset' is one arbitrary name that hopefully won't be used ever
-            // in order to avoid problems where the same field is used both in the set clause and in
-            // the conditions. This was breaking badly in drivers using NAMED params like oci.
-            $params['newfieldtoset'] = array($newfield => $newvalue);
-            $newsql = "$newfield = :newfieldtoset";
-        }
-        $sql = "UPDATE {" . $table . "} SET $newsql $select";
+
+        $setfieldssql = implode(', ', $setfields);
+        $sql = "UPDATE {" . $table . "} SET $setfieldsql $select";
+        print_object($sql);
+        print_object($params);
         list($sql, $params, $type) = $this->fix_sql_params($sql, $params);
 
         list($sql, $params) = $this->tweak_param_names($sql, $params);

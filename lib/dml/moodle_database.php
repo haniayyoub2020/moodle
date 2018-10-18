@@ -1804,8 +1804,35 @@ abstract class moodle_database {
      * @return bool true
      * @throws dml_exception A DML specific exception is thrown for any errors.
      */
-    public abstract function set_field_select($table, $newfield, $newvalue, $select, array $params=null);
+    public function set_field_select($table, $newfield, $newvalue, $select, array $params = null) {
+        return $this->set_fields_select($table, [$newfield => $newvalue], $select, $params);
+    }
 
+    /**
+     * Set several fields in every table record which all the given conditions are met.
+     *
+     * @param   string  $table The database table to be checked against.
+     * @param   string[] $newfieldvalues A mapping of field => new value.
+     * @param   array   $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @return  bool    true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function set_fields(string $table, array  $newfieldvalues, array $conditions = null) : bool {
+        list($select, $params) = $this->where_clause($table, $conditions);
+        return $this->set_fields_select($table, $newfieldvalues, $select, $params);
+    }
+
+    /**
+     * Set several fields in every table record which match a particular WHERE clause.
+     *
+     * @param   string  $table The database table to be checked against.
+     * @param   string[] $newfieldvalues A mapping of field => new value.
+     * @param   string  $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param   array   $params array of sql parameters
+     * @return  bool    true
+     * @throws  dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function set_fields_select(string $table, array $newfieldvalues, string $select, array $params = null) : bool;
 
     /**
      * Count the records in a table where all the given conditions met.
