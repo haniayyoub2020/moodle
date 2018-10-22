@@ -54,7 +54,7 @@ class behat_action_menu extends behat_base {
             return;
         }
         // Gets the node based on the requested selector type and locator.
-        $node = $this->get_node_in_container("css_element", "[role=menuitem][aria-haspopup=true]", $selectortype, $element);
+        $node = $this->get_node_in_container("css_element", "[role=button][aria-haspopup=true]", $selectortype, $element);
 
         // Check if it is not already opened.
         $menunode = $this->find('css', '[aria-labelledby='.$node->getAttribute('id').']');
