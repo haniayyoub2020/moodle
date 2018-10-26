@@ -3253,7 +3253,16 @@ EOD;
         // Accessing $CFG directly as using \core_search::is_global_search_enabled would
         // result in an extra included file for each site, even the ones where global search
         // is disabled.
-        if (empty($CFG->enableglobalsearch) || !has_capability('moodle/search:query', context_system::instance())) {
+        if (empty($CFG->enableglobalsearch)) {
+            return '';
+        }
+
+        if (!has_capability('moodle/search:query', context_system::instance())) {
+            return '';
+        }
+
+        // Now that we know that search is available, we do need to check if it is actually configured, otherwise we show a non-functional search box.
+        if (!\core_search\manager::is_global_search_enabled_and_configured()) {
             return '';
         }
 

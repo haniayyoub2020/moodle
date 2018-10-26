@@ -165,6 +165,25 @@ class manager {
     }
 
     /**
+     * Returns whether global search is enabled and configured.
+     *
+     * @return bool
+     */
+    public static function is_global_search_enabled_and_configured() {
+        global $CFG;
+        if (!self::is_global_search_enabled()) {
+            return false;
+        }
+
+        $engine = self::search_engine_instance();
+        if (true !== $engine->is_server_ready()) {
+            // Note: is_server_ready returns either true, or an error string.
+            return false;
+        }
+
+        return true;
+    }
+    /**
      * Returns whether indexing is enabled or not (you can enable indexing even when search is not
      * enabled at the moment, so as to have it ready for students).
      *

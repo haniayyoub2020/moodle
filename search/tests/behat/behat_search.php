@@ -37,6 +37,18 @@ use Behat\Gherkin\Node\TableNode as TableNode;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_search extends behat_base {
+
+    /**
+     * Confirm that, when enabled and configured, global search is available.
+     *
+     * @Given /^Global search is available$/
+     */
+    public function global_search_is_available() {
+        if (!\core_search\manager::is_global_search_enabled_and_configured()) {
+            throw new \Moodle\BehatExtension\Exception\SkippedException;
+        }
+    }
+
     /**
      * Create event when starting on the front page.
      *

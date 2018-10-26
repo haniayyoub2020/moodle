@@ -7,6 +7,7 @@ Feature: Use global search interface
   Background:
     Given the following config values are set as admin:
       | enableglobalsearch | 1 |
+    And Global search is available
     And the following "activities" exist:
       | activity | name       | intro      | course               | idnumber |
       | page     | PageName1  | PageDesc1  | Acceptance test site | PAGE1    |
