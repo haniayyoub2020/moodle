@@ -1468,7 +1468,6 @@ class oci_native_moodle_database extends moodle_database {
         } else {
             $i = 0;
         }
-        $i = 1;
         foreach ($newfieldvalues as $newfield => $newvalue) {
             $column = $columns[$newfield];
             $newvalue = $this->normalise_value($column, $newvalue);
