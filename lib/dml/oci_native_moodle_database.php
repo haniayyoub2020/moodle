@@ -1463,17 +1463,21 @@ class oci_native_moodle_database extends moodle_database {
 
         // Set and normalise all of the values.
         $setfields = [];
-        $i = count($params);
+        if (count($newfieldvalues) === 1) {
+            $i = '';
+        } else {
+            $i = 0;
+        }
+        $i = 1;
         foreach ($newfieldvalues as $newfield => $newvalue) {
-            $i++;
             $column = $columns[$newfield];
-            $normalisedvalue = $this->normalise_value($column, $newvalue);
+            $newvalue = $this->normalise_value($column, $newvalue);
 
-            if (is_bool($normalisedvalue)) {
-                $normalisedvalue = (int) $normalisedvalue; // Prevent "false" problems.
+            if (is_bool($newvalue)) {
+                $newvalue = (int) $newvalue; // Prevent "false" problems.
             }
 
-            if (is_null($normalisedvalue)) {
+            if (is_null($newvalue)) {
                 $newfieldsql = "$newfield = NULL";
             } else {
                 // Set the param to array ($newfield => $newvalue) and key to 'newfieldtoset'
@@ -1482,19 +1486,18 @@ class oci_native_moodle_database extends moodle_database {
                 // 'newfieldtoset' is one arbitrary name that hopefully won't be used ever
                 // in order to avoid problems where the same field is used both in the set clause and in
                 // the conditions. This was breaking badly in drivers using NAMED params like oci.
-                $params["newfieldtoset{$i}"] = array($newfield => $normalisedvalue);
+                $params["newfieldtoset{$i}"] = array($newfield => $newvalue);
                 $newfieldsql = "$newfield = :newfieldtoset{$i}";
+                $i++;
             }
             $setfields[] = $newfieldsql;
         }
-
-        $setfieldssql = implode(', ', $setfields);
-        $sql = "UPDATE {" . $table . "} SET $setfieldsql $select";
-        print_object($sql);
-        print_object($params);
+        $sql = "UPDATE {" . $table . "} SET " . implode(', ', $setfields) . " $select";
         list($sql, $params, $type) = $this->fix_sql_params($sql, $params);
 
         list($sql, $params) = $this->tweak_param_names($sql, $params);
+        print_object($sql);
+        var_dump($params);
         $this->query_start($sql, $params, SQL_QUERY_UPDATE);
         $stmt = $this->parse_query($sql);
         $descriptors = array();
