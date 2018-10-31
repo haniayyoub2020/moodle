@@ -1475,16 +1475,12 @@ class oci_native_moodle_database extends moodle_database {
             if (is_null($newvalue)) {
                 $newfieldsql = "$newfield = NULL";
             } else {
-                // Set the param to array ($newfield => $newvalue) and key to 'newfieldtoset'
-                // name in the build sql. Later, bind_params() will detect the value array and
-                // perform the needed modifications to allow the query to work. Note that
-                // 'newfieldtoset' is one arbitrary name that hopefully won't be used ever
-                // in order to avoid problems where the same field is used both in the set clause and in
-                // the conditions. This was breaking badly in drivers using NAMED params like oci.
-                $fieldname = "_newfield{$i}";
-                $params[$newfield] = array($newfield => $newvalue);
+                do {
+                    $fieldname = "nfvtoset{$i}";
+                    $i++;
+                } while (isset($params[$fieldname]));
+                $params[$fieldname] = array($newfield => $newvalue);
                 $newfieldsql = "$newfield = :{$fieldname}";
-                $i++;
             }
             $setfields[] = $newfieldsql;
         }
