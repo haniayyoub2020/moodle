@@ -1464,7 +1464,7 @@ class oci_native_moodle_database extends moodle_database {
         // Set and normalise all of the values.
         $setfields = [];
         if (count($newfieldvalues) === 1) {
-            $i = '';
+            $i = 'x';
         } else {
             $i = 0;
         }
