@@ -1486,6 +1486,8 @@ class oci_native_moodle_database extends moodle_database {
         list($sql, $params, $type) = $this->fix_sql_params($sql, $params);
 
         list($sql, $params) = $this->tweak_param_names($sql, $params);
+        print_object($sql);
+        var_dump($params);
         $this->query_start($sql, $params, SQL_QUERY_UPDATE);
         $stmt = $this->parse_query($sql);
         $descriptors = array();
