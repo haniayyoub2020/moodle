@@ -1463,11 +1463,7 @@ class oci_native_moodle_database extends moodle_database {
 
         // Set and normalise all of the values.
         $setfields = [];
-        if (count($newfieldvalues) === 1) {
-            $i = 'x';
-        } else {
-            $i = 0;
-        }
+        $i = 0;
         foreach ($newfieldvalues as $newfield => $newvalue) {
             $column = $columns[$newfield];
             $newvalue = $this->normalise_value($column, $newvalue);
@@ -1485,8 +1481,9 @@ class oci_native_moodle_database extends moodle_database {
                 // 'newfieldtoset' is one arbitrary name that hopefully won't be used ever
                 // in order to avoid problems where the same field is used both in the set clause and in
                 // the conditions. This was breaking badly in drivers using NAMED params like oci.
-                $params["newfieldtoset{$i}"] = array($newfield => $newvalue);
-                $newfieldsql = "$newfield = :newfieldtoset{$i}";
+                $fieldname = "_newfield{$i}";
+                $params[$newfield] = array($newfield => $newvalue);
+                $newfieldsql = "$newfield = :{$fieldname}";
                 $i++;
             }
             $setfields[] = $newfieldsql;
