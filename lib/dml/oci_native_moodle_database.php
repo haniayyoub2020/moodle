@@ -1458,14 +1458,13 @@ class oci_native_moodle_database extends moodle_database {
         if (is_null($params)) {
             $params = array();
         }
+        list($select, $params, $type) = $this->fix_sql_params($select, $params);
 
         // Get column metadata
         $columns = $this->get_columns($table);
         $column = $columns[$newfield];
 
         $newvalue = $this->normalise_value($column, $newvalue);
-
-        list($select, $params, $type) = $this->fix_sql_params($select, $params);
 
         if (is_bool($newvalue)) {
             $newvalue = (int)$newvalue; // prevent "false" problems
