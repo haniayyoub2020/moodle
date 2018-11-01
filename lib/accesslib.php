@@ -6821,10 +6821,31 @@ class context_module extends context {
         if (!empty($extra)) {
             $extra = "OR name $extra";
         }
+
+        $ignorecomponents = [
+            $DB->sql_like('component', ':notlike', true, true, true),
+        ];
+        $params['notlike'] = "mod_%";
+
+        $components = \core_component::get_component_list();
+        $i = 0;
+        foreach (array_keys($components['mod']) as $mod) {
+            if ($subplugins = \core_component::get_subplugins($mod)) {
+                foreach (array_keys($subplugins) as $subplugintype) {
+                    $paramname = "notlike{$i}";
+                    $ignorecomponents[] = $DB->sql_like('component', ":{$paramname}", true, true, true);
+                    $params[$paramname] = "{$subplugintype}_%";
+                    $i++;
+                }
+            }
+        }
+
+        $notlikesql = "(" . implode(' AND ', $ignorecomponents) . ")";
+
         $sql = "SELECT *
                   FROM {capabilities}
                  WHERE (contextlevel = ".CONTEXT_MODULE."
-                       AND (component = :component OR component = 'moodle'))
+                       AND (component = :component OR {$notlikesql}))
                        $extra";
         $params['component'] = "mod_$module->name";
 
