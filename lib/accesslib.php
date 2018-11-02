@@ -479,7 +479,7 @@ function has_capability($capability, context $context, $user = null, $doanything
     }
 
     // Check whether context locking is enabled.
-    if ($CFG->contextlocking) {
+    if (!empty($CFG->contextlocking)) {
         if ($capinfo->captype === 'write' && $context->locked && $capinfo->name !== 'moodle/site:managecontextlocks') {
             return false;
         }
