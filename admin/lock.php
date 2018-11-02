@@ -27,6 +27,7 @@ require_once("{$CFG->libdir}/adminlib.php");
 
 $contextid = required_param('id', PARAM_INT);
 $confirm = optional_param('confirm', null, PARAM_INT);
+$returnurl = optional_param('returnurl', null, PARAM_LOCALURL);
 
 $PAGE->set_url('/admin/lock.php', ['id' => $contextid]);
 
@@ -51,11 +52,25 @@ require_capability('moodle/site:managecontextlocks', $context);
 $PAGE->set_pagelayout('admin');
 $PAGE->navigation->clear_cache();
 
+$a = (object) [
+    'contextname' => $context->get_context_name(),
+];
+
 if (null !== $confirm && confirm_sesskey()) {
     $context->set_locked(!empty($confirm));
 
-    // TODO: Make this remember the returnurl.
-    redirect($context->get_url());
+    if ($context->locked) {
+        $lockmessage = get_string('managecontextlocklocked', 'admin', $a);
+    } else {
+        $lockmessage = get_string('managecontextlockunlocked', 'admin', $a);
+    }
+
+    if (empty($returnurl)) {
+        $returnurl = $context->get_url();
+    } else {
+        $returnurl = new moodle_url($returnurl);
+    }
+    redirect($returnurl, $lockmessage);
 }
 
 $heading = get_string('managecontextlock', 'admin');
@@ -65,17 +80,17 @@ $PAGE->set_heading($heading);
 echo $OUTPUT->header();
 
 if ($context->locked) {
-    $confirmstring = get_string('confirmcontextunlock', 'admin');
+    $confirmstring = get_string('confirmcontextunlock', 'admin', $a);
     $target = 0;
 } else {
-    $confirmstring = get_string('confirmcontextlock', 'admin');
+    $confirmstring = get_string('confirmcontextlock', 'admin', $a);
     $target = 1;
 }
 
-echo $OUTPUT->confirm(
-    $confirmstring,
-    new moodle_url($PAGE->url, ['confirm' => $target]),
-    $context->get_url()
-);
+$confirmurl = new \moodle_url($PAGE->url, ['confirm' => $target]);
+if (!empty($returnurl)) {
+    $confirmurl->param('returnurl', $returnurl);
+}
 
+echo $OUTPUT->confirm($confirmstring, $confirmurl, $context->get_url());
 echo $OUTPUT->footer();

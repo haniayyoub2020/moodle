@@ -835,17 +835,24 @@ class navigation_node implements renderable {
         return $this->action;
     }
 
-    protected function add_context_locking_node($node, $context) {
+    /**
+     * Add the menu item to handle locking and unlocking of a conext.
+     *
+     * @param \navigation_node $node Node to add
+     * @param \context $context The context to be locked
+     */
+    protected function add_context_locking_node(\navigation_node $node, \context $context) {
         global $CFG;
         // Manage context locking.
         if (!empty($CFG->contextlocking) && has_capability('moodle/site:managecontextlocks', $context)) {
             $parentcontext = $context->get_parent_context();
             if (empty($parentcontext) || !$parentcontext->locked) {
-                $lockstring = get_string('managecontextlock', 'admin');
                 if ($context->locked) {
                     $lockicon = 'i/unlock';
+                    $lockstring = get_string('managecontextunlock', 'admin');
                 } else {
                     $lockicon = 'i/lock';
+                    $lockstring = get_string('managecontextlock', 'admin');
                 }
                 $node->add(
                     $lockstring,
