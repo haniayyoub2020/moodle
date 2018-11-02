@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tests\core\accesslib;
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -33,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class has_capability_testcase extends \advanced_testcase {
+class accesslib_has_capability_testcase extends \advanced_testcase {
 
     /**
      * Unit tests to check the operation of locked contexts.
@@ -49,8 +47,10 @@ class has_capability_testcase extends \advanced_testcase {
         global $DB;
 
         $this->resetAfterTest();
+        set_config('contextlocking', 1);
 
         $generator = $this->getDataGenerator();
+        $otheruser = $generator->create_user();
 
         /**
          * / (system)
@@ -171,6 +171,33 @@ class has_capability_testcase extends \advanced_testcase {
                 $this->assertTrue(has_capability($writecapability, $context));
             }
         }
+
+        $this->setUser($otheruser);
+        // Check writes.
+        foreach ((array) $contexts as $contextname => $context) {
+            $this->assertFalse(has_capability($writecapability, $context));
+        }
+
+        // Disable the contextlocking experimental feature.
+        set_config('contextlocking', 0);
+
+        $this->setAdminUser();
+        // All read capabilities should remain.
+        foreach ((array) $contexts as $context) {
+            $this->assertTrue(has_capability($readcapability, $context));
+            $this->assertTrue(has_capability($managecapability, $context));
+        }
+
+        // All write capabilities should now be present again.
+        foreach ((array) $contexts as $contextname => $context) {
+            $this->assertTrue(has_capability($writecapability, $context));
+        }
+
+        $this->setUser($otheruser);
+        // Check writes.
+        foreach ((array) $contexts as $contextname => $context) {
+            $this->assertFalse(has_capability($writecapability, $context));
+        }
     }
 
     /**
@@ -254,5 +281,12 @@ class has_capability_testcase extends \advanced_testcase {
                 ],
             ],
         ];
+    }
+
+    public function test_managecontextlocks_allows_write() {
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+
     }
 }
