@@ -1,0 +1,58 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Prints the contact form to the site's Data Protection Officer
+ *
+ * @copyright 2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
+ * @package tool_dataprivacy
+ */
+
+require_once('../../../config.php');
+
+$confirm = optional_param('confirm', null, PARAM_INT);
+
+$PAGE->set_url(new moodle_url('/admin/tool/dataprivacy/resubmitallrequests.php'));
+
+require_login();
+
+$PAGE->set_context(\context_system::instance());
+require_capability('tool/dataprivacy:managedatarequests', $PAGE->context);
+
+$manageurl = new moodle_url('/admin/tool/dataprivacy/datarequests.php');
+
+$stringparams = (object) [
+        'requestcount' => \tool_dataprivacy\data_request::count_waiting_requests(),
+    ];
+
+if (null !== $confirm && confirm_sesskey()) {
+    foreach (\tool_dataprivacy\data_request::get_waiting_requests() as $request) {
+        $request->resubmit_request();
+    }
+    redirect($manageurl, get_string('resubmittedallrequests', 'tool_dataprivacy', $stringparams));
+}
+
+$heading = get_string('resubmitallrequests', 'tool_dataprivacy', $stringparams);
+$PAGE->set_title($heading);
+$PAGE->set_heading($heading);
+
+echo $OUTPUT->header();
+
+$confirmstring = get_string('confirmrequestresubmitall', 'tool_dataprivacy', $stringparams);
+$confirmurl = new \moodle_url($PAGE->url, ['confirm' => 1]);
+echo $OUTPUT->confirm($confirmstring, $confirmurl, $manageurl);
+echo $OUTPUT->footer();

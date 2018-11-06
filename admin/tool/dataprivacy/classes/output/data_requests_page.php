@@ -74,6 +74,7 @@ class data_requests_page implements renderable, templatable {
         $data = new stdClass();
         $data->newdatarequesturl = new moodle_url('/admin/tool/dataprivacy/createdatarequest.php');
         $data->newdatarequesturl->param('manage', true);
+        $data->resubmitallrequests = new moodle_url('/admin/tool/dataprivacy/resubmitallrequests.php');
 
         if (!is_https()) {
             $httpwarningmessage = get_string('httpwarning', 'tool_dataprivacy');

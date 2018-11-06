@@ -191,6 +191,40 @@ class data_request extends persistent {
     }
 
     /**
+     * Fetch all data requests which are in one of the waiting states.
+     * That is where the status is pending approval, or is approved and pending completion.
+     *
+     * @return  data_request[]
+     */
+    public static function get_waiting_requests() : array {
+        global $DB;
+
+        $pendingstatuses = [
+            api::DATAREQUEST_STATUS_APPROVED,
+            api::DATAREQUEST_STATUS_AWAITING_APPROVAL,
+        ];
+        list($statusinsql, $statusparams) = $DB->get_in_or_equal($pendingstatuses, SQL_PARAMS_NAMED);
+        return self::get_records_select("status {$statusinsql}", $statusparams);
+    }
+
+    /**
+     * Fetch the count of data requests in the waiting states.
+     * That is where the status is pending approval, or is approved and pending completion.
+     *
+     * @return  data_request[]
+     */
+    public static function count_waiting_requests() : int {
+        global $DB;
+
+        $pendingstatuses = [
+            api::DATAREQUEST_STATUS_APPROVED,
+            api::DATAREQUEST_STATUS_AWAITING_APPROVAL,
+        ];
+        list($statusinsql, $statusparams) = $DB->get_in_or_equal($pendingstatuses, SQL_PARAMS_NAMED);
+        return self::count_records_select("status {$statusinsql}", $statusparams);
+    }
+
+    /**
      * Expire a given set of data requests.
      * Update request status and delete the files.
      *
