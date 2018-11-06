@@ -158,8 +158,6 @@ class data_request extends persistent {
         return $result;
     }
 
-
-
     /**
      * Fetch completed data requests which are due to expire.
      *
@@ -223,5 +221,61 @@ class data_request extends persistent {
                 }
             }
         }
+    }
+
+    /**
+     * Whether this request is in a state appropriate for reset/resubmission.
+     *
+     * Note: This does not check whether any other completed requests exist for this user.
+     *
+     * @return  bool
+     */
+    public function is_resettable() : bool {
+        $resettable = [
+            api::DATAREQUEST_STATUS_AWAITING_APPROVAL,
+            api::DATAREQUEST_STATUS_APPROVED,
+            api::DATAREQUEST_STATUS_REJECTED,
+        ];
+
+        return (false !== array_search($this->get('status'), $resettable));
+    }
+
+    /**
+     * Whether this request is 'active'.
+     */
+    public function is_active() : bool {
+        $active = [
+            api::DATAREQUEST_STATUS_AWAITING_APPROVAL,
+            api::DATAREQUEST_STATUS_APPROVED,
+        ];
+
+        return (false !== array_search($this->get('status'), $active));
+    }
+
+    /**
+     * Reject this request and resubmit it as a fresh request.
+     *
+     * Note: This does not check whether any other completed requests exist for this user.
+     *
+     * @return  self
+     */
+    public function resubmit_request() : data_request {
+        if (!$this->is_resettable()) {
+            throw new \moodle_exception('cannotreset', 'tool_dataprivacy');
+        }
+
+        $currentdata = $this->to_record();
+        unset($currentdata->id);
+
+        $this->set('status', api::DATAREQUEST_STATUS_REJECTED);
+        $this->save();
+
+        $clone = api::create_data_request($this->get('userid'), $this->get('type'));
+        $clone->set('comments', $this->get('comments'));
+        $clone->set('dpo', $this->get('dpo'));
+        $clone->set('requestedby', $this->get('requestedby'));
+        $clone->save();
+
+        return $clone;
     }
 }

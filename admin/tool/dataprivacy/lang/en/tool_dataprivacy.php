@@ -55,6 +55,7 @@ $string['confirmcompletion'] = 'Do you really want to mark this user enquiry as 
 $string['confirmcontextdeletion'] = 'Do you really want to confirm the deletion of the selected contexts? This will also delete all of the user data for their respective sub-contexts.';
 $string['confirmdenial'] = 'Do you really want deny this data request?';
 $string['confirmbulkdenial'] = 'Do you really want to bulk deny the selected data requests?';
+$string['confirmrequestresubmit'] = 'Are you sure you wish to cancel the current {$a->type} request for {$a->username} and resubmit it?';
 $string['contactdataprotectionofficer'] = 'Contact the privacy officer';
 $string['contactdataprotectionofficer_desc'] = 'If enabled, users will be able to contact the privacy officer and make a data request via a link on their profile page.';
 $string['contextlevelname10'] = 'Site';
@@ -264,6 +265,9 @@ When checking the active enrolment in a course, if the course has no end date th
 If the course has no end date, and this setting is enabled, then the user cannot be deleted.';
 $string['requiresattention'] = 'Requires attention.';
 $string['requiresattentionexplanation'] = 'This plugin does not implement the Moodle privacy API. If this plugin stores any personal data it will not be able to be exported or deleted through Moodle\'s privacy system.';
+$string['resubmitrequestasnew'] = 'Resubmit as new request';
+$string['resubmitrequest'] = 'Resubmit {$a->type} request for {$a->username}';
+$string['resubmittedrequest'] = 'The existing {$a->type} request for {$a->username} was cancelled and resubmitted';
 $string['resultdeleted'] = 'You recently requested to have your account and personal data in {$a} to be deleted. This process has been completed and you will no longer be able to log in.';
 $string['resultdownloadready'] = 'Your copy of your personal data in {$a} that you recently requested is now available for download. Please click on the link below to go to the download page.';
 $string['reviewdata'] = 'Review data';
