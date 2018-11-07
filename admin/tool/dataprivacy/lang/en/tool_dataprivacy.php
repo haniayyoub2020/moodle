@@ -289,7 +289,6 @@ $string['statusready'] = 'Download ready';
 $string['statusdeleted'] = 'Deleted';
 $string['statusdetail'] = 'Status:';
 $string['statusexpired'] = 'Expired';
-$string['statuspreprocessing'] = 'Pre-processing';
 $string['statusprocessing'] = 'Processing';
 $string['statuspending'] = 'Pending';
 $string['statusrejected'] = 'Rejected';

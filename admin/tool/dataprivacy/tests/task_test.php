@@ -131,9 +131,6 @@ class tool_dataprivacy_task_testcase extends data_privacy_testcase {
         // After running the scheduled task, the user should have only one delete data request.
         $this->assertCount(1, api::get_data_requests($user->id, [],
                 [api::DATAREQUEST_TYPE_DELETE]));
-        // The user should not have a newly created delete data request.
-        $this->assertCount(0, api::get_data_requests($user->id,
-                [api::DATAREQUEST_STATUS_PENDING], [api::DATAREQUEST_TYPE_DELETE]));
     }
 
     /**
@@ -161,7 +158,7 @@ class tool_dataprivacy_task_testcase extends data_privacy_testcase {
         $this->setAdminUser();
         // Delete the user.
         delete_user($user);
-        // The user should still have the existing finished delete data request.
+        // The user should still have the existing cancelled delete data request.
         $this->assertCount(1, \tool_dataprivacy\api::get_data_requests($user->id,
                 [api::DATAREQUEST_STATUS_CANCELLED], [api::DATAREQUEST_TYPE_DELETE]));
 
@@ -169,7 +166,7 @@ class tool_dataprivacy_task_testcase extends data_privacy_testcase {
         // After running the scheduled task, the user should still have one delete data requests.
         $this->assertCount(1, api::get_data_requests($user->id, [],
                 [api::DATAREQUEST_TYPE_DELETE]));
-        // The user should still have the existing finished delete data request.
+        // The user should only have the existing cancelled delete data request.
         $this->assertCount(1, \tool_dataprivacy\api::get_data_requests($user->id,
                 [api::DATAREQUEST_STATUS_CANCELLED], [api::DATAREQUEST_TYPE_DELETE]));
     }
