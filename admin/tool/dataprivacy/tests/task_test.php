@@ -133,7 +133,7 @@ class tool_dataprivacy_task_testcase extends data_privacy_testcase {
                 [api::DATAREQUEST_TYPE_DELETE]));
         // The user should not have a newly created delete data request.
         $this->assertCount(0, api::get_data_requests($user->id,
-                [api::DATAREQUEST_STATUS_PENDING], [api::DATAREQUEST_TYPE_DELETE]));
+                [api::DATAREQUEST_STATUS_AWAITING_APPROVAL], [api::DATAREQUEST_TYPE_DELETE]));
     }
 
     /**
