@@ -263,25 +263,23 @@ class data_request extends persistent {
      * @return  bool
      */
     public function is_resettable() : bool {
-        $resettable = [
-            api::DATAREQUEST_STATUS_AWAITING_APPROVAL,
-            api::DATAREQUEST_STATUS_APPROVED,
-            api::DATAREQUEST_STATUS_REJECTED,
-        ];
+        return (api::DATAREQUEST_STATUS_AWAITING_APPROVAL == $this->get('status'));
 
         return (false !== array_search($this->get('status'), $resettable));
     }
 
     /**
      * Whether this request is 'active'.
+     *
+     * @return  bool
      */
     public function is_active() : bool {
         $active = [
-            api::DATAREQUEST_STATUS_AWAITING_APPROVAL,
-            api::DATAREQUEST_STATUS_APPROVED,
+            api::DATAREQUEST_STATUS_AWAITING_APPROVAL => true,
+            api::DATAREQUEST_STATUS_APPROVED => true,
         ];
 
-        return (false !== array_search($this->get('status'), $active));
+        return isset($active[$this->get('status')]);
     }
 
     /**

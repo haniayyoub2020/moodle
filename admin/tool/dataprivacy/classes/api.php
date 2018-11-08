@@ -456,10 +456,10 @@ class api {
             self::DATAREQUEST_STATUS_EXPIRED,
             self::DATAREQUEST_STATUS_DELETED,
         ];
-        list($statusinsql, $statusparams) = $DB->get_in_or_equal($nonpendingstatuses, SQL_PARAMS_NAMED, 'st', true);
+        list($statusinsql, $statusparams) = $DB->get_in_or_equal($nonpendingstatuses, SQL_PARAMS_NAMED, 'st', false);
         list($userinsql, $userparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED, 'us');
 
-        $select = "userid {$userinsql} AND status NOT {$statusinsql}";
+        $select = "userid {$userinsql} AND status {$statusinsql}";
         $params = array_merge($statusparams, $userparams);
 
         $requests = $DB->get_records_select(data_request::TABLE, $select, $params, 'userid', 'id, userid, type');
