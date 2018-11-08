@@ -230,6 +230,31 @@ class provider_testcase extends advanced_testcase {
     }
 
     /**
+     * Ensure that providers do not throw an error when processing a deleted user.
+     *
+     * @dataProvider    is_shared_data_provider
+     * @param   string  $component
+     */
+    public function test_shared_provider_implements_userlist($component) {
+        $classname =  manager::get_provider_classname_for_component($component);
+        $this->assertTrue(is_subclass_of($classname, \core_privacy\local\request\userlist_provider::class));
+    }
+
+    /**
+     * List of providers which implement the core_user_data_provider.
+     *
+     * @return array
+     */
+    public function is_shared_data_provider() {
+        return array_filter($this->get_component_list(), function($component) {
+                return static::component_implements(
+                    $component['classname'],
+                    \core_privacy\local\request\shared_data_provider::class
+                );
+        });
+    }
+
+    /**
      * Checks whether the component's provider class implements the specified interface, either directly or as a grandchild.
      *
      * @param   string  $providerclass The name of the class to test.
