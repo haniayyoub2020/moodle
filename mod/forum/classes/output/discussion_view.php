@@ -148,6 +148,7 @@ class discussion_view implements \renderable, \templatable {
 
         $return = [
             // The discussion.
+            // TODO Change to renderable.
             'discussion' => $this->discussion,
 
             // URLs.
@@ -180,7 +181,7 @@ class discussion_view implements \renderable, \templatable {
             'move_target_selector' => $moveselect->export_for_template($renderer),
 
             // Actual post content.
-            'posts' => $this->get_old_posts_in_discussion($renderer),
+            //'posts' => $this->get_old_posts_in_discussion($renderer),
             'post_structure' => $this->get_posts_in_discussion($renderer),
 
             // TODO Decide how to handle displayig the Q&A Notification.
@@ -275,6 +276,9 @@ class discussion_view implements \renderable, \templatable {
         });
 
         foreach ($children as $childobj) {
+            if (!$this->forum->can_see_post($childobj, $this->discussion)) {
+                continue;
+            }
             $author = $authors[$childobj->userid];
             $child = new discussion_post($this->forum, $this->discussion, $childobj, $author);
             $post->add_child($child);

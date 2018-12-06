@@ -707,6 +707,8 @@ abstract class instance {
      * @return  bool
      */
     public function can_edit_post(\stdClass $discussion, \stdClass $post) : bool {
+        global $CFG;
+
         if (has_capability('mod/forum:editanypost', $this->get_context(), $this->user)) {
             // This user can edit posts regardless of who wrote it or its age.
             return true;
@@ -717,8 +719,18 @@ abstract class instance {
             return false;
         }
 
+        return $this->is_post_within_maxediting_time($post);
+    }
+
+    /**
+     * Whether the post is within the maxediting time.
+     *
+     * @param   \stdClass $post The post to be edited
+     * @return  bool
+     */
+    public function is_post_within_maxediting_time(\stdClass $post) : bool {
         $age = time() - $post->created;
-        if ($age < $CFG->maxeditingtime) {
+        if ($age < $this->get_maxediting_time()) {
             // The post is within the max editing time.
             return true;
         }
@@ -734,6 +746,8 @@ abstract class instance {
      * @return  bool
      */
     public function can_delete_post(\stdClass $discussion, \stdClass $post) : bool {
+        global $CFG;
+
         if (has_capability('mod/forum:deleteanypost', $this->get_context(), $this->user)) {
             // This user can delete posts regardless of who wrote it or its age.
             return true;
@@ -750,7 +764,7 @@ abstract class instance {
         }
 
         $age = time() - $post->created;
-        if ($age < $CFG->maxeditingtime) {
+        if ($age < $this->get_maxediting_time()) {
             // The post is within the max editing time.
             return true;
         }
@@ -788,6 +802,17 @@ abstract class instance {
         }
 
         return false;
+    }
+
+    /**
+     * Return the max editing time in seconds for this forum.
+     *
+     * @return  int
+     */
+    public function get_maxediting_time() : int {
+        global $CFG;
+
+        return $CFG->maxeditingtime;
     }
 
     /**
@@ -1995,7 +2020,7 @@ abstract class instance {
 
         return $DB->record_exists('forum_posts', [
                 'discussion' => $discussion->id,
-                'userid' => $this->get_user_id(),
+                'userid' => $this->user->id,
             ]);
     }
 
@@ -2059,7 +2084,6 @@ abstract class instance {
 
     /**
      * Get the string to display when there are no discussions to list.
-     * TODO see if this can be a template somehow.
      *
      * @return  string
      */
@@ -2090,10 +2114,26 @@ abstract class instance {
      * @return  \core\output\notifications[]
      */
     public function get_discussion_list_notifications() {
-        return [];
+        $notifications = [];
+
+        if ($this->is_throttled()) {
+            $notification = new \core\output\notification(get_string('thisforumisthrottled', 'mod_forum', (object) [
+                'blockafter' => $this->get_forum_record()->blockafter,
+                'blockperiod' => format_time($this->get_forum_record()->blockperiod),
+            ]));
+            $notification->set_show_closebutton();
+            $notifications[] = $notification;
+        }
+
+        return $notifications;
     }
 
-
+    /**
+     * Get actions for the current post.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @param   \stdClass $post The post to be tested
+     */
     public function get_post_actions(\stdClass $discussion, \stdClass $post) {
         $commands = [];
 
@@ -2200,5 +2240,41 @@ abstract class instance {
         }
 
         return $commands;
+    }
+
+    /**
+     * Fullname function helper.
+     *
+     * @param   \stdClass       $user
+     * @return  string
+     */
+    public function fullname(\stdClass $user) {
+        return fullname($user);
+    }
+
+    /**
+     * Get the profile URL.
+     *
+     * @param   \stdClass       $user
+     * @return  string
+     */
+    public function get_profile_url(\stdClass $user) : \moodle_url {
+        return new \moodle_url('/user/view.php', [
+            'id' => $user->id,
+            'course' => $this->get_course_id(),
+        ]);
+    }
+
+    /**
+     * Get the profile image URL.
+     *
+     * @param   \moodle_page    $page
+     * @param   \stdClass       $user
+     * @return  string
+     */
+    public function get_profile_image_url(\moodle_page $page, \stdClass $user) : \moodle_url {
+        $userpicture = new \user_picture($user);
+
+        return $userpicture->get_url($page);
     }
 }

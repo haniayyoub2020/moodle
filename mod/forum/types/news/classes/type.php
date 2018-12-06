@@ -56,15 +56,16 @@ class type extends \mod_forum\instance {
     }
 
     /**
-     * News forums should respect the timestart if present.
+     * Whether the post is within the maxediting time.
+     *
+     * @param   \stdClass $post The post to be edited
+     * @return  bool
      */
-    public function can_edit_post(\stdClass $discussion, \stdClass $post) : bool {
-        if (parent::can_edit_post($discussion, $post)) {
+    public function is_post_within_maxediting_time(\stdClass $post) : bool {
+        if (parent::is_post_within_maxediting_time($post)) {
             return true;
         }
 
-        // Where a news post is the programmed for the future, it should be editable.
-        // TODO ... shouldn't it be editable until 30 minutes after the programmed time?
         if ($post->userid == $this->user->id) {
             if ($discussion->timestart > time()) {
                 return true;

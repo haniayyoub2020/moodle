@@ -78,7 +78,7 @@ class type extends \mod_forum\instance {
      * @param   \stdClass $discussion The discussion the post is in
      * @return  bool
      */
-    public function can_see_posts_in_discussion(\stdClass $discussion) : bool {
+    public function acan_see_posts_in_discussion(\stdClass $discussion) : bool {
         if (!$this->can_see_discussion($discussion)) {
             return false;
         }
@@ -127,7 +127,7 @@ class type extends \mod_forum\instance {
         return $DB->record_exists_select('forum_posts', 'discussion = :discussionid AND userid = :userid AND created < :mintime', [
                 'userid' => $this->user->id,
                 'discussionid' => $discussionid,
-                'mintime' => time() - $CFG->maxeditingtime,
+                'mintime' => time() - $this->get_maxediting_time(),
             ]);
     }
 

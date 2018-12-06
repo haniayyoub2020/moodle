@@ -43,7 +43,22 @@
     </td>
     <td scope="col" class="author">
         {{#author}}
-            {{>mod_forum/user_detail}}
+            <a href="{{profilelink}}">
+                <div class="d-flex flex-row">
+                    <div class="align-middle p-0">
+                        <a href="{{profileurl}}">
+                            <img {{!
+                                }} class="h-auto rounded-circle" {{!
+                                }} src="{{profileimageurl}}" {{!
+                                }} alt="{{#str}}pictureof, moodle, {{fullname}}{{/str}}" {{!
+                                }}>
+                        </a>
+                    </div>
+                    <div class="align-middle p-2">
+                        <a href="{{profileurl}}">{{fullname}}</a>
+                    </div>
+                </div>
+            </a>
         {{/author}}
     </td>
     {{#has_any_group}}
@@ -76,7 +91,7 @@
                     <a href="{{profileurl}}">
                         <img {{!
                             }} class="h-auto rounded-circle" {{!
-                            }} src="{{profileurl}}" {{!
+                            }} src="{{profileimageurl}}" {{!
                             }} alt="{{#str}}pictureof, moodle, {{fullname}}{{/str}}" {{!
                             }}>
                     </a>

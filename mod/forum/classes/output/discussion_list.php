@@ -103,21 +103,21 @@ class discussion_list implements \renderable, \templatable {
      * Export all data required to generate the template.
      *
      * @param   \renderer_base  $renderer
-     * @return  array
+     * @return  \stdClass
      */
     public function export_for_template(\renderer_base $renderer) {
         $this->discussionlist = $this->forum->get_discussions($this->pageno);
 
         return (object) [
-            'notifications' => $this->get_page_notifications($renderer),
+            // Page notifications typically warn about throttling being enabled, and similar information.
+            'notifications' => $this->export_page_notifications($renderer),
 
-            // TODO Allow template instead of string var?
-            // No... Difficult because the wording changes depending on the type of forum.
+            // Note: We cannot use a different template here because templates do not support variables.
             'nodiscussionstring' => $this->forum->get_no_discussions_string(),
+
             'can_create_discussion' => $this->forum->can_create_discussion(),
             'create_discussion_link' => $this->forum->get_discussion_create_url(),
             'create_discussion_link_text' => $this->forum->get_create_discussion_string(),
-            'can_see_discussions' => $this->forum->can_see_discussions(),
 
             // The activity is in a group mode.
             'has_any_group' => $this->forum->get_activity_groupmode() > 0,
@@ -125,11 +125,13 @@ class discussion_list implements \renderable, \templatable {
             'can_track_reads' => $this->forum->can_track_reads(),
             'can_subscribe' => $this->forum->can_subscribe(),
 
+            'can_see_discussions' => $this->forum->can_see_discussions(),
             'has_any_discussions' => $this->discussionlist->has_any(),
-            'discussions' => $this->get_discussion_list($renderer),
+            'discussions' => $this->export_discussion_list($renderer),
+
+            // Pagination.
             'pageno' => $this->pageno,
             'more_pages' => $this->discussionlist->has_more_entries(),
-
             'prev_page_link' => $this->get_prev_page()->out(),
             'next_page_link' => $this->get_next_page()->out(),
         ];
@@ -141,17 +143,8 @@ class discussion_list implements \renderable, \templatable {
      * @param   \renderer_base  $renderer
      * @return  array
      */
-    public function get_page_notifications(\renderer_base $renderer) : array {
+    public function export_page_notifications(\renderer_base $renderer) : array {
         $notifications = [];
-
-        if ($this->forum->is_throttled()) {
-            $notification = new \core\output\notification(get_string('thisforumisthrottled', 'mod_forum', (object) [
-                'blockafter' => $this->forum->get_forum_record()->blockafter,
-                'blockperiod' => get_string('secondstotime' . $this->forum->get_forum_record()->blockperiod),
-            ]));
-            $notification->set_show_closebutton();
-            $notifications[] = $notification->export_for_template($renderer);
-        }
 
         foreach ($this->forum->get_discussion_list_notifications() as $notification) {
             $notifications[] = $notification->export_for_template($renderer);
@@ -166,30 +159,14 @@ class discussion_list implements \renderable, \templatable {
      * @param   \renderer_base  $renderer The renderer used to format this information
      * @return  array
      */
-    public function get_discussion_list(\renderer_base $renderer) : array {
-        // TODO These should be in a renderable.
-        $discussions = $this->discussionlist->get_discussions();
-
-        $groups = $this->forum->get_all_groups();
-        foreach ($discussions as $discussion) {
-            $form = new discussion_subscription_toggle($this->forum, $discussion, false);
-            $discussion->subscription_toggle_form = $form->export_for_template($renderer);
-
-            if ($discussion->groupid > 0) {
-                // TODO Move to a new templatable/renderable?
-                // TODO Display something when there is no picture.
-                if ($url = get_group_picture_url($groups[$discussion->groupid], $this->forum->get_course_id())) {
-                    $discussion->group = (object) [
-                        'picture' => $url->out(),
-                    ];
-                }
-            }
-
-            $discussion->author = $this->get_user_info($renderer, $discussion->author);
-            $discussion->modifier = $this->get_user_info($renderer, $discussion->modifier);
+    public function export_discussion_list(\renderer_base $renderer) : array {
+        $discussions = [];
+            foreach ($this->discussionlist->get_discussions() as $discussion) {
+            $renderable = new discussion_index_item($this->forum, $discussion);
+            $discussions[] = $renderable->export_for_template($renderer);
         }
 
-        return array_values($discussions);
+        return $discussions;
     }
 
     /**
@@ -225,24 +202,5 @@ class discussion_list implements \renderable, \templatable {
         }
 
         return $prev;
-    }
-
-    /**
-     * Get the information about this author.
-     *
-     * @param   \renderer_base  $renderer The renderer used to format this information.
-     * @param   \stdClass       $user The user being formatted.
-     * @return  array
-     */
-    public function get_user_info(\renderer_base $renderer, $user) : array {
-        global $PAGE;
-
-        $userpicture = new \user_picture($user);
-
-        return [
-            'fullname' => fullname($user),
-            'profileimageurl' => $userpicture->get_url($PAGE),
-            'profileurl' => $userpicture->get_url($PAGE),
-        ];
     }
 }

@@ -34,6 +34,8 @@ defined('MOODLE_INTERNAL') || die();
  */
 class discussion_post implements \renderable, \templatable {
 
+    use user_trait;
+
     /**
      * @var \mod_forum\instance
      */
@@ -116,7 +118,7 @@ class discussion_post implements \renderable, \templatable {
 
             'can_see_post'                  => $this->forum->can_see_post($this->post, $this->discussion),
             'can_reply'                     => $this->forum->can_post_to_discussion($this->discussion),
-            'author'                        => $this->get_author($renderer),
+            'author'                        => $this->get_user_info($renderer, $this->author),
             'bynameondate'                  => $this->get_author_line($renderer),
 
             'haschildren'                   => !empty($children),
@@ -220,21 +222,18 @@ class discussion_post implements \renderable, \templatable {
         return forum_print_attachments($this->post, $this->forum->get_cm(), "html");
     }
 
-    public function get_author(\renderer_base $renderer) : array {
-        global $PAGE;
-
-        $userpicture = new \user_picture($this->author);
-        return [
-            'fullname' => fullname($this->author),
-            'profileimageurl' => $userpicture->get_url($PAGE),
-            'profileurl' => $userpicture->get_url($PAGE),
-        ];
-    }
-
+    /**
+     * Get the author description.
+     *
+     * @return  string
+     */
     protected function get_author_line(\renderer_base $renderer) : string {
         return get_string('bynameondate', 'forum', (object) [
             'date' => userdate_htmltime($this->get_postdate()),
-            'name' => \html_writer::link($this->author->profilelink, fullname($this->author)),
+            'name' => \html_writer::link(
+                $this->forum->get_profile_url($this->author),
+                $this->forum->fullname($this->author)
+            ),
         ]);
     }
 
