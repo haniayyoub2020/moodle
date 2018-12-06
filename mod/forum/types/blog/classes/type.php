@@ -15,40 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The base forum type.
+ * The blog forum type.
  *
- * @package    mod_forum
+ * @package    forumtype_blog;
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_forum\local\type;
+namespace forumtype_blog;
 
-class news extends \mod_forum\instance {
+class type extends \mod_forum\instance {
 
     /**
-     * Get the name of hte capability used to post in an existing discussion.
+     * Get the string to use for the create discussion buttons.
      *
      * @return  string
      */
-    protected function get_capability_to_post_to_discussion() : string {
-        return 'mod/forum:replynews';
-    }
-
-    /**
-     * Get the name of hte capability used to post in an existing discussion.
-     *
-     * @return  string
-     */
-    protected function get_capability_to_create_new_discussion() : string {
-        return 'mod/forum:addnews';
-    }
-
-    /**
-     * Get the string to display when there are no discussions to list.
-     *
-     * @return  string
-     */
-    public function get_no_discussions_string() : string {
-        return get_string('nonews', 'mod_forum');
+    public function get_create_discussion_string() : string {
+        // TODO Move this to the subplugin.
+        return get_string('addanewtopic', 'forum');
     }
 }

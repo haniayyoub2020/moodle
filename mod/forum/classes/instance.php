@@ -54,7 +54,7 @@ abstract class instance {
     protected $modinfo = null;
 
     /**
-     * @var \stdClass The user being tested.
+     * @var \stdClass The user viewing the forum.
      */
     protected $user = null;
 
@@ -74,10 +74,15 @@ abstract class instance {
     protected $course = null;
 
     /**
+     * @var int The current layout.
+     */
+    protected $layout = null;
+
+    /**
      * Constructor for a forum.
      *
      * @param   \stdClass   $record The record from the forum table.
-     * @param   \stdClass   $user The user to use.
+     * @param   \stdClass   $user The user viewing the forum.
      */
     public function __construct(\stdClass $forum, \stdClass $user = null) {
         global $USER;
@@ -353,7 +358,6 @@ abstract class instance {
         return has_capability('mod/forum:rate', $this->get_context(), $this->user);
     }
 
-
     /**
      * Whether the user can view all groups.
      *
@@ -374,7 +378,7 @@ abstract class instance {
     /**
      * Get the list of possible forum layouts of forum.
      *
-     * @return  array
+     * @return  int[]
      */
     public function get_layout_modes() : array {
         return [
@@ -383,6 +387,32 @@ abstract class instance {
             FORUM_MODE_THREADED   => get_string('modethreaded', 'forum'),
             FORUM_MODE_NESTED     => get_string('modenested', 'forum'),
         ];
+    }
+
+    /**
+     * Set the currently activated layout.
+     *
+     * @param   int     $layout The current layout
+     * return   $this
+     */
+    public function set_current_layout(int $layout) : self {
+        $this->layout = $layout;
+
+        return $this;
+    }
+
+    /**
+     * Get the currently activated layout.
+     *
+     * @return  int
+     */
+    public function get_current_layout() : int {
+        if (null !== $this->layout) {
+            return $this->layout;
+        }
+
+        // Default to nested.
+        return FORUM_MODE_NESTED;
     }
 
     // Functions relating to a forum.
@@ -446,21 +476,20 @@ abstract class instance {
     }
 
     /**
-     * Check if the user can create attachments in a forum.
+     * Check if the user can create attachments in this forum.
+     *
      * @param  stdClass $forum   forum object
      * @param  stdClass $context context object
-     * @return bool true if the user can create attachments, false otherwise
-     * @since  Moodle 3.3
+     * @return bool
      */
     public function can_create_attachment() {
-        // If maxbytes == 1 it means no attachments at all.
         if (empty($this->record->maxattachments)) {
             // No attachments allowed on this forum.
             return false;
         }
 
         if ($this->record->maxbytes == 1) {
-            // No meaningful attachment size.
+            // If maxbytes == 1 it means no attachments at all.
             return false;
         }
 
@@ -470,6 +499,7 @@ abstract class instance {
     /**
      * Whether the user can move discussions _out_ of this forum.
      *
+     * @param   bool    $require    Require instead of has_cap
      * @return  bool
      */
     public function can_move_discussions($require = false) : bool {
@@ -481,7 +511,7 @@ abstract class instance {
     }
 
     /**
-     * Whether the user can move discussions _out_ of this forum.
+     * The list of forums that the user can move the discussion to.
      *
      * @return  array
      */
@@ -539,6 +569,7 @@ abstract class instance {
         $return = $target->get_discussion_view_url($discussion);
 
         if (!$target->is_visible_to_user()) {
+            // The target forum must be visible to the user.
             \core\notification::add(
                 get_string('cannotmovenotvisible', 'mod_forum'),
                 \core\output\notification::NOTIFY_ERROR);
@@ -547,6 +578,7 @@ abstract class instance {
         }
 
         if (!$target->can_create_discussion()) {
+            // The user must be able to create a dicussion there.
             \core\notification::add(
                 get_string('cannotcreatediscussion', 'mod_forum'),
                 \core\output\notification::NOTIFY_ERROR);
@@ -555,7 +587,7 @@ abstract class instance {
         }
 
         if (!$this->can_move_discussions()) {
-            // TODO Check error message.
+            // The user must be able to move discussions from this forum.
             \core\notification::add(
                 get_string('cannotcreatediscussion', 'mod_forum'),
                 \core\output\notification::NOTIFY_ERROR);
@@ -645,10 +677,117 @@ abstract class instance {
 
         // Delete the RSS files for the 2 forums to force regeneration of the feeds
         require_once($CFG->dirroot.'/mod/forum/rsslib.php');
-        forum_rss_delete_file($this->recordorum);
+        forum_rss_delete_file($this->record);
         forum_rss_delete_file($targetrecord);
 
         return true;
+    }
+
+    /**
+     * Whether the user can split the supplied post.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @param   \stdClass $post The post to be tested
+     * @return  bool
+     */
+    public function can_split_discussion(\stdClass $discussion, \stdClass $post) : bool {
+        if (empty($post->parent)) {
+            // The first post in a discussion cannot be split out.
+            return false;
+        }
+
+        return has_capability('mod/forum:splitdiscussions', $this->get_context(), $this->user);
+    }
+
+    /**
+     * Whether the user can edit this post.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @param   \stdClass $post The post to be edited
+     * @return  bool
+     */
+    public function can_edit_post(\stdClass $discussion, \stdClass $post) : bool {
+        if (has_capability('mod/forum:editanypost', $this->get_context(), $this->user)) {
+            // This user can edit posts regardless of who wrote it or its age.
+            return true;
+        }
+
+        if ($post->userid != $this->user->id) {
+            // This user cannot edit posts belonging to other users.
+            return false;
+        }
+
+        $age = time() - $post->created;
+        if ($age < $CFG->maxeditingtime) {
+            // The post is within the max editing time.
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the user can delete this post.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @param   \stdClass $post The post to be delete
+     * @return  bool
+     */
+    public function can_delete_post(\stdClass $discussion, \stdClass $post) : bool {
+        if (has_capability('mod/forum:deleteanypost', $this->get_context(), $this->user)) {
+            // This user can delete posts regardless of who wrote it or its age.
+            return true;
+        }
+
+        if ($post->userid != $this->user->id) {
+            // This user cannot delete posts belonging to other users.
+            return false;
+        }
+
+        if (!has_capability('mod/forum:deleteownpost', $this->get_context(), $this->user)) {
+            // This user does not have permission to delete their own posts.
+            return false;
+        }
+
+        $age = time() - $post->created;
+        if ($age < $CFG->maxeditingtime) {
+            // The post is within the max editing time.
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the user can export this post.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @param   \stdClass $post The post to be delete
+     * @return  bool
+     */
+    public function can_export_post(\stdClass $discussion, \stdClass $post) : bool {
+        global $CFG;
+
+        if (empty($CFG->enableportfolios)) {
+            // Portfolios are disabled.
+            return false;
+        }
+
+        if (has_capability('mod/forum:exportpost', $this->get_context(), $this->user)) {
+            // This user can export posts regardless of who wrote it.
+            return true;
+        }
+
+        if ($post->userid != $this->user->id) {
+            // This user cannot export posts belonging to other users.
+            return false;
+        }
+
+        if (has_capability('mod/forum:exportownpost', $this->get_context(), $this->user)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -988,6 +1127,35 @@ abstract class instance {
     }
 
     /**
+     * Get the URL used to split a post out of the current discussion.
+     *
+     * @param   \stdClass   $post
+     * @return  \moodle_url
+     */
+    public function get_discussion_split_url(\stdClass $post) : \moodle_url {
+        $url = $this->get_discussion_create_url();
+        $url->param('prune', $post->id);
+
+        return $url;
+    }
+
+    /**
+     * Get the URL used to reply to a post.
+     *
+     * @param   \stdClass   $post The post to reply to
+     * @return  \moodle_url
+     */
+    public function get_discussion_reply_url(\stdClass $post) : \moodle_url {
+        $url = $this->get_discussion_create_url();
+        $url->param('reply', $post->id);
+
+        // Jump to the form.
+        $url->set_anchor('mformforum');
+
+        return $url;
+    }
+
+    /**
      * Get the URL used to toggle pinning of this discussion.
      *
      * @param   \stdClass   $discussion
@@ -1001,6 +1169,53 @@ abstract class instance {
         } else {
             $url->param('pin', FORUM_DISCUSSION_PINNED);
         }
+
+        return $url;
+    }
+
+    /**
+     * Get the URL used to view this post.
+     *
+     * @param   \stdClass   $discussion
+     * @param   int         $postid
+     * @return  \moodle_url
+     */
+    public function get_post_view_url(\stdClass $discussion, $postid) : \moodle_url {
+        $url = $this->get_discussion_view_url($discussion);
+
+        if (FORUM_MODE_THREADED == $this->get_current_layout()) {
+            $url->param('parent', $postid);
+        } else {
+            $url->set_anchor("p{$postid}");
+        }
+
+        return $url;
+    }
+
+    /**
+     * Get the URL used to edit this post.
+     *
+     * @param   \stdClass   $discussion
+     * @param   \stdClass   $post
+     * @return  \moodle_url
+     */
+    public function get_post_edit_url(\stdClass $discussion, \stdClass $post) : \moodle_url {
+        $url = $this->get_discussion_create_url($discussion);
+        $url->param('edit', $post->id);
+
+        return $url;
+    }
+
+    /**
+     * Get the URL used to delete this post.
+     *
+     * @param   \stdClass   $discussion
+     * @param   \stdClass   $post
+     * @return  \moodle_url
+     */
+    public function get_post_delete_url(\stdClass $discussion, \stdClass $post) : \moodle_url {
+        $url = $this->get_discussion_create_url($discussion);
+        $url->param('delete', $post->id);
 
         return $url;
     }
@@ -1806,7 +2021,7 @@ abstract class instance {
     }
 
     /**
-     * Add RSS headres for the forum.
+     * Add RSS headers for the forum.
      */
     public function add_rss_headers() {
         global $CFG;
@@ -1844,6 +2059,7 @@ abstract class instance {
 
     /**
      * Get the string to display when there are no discussions to list.
+     * TODO see if this can be a template somehow.
      *
      * @return  string
      */
@@ -1875,5 +2091,114 @@ abstract class instance {
      */
     public function get_discussion_list_notifications() {
         return [];
+    }
+
+
+    public function get_post_actions(\stdClass $discussion, \stdClass $post) {
+        $commands = [];
+
+        // Add a permalink.
+        $commands['permalink'] = [
+            // Maybe move this to ajax??
+            // 'mark' => 'read'
+            'url' => $this->get_post_view_url($discussion, $post->id),
+            'text' => new \lang_string('permalink', 'forum'),
+            'attributes' => [
+                [
+                    'key' => 'rel',
+                    'value' => 'bookmark',
+                ],
+            ]
+        ];
+
+        // If is tracked
+        // And user is logged in???? (this should be in the isntance)
+        // TODO Mark as read/unread
+        /*
+        if ($istracked && $CFG->forum_usermarksread && isloggedin()) {
+        $commands['track'] = [
+            'url' => $forum->get_post_view_url($discussion, $post->id),
+            'text' => new \lang_string('markread', 'forum'), // or markunread
+            'attributes' => [
+                [
+                    'key' => 'rel',
+                    'value' => 'bookmark',
+                ],
+            ]
+        ];
+        }
+         */
+
+        // Link to the parent post.
+        if ($post->parent) {
+            $commands['parent'] = [
+                'url' => $this->get_post_view_url($discussion, $post->parent),
+                'text' => new \lang_string('parent', 'forum'),
+                'attributes' => [
+                    [
+                        'key' => 'rel',
+                        'value' => 'bookmark',
+                    ],
+                ]
+            ];
+        }
+
+        if ($this->can_edit_post($discussion, $post)) {
+            $commands['edit'] = [
+                'url' => $this->get_post_edit_url($discussion, $post),
+                'text' => new \lang_string('edit', 'forum'),
+            ];
+        }
+
+
+        // Split the post into a new discussion.
+        if ($this->can_split_discussion($discussion, $post)) {
+            $commands['split'] = [
+                'url' => $this->get_discussion_split_url($post),
+                'text' => new \lang_string('prune', 'forum'),
+            ];
+        }
+
+        // Delete
+        if ($this->can_delete_post($discussion, $post)) {
+            $commands['delete'] = [
+                'url' => $this->get_post_delete_url($discussion, $post),
+                'text' => new \lang_string('delete', 'forum'),
+            ];
+        }
+
+        // Reply
+        if ($this->can_post_to_discussion($discussion)) {
+            $commands['reply'] = [
+                'url' => $this->get_discussion_reply_url($post),
+                'text' => new \lang_string('reply', 'forum'),
+            ];
+        }
+
+        // Portfolios.
+        if ($this->can_export_post($discussion, $post)) {
+            require_once("{$CFG->libdir}/portfoliolib.php");
+
+            $button = new \portfolio_add_button();
+            $button->set_callback_options('forum_portfolio_caller', [
+                    'postid' => $post->id,
+                ], 'mod_forum');
+
+            // TODO
+            // $attachemnts used to come from the first field from forum_print_attachments
+            if (empty($attachments)) {
+                $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            } else {
+                $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+            }
+
+            if ($porfoliohtml = $button->to_html(PORTFOLIO_ADD_TEXT_LINK)) {
+                $commands['export'] = [
+                    'html' => $button,
+                ];
+            }
+        }
+
+        return $commands;
     }
 }

@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * This file contains the version information for the standard forum type.
  *
- * @package   mod_forum
- * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     forumtype_standard
+ * @copyright   2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018120501;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2018112800;       // Requires this Moodle version
-$plugin->component = 'mod_forum';      // Full name of the plugin (used for diagnostics)
+$plugin->version   = 2018120500;
+$plugin->requires  = 2018120301.00;
+$plugin->component = 'forumtype_standard';

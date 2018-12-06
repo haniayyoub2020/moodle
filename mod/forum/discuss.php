@@ -77,13 +77,19 @@ if ($move > 0 and confirm_sesskey()) {
     // Move discussion if requested.
     $target = \mod_forum\factory::get_forum_by_id($move);
     $instance->move_discussion_to_forum($discussion, $target);
+
+    redirect(
+            $target->get_discussion_view_url($discussion),
+            get_string('discussionmoved', 'forum', $target->get_cm()->name),
+            \core\output\notification::NOTIFY_INFO
+        );
 }
 
 if ($mode) {
     // User requested a change of mode.
     set_user_preference('forum_displaymode', $mode);
+    redirect($instance->get_discussion_view_url($discussion));
 }
-$mode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
 
 $post = $instance->get_top_post_in_discussion_or_specified($discussion, $parent);
 
@@ -128,9 +134,14 @@ if (null !== $mark) {
     \mod_forum\tracking::mark_post($instance, $postid, $mark);
 }
 
+$mode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($forum->name), 2);
 echo $OUTPUT->heading(format_string($discussion->name), 3, 'discussionname');
+
+// Hmm. both insance and templatable are usign the mode.
+$instance->set_current_layout($mode);
 
 $templatable = new \mod_forum\output\discussion_view($instance, $discussion);
 $templatable->set_top_post($post);

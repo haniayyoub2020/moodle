@@ -31,8 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
- * @property boolean $viewfullnames Whether to override fullname()
  */
 class discussion_post implements \renderable, \templatable {
 
@@ -68,12 +66,24 @@ class discussion_post implements \renderable, \templatable {
         $this->author = $author;
     }
 
-    public function add_child($child) {
+    /**
+     * Add a single reply to this post.
+     *
+     * @param   self        $child
+     * @return  $this
+     */
+    public function add_child(self $child) {
         $this->children[] = $child;
 
         return $this;
     }
 
+    /**
+     * Add a set of replies to this post.
+     *
+     * @param   self[]      $children
+     * @return  $this
+     */
     public function add_children(array $children) {
         foreach ($children as $child) {
             $this->add_child($child);
@@ -102,7 +112,7 @@ class discussion_post implements \renderable, \templatable {
             'message'                       => $this->get_message_body($renderer),
             // TODO Replace.
             'attachments'                   => $this->get_attachment_html($renderer),
-            'commands'                      => $this->get_commands($renderer),
+            'commands'                      => array_values($this->forum->get_post_actions($this->discussion, $this->post)),
 
             'can_see_post'                  => $this->forum->can_see_post($this->post, $this->discussion),
             'can_reply'                     => $this->forum->can_post_to_discussion($this->discussion),
@@ -111,6 +121,11 @@ class discussion_post implements \renderable, \templatable {
 
             'haschildren'                   => !empty($children),
             'children'                      => $children,
+
+            'firstpost'                     => $this->post->parent == 0,
+
+            // TODO - determine if this is the last post.
+            'lastpost'                      => false,
 
             // TODO.
             // author
@@ -237,9 +252,5 @@ class discussion_post implements \renderable, \templatable {
         }
 
         return $postmodified;
-    }
-
-    public function get_commands(\renderer_base $renderer) : array {
-        return [];
     }
 }

@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The base forum type.
+ * The Q&A forum type.
  *
- * @package    mod_forum
+ * @package    forumtype_qanda
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_forum\local\type;
+namespace forumtype_qanda;
 
-class qanda extends \mod_forum\instance {
+class type extends \mod_forum\instance {
 
     /**
      * Check whether a user can see the specified post.

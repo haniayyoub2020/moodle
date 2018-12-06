@@ -178,12 +178,11 @@ class factory {
 
     /**
      * Get the name of the class for the specified type.
-     * TODO change to use plugintype.
      *
      * @param   string      $type The type of forum
      * @return  string
      */
     protected static function get_type_classname(string $type) : string {
-        return "\\mod_forum\\local\\type\\{$type}";
+        return "\\forumtype_{$type}\\type";
     }
 }

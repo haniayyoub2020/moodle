@@ -15,23 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The base forum type.
+ * Definition of sub-plugins for the forum module..
  *
- * @package    mod_forum
- * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_forum
+ * @copyright   2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_forum\local\type;
 
-class blog extends \mod_forum\instance {
-
-    /**
-     * Get the string to use for the create discussion buttons.
-     *
-     * @return  string
-     */
-    public function get_create_discussion_string() : string {
-        // TODO Move this to the subplugin.
-        return get_string('addanewtopic', 'forum');
-    }
-}
+$subplugins = [
+    'forumtype' => 'mod/forum/types',
+];

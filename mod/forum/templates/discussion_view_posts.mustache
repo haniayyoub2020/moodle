@@ -65,12 +65,20 @@
             <div class="options clearfix">
                 <div class="commands nav">
                     {{#commands}}
-                        <a class="nav-item nav-link" href="{{{url}}}">{{{text}}}</a>
+                        {{#url}}
+                            <a class="nav-item nav-link" href="{{{url}}}"{{!
+                                    }}{{#attributes}}{{key}}={{#quote}}{{value}}{{/quote}}{{/attributes}}{{!
+                                }}>{{{text}}}</a>
+                        {{/url}}
+                        {{#html}}
+                            {{{html}}}
+                        {{/html}}
                     {{/commands}}
                 </div>
             </div>
         </div>
     </div>
+    {{! TODO Handle the differnet display modes here}}
     {{#haschildren}}
     {{#children}}
     <div class="indent">

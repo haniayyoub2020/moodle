@@ -35,6 +35,10 @@ $name    = optional_param('name', '', PARAM_CLEAN);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $groupid = optional_param('groupid', null, PARAM_INT);
 
+if (!empty($reply) || !empty($edit) || !empty($delete) || !empty($prune)) {
+    $forum = 0;
+}
+
 $PAGE->set_url('/mod/forum/post.php', array(
     'reply' => $reply,
     'forum' => $forum,

@@ -17,13 +17,13 @@
 /**
  * The single forum type.
  *
- * @package    mod_forum
+ * @package    mod_foruforumtype_single
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_forum\local\type;
+namespace forumtype_single;
 
-class single extends \mod_forum\instance {
+class type extends \mod_forum\instance {
 
     /**
      * Check whether the user can create a new discussion in the specified group.
@@ -76,10 +76,53 @@ class single extends \mod_forum\instance {
 
     /**
      * Discussions cannot be moved into, or out of, a Single Discussion.
-     *
-     * @return  bool
      */
     public function can_move_discussions($require = false) : bool {
         return false;
     }
+
+    /**
+     * Discussions cannot be split in a single discussion.
+     */
+    public function can_split_discussion(\stdClass $discussion, \stdClass $post) : bool {
+        return false;
+    }
+
+    /**
+     * The first post in a single discussions is the activity description.
+     */
+    public function can_edit_post(\stdClass $discussion, \stdClass $post) : bool {
+        if ($discussion->firstpost == $post->id) {
+            return has_capability('moodle/course:manageactivities', $this->get_context(), $this->user);
+        }
+
+        return parent::can_edit_post($discussion, $post);
+    }
+
+    /**
+     * The first post in a single discussions cannot be deleted.
+     */
+    public function can_delete_post(\stdClass $discussion, \stdClass $post) : bool {
+        if ($discussion->firstpost == $post->id) {
+            return false;
+        }
+
+        return parent::can_delete_post($discussion, $post);
+    }
+
+    /**
+     * The first post in a single discussions is the activity description.
+     */
+    public function get_post_edit_url(\stdClass $discussion, \stdClass $post) : \moodle_url {
+        if ($discussion->firstpost == $post->id) {
+            return new \moodle_url('/course/modedit.php', [
+                'update' => $this->get_cm()->id,
+                'sesskey' => sesskey(),
+                'return' => 1,
+            ]);
+        }
+
+        return parent::get_post_edit_url($discussion, $post);
+    }
+
 }

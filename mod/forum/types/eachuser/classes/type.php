@@ -17,13 +17,13 @@
 /**
  * The eachuser forum type.
  *
- * @package    mod_forum
+ * @package    forumtype_eachuser
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_forum\local\type;
+namespace forumtype_eachuser;
 
-class eachuser extends \mod_forum\instance {
+class type extends \mod_forum\instance {
 
     /**
      * Check whether the user can create a new discussion in the specified group.

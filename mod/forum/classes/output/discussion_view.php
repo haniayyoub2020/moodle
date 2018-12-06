@@ -133,11 +133,15 @@ class discussion_view implements \renderable, \templatable {
     public function export_for_template(\renderer_base $renderer) {
         $neighbours = forum_get_discussion_neighbours($this->forum->get_cm(), $this->discussion, $this->forum->get_forum_record());
 
+        $discussionviewurl = $this->forum->get_discussion_view_url($this->discussion);
+
         $movetargets = $this->forum->get_move_discussion_targets($this->discussion);
         $moveselect = new \url_select(
             $movetargets,
             '',
-            ['' => get_string('movethisdiscussionto', 'forum')],
+            [
+                $discussionviewurl->out() => get_string('movethisdiscussionto', 'forum'),
+            ],
             'movetarget',
             get_string('move')
         );
@@ -148,7 +152,7 @@ class discussion_view implements \renderable, \templatable {
 
             // URLs.
             'forum_view_url' => $this->forum->get_forum_view_url(),
-            'discussion_view_url' => $this->forum->get_discussion_view_url($this->discussion),
+            'discussion_view_url' => $discussionviewurl,
 
             // General information.
             'is_discussion_locked' => $this->forum->is_discussion_locked($this->discussion),
@@ -187,6 +191,9 @@ class discussion_view implements \renderable, \templatable {
 
     /**
      * Get the rendered HTML to export to a renderer.
+     *
+     * @param   \renderer_base  $renderer
+     * @return  string
      */
     protected function get_portfolio_button(\renderer_base $renderer) : string {
         global $CFG;
@@ -219,10 +226,14 @@ class discussion_view implements \renderable, \templatable {
         return ob_get_clean();
     }
 
+    /**
+     * Get all posts in the discussion.
+     *
+     * @param   \renderer_base  $renderer
+     * @return  array
+     */
     protected function get_posts_in_discussion(\renderer_base $renderer) : array {
         // TODO Sorting.
-        // TODO respect toppost.
-        //$posts = $this->forum->get_posts_in_discussion($this->discussion);
         $discussionposts = $this->get_posts_in_structure();
 
         return $discussionposts->export_for_template($renderer);
@@ -243,7 +254,7 @@ class discussion_view implements \renderable, \templatable {
         // Get the root post.
         $post = $this->get_top_post();
         $author = $authors[$post->userid];
-        $firstpost = new discussion_post($this->forum, $this->discussion, $post, $author);
+        $firstpost = new discussion_post($this->forum, $this->discussion, $post, $authors[$post->userid]);
 
         // Note: $posts are passed by reference.
         $this->get_post_children($posts, $authors, $post, $firstpost);

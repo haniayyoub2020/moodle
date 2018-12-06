@@ -15,13 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The base forum type.
+ * This file contains the version information for the news forum type.
  *
- * @package    mod_forum
- * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     forumtype_news
+ * @copyright   2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_forum\local\type;
 
-class general extends \mod_forum\instance {
-}
+defined('MOODLE_INTERNAL') || die();
+
+$plugin->version   = 2018120500;
+$plugin->requires  = 2018120301.00;
+$plugin->component = 'forumtype_news';
