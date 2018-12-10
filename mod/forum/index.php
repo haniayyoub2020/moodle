@@ -116,38 +116,28 @@ $modinfo = get_fast_modinfo($course);
 $showsubscriptioncolumns = false;
 
 foreach ($modinfo->get_instances_of('forum') as $forumid => $cm) {
-    if (!$cm->uservisible or !isset($forums[$forumid])) {
+    if (!isset($forums[$forumid])) {
         continue;
     }
 
-    $forum = $forums[$forumid];
+    $forum = \mod_forum\factory::get_forum_by_cm_info_with_record($cm, $forums[$forumid]);
 
-    if (!$context = context_module::instance($cm->id, IGNORE_MISSING)) {
-        // Shouldn't happen.
+    if (!$forum->is_visible_to_user()) {
         continue;
     }
 
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
-        // User can't view this one - skip it.
+    if (!$forum->can_see_discussions()) {
+        // Cannot see discussions in this forum.
         continue;
     }
 
-    // Determine whether subscription options should be displayed.
-    $forum->cansubscribe = mod_forum\subscriptions::is_subscribable($forum);
-    $forum->cansubscribe = $forum->cansubscribe || has_capability('mod/forum:managesubscriptions', $context);
-    $forum->issubscribed = mod_forum\subscriptions::is_subscribed($USER->id, $forum, null, $cm);
+    $showsubscriptioncolumns = $showsubscriptioncolumns || $forum->is_subscribed();
+    $showsubscriptioncolumns = $showsubscriptioncolumns || $forum->can_subscribe();
 
-    $showsubscriptioncolumns = $showsubscriptioncolumns || $forum->issubscribed || $forum->cansubscribe;
-
-    // Fill two type array - order in modinfo is the same as in course.
-    if ($forum->type == 'news' or $forum->type == 'social') {
-        $generalforums[$forum->id] = $forum;
-
-    } else if ($course->id == SITEID or empty($cm->sectionnum)) {
-        $generalforums[$forum->id] = $forum;
-
+    if ($forum->is_learning_forum()) {
+        $learningforums[$forum->get_forum_id()] = $forum;
     } else {
-        $learningforums[$forum->id] = $forum;
+        $generalforums[$forum->get_forum_id()] = $forum;
     }
 }
 
@@ -225,26 +215,39 @@ if (!is_null($subscribe)) {
 
 if ($generalforums) {
     // Process general forums.
-    foreach ($generalforums as $forum) {
-        $cm      = $modinfo->instances['forum'][$forum->id];
-        $context = context_module::instance($cm->id);
-
-        $instance = \mod_forum\factory::get_forum_by_cm_info($cm);
+    foreach ($generalforums as $instance) {
         $count = $instance->count_discussions();
+        // TODO Remove this if possible.
+        $forum = $instance->get_forum_record();
 
         if ($usetracking) {
-            if ($forum->trackingtype == FORUM_TRACKING_OFF) {
+            if ($instance->get_tracking_type() == FORUM_TRACKING_OFF) {
                 $unreadlink  = '-';
                 $trackedlink = '-';
 
             } else {
-                if (isset($untracked[$forum->id])) {
+                if (isset($untracked[$instance->get_forum_id()])) {
                         $unreadlink  = '-';
-                } else if ($unread = forum_tp_count_forum_unread_posts($cm, $course)) {
-                    $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+                } else if ($unreadcount = forum_tp_count_forum_unread_posts($cm, $course)) {
                     $icon = $OUTPUT->pix_icon('t/markasread', $strmarkallread);
-                    $unreadlink .= '<a title="'.$strmarkallread.'" href="markposts.php?f='.
-                                   $forum->id.'&amp;mark=read&amp;sesskey=' . sesskey() . '">' . $icon . '</a></span>';
+                    $unreadlink = html_writer::span(
+                        html_writer::link($instance->get_forum_view_url(), $unreadcount) .
+                        // TODO Convert to an AJAX action.
+                        html_writer::link(
+                            new \moodle_url(
+                                '/mod/forum/markposts.php',
+                                [
+                                    'f' => $instance->get_forum_id(),
+                                    'mark' => 'read',
+                                    'sesskey' => sesskey(),
+                                ]
+                            ),
+                            $OUTPUT->pix_icon('t/markasread', $strmarkallread),
+                            [
+                                'title' => get_string('markallread', 'forum'),
+                            ]
+                        )
+                    );
                 } else {
                     $unreadlink = '<span class="read">0</span>';
                 }
@@ -285,10 +288,13 @@ if ($generalforums) {
         }
 
         if ($showsubscriptioncolumns) {
-            $row[] = forum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
-                'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                'cantsubscribe' => '-'), false, false, true);
-            $row[] = forum_index_get_forum_subscription_selector($forum);
+            $row[] = forum_get_subscribe_link($forum, $instance->get_context(), [
+                    'subscribed' => $stryes,
+                    'unsubscribed' => $strno,
+                    'forcesubscribed' => $stryes,
+                    'cantsubscribe' => '-',
+                ], false, false, true);
+            $row[] = forum_index_get_forum_subscription_selector($instance);
         }
 
         // If this forum has RSS activated, calculate it.
@@ -357,14 +363,13 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
 
     if ($learningforums) {
         $currentsection = '';
-            foreach ($learningforums as $forum) {
-            $cm      = $modinfo->instances['forum'][$forum->id];
-            $context = context_module::instance($cm->id);
-
-            $count = forum_count_discussions($forum, $cm, $course);
+        foreach ($learningforums as $instance) {
+            $count = $instance->count_discussions();
+            // TODO Remove this if possible.
+            $forum = $instance->get_forum_record();
 
             if ($usetracking) {
-                if ($forum->trackingtype == FORUM_TRACKING_OFF) {
+                if ($instance->get_tracking_type() == FORUM_TRACKING_OFF) {
                     $unreadlink  = '-';
                     $trackedlink = '-';
 
@@ -424,10 +429,13 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             }
 
             if ($showsubscriptioncolumns) {
-                $row[] = forum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
-                    'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                    'cantsubscribe' => '-'), false, false, true);
-                $row[] = forum_index_get_forum_subscription_selector($forum);
+                $row[] = forum_get_subscribe_link($forum, $instance->get_context(), [
+                        'subscribed' => $stryes,
+                        'unsubscribed' => $strno,
+                        'forcesubscribed' => $stryes,
+                        'cantsubscribe' => '-',
+                    ], false, false, true);
+                $row[] = forum_index_get_forum_subscription_selector($instance);
             }
 
             //If this forum has RSS activated, calculate it
@@ -501,18 +509,17 @@ echo $OUTPUT->footer();
  * @param   stdClass    $forum      The forum to return options for
  * @return  string
  */
-function forum_index_get_forum_subscription_selector($forum) {
+function forum_index_get_forum_subscription_selector(\mod_forum\instance $instance) : string {
     global $OUTPUT, $PAGE;
 
-    if ($forum->cansubscribe || $forum->issubscribed) {
-        if ($forum->maildigest === null) {
-            $forum->maildigest = -1;
-        }
+    $cansubscribe = false;
+    $cansubscribe = $cansubscribe || $instance->is_subscribed();
+    $cansubscribe = $cansubscribe || $instance->can_subscribe();
 
-        $renderer = $PAGE->get_renderer('mod_forum');
-        return $OUTPUT->render($renderer->render_digest_options($forum, $forum->maildigest));
-    } else {
-        // This user can subscribe to some forums. Add the empty fields.
+    if (!$cansubscribe) {
         return '';
     }
+
+    $renderer = $PAGE->get_renderer('mod_forum');
+    return $OUTPUT->render($renderer->render_digest_options($instance->get_forum_record(), $instance->get_digest_preference()));
 };

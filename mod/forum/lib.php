@@ -4628,6 +4628,7 @@ function forum_post_subscription($fromform, $forum, $discussion) {
 /**
  * Generate and return the subscribe or unsubscribe link for a forum.
  *
+ * // TODO MOve to instance?
  * @param object $forum the forum. Fields used are $forum->id and $forum->forcesubscribe.
  * @param object $context the context object for this forum.
  * @param array $messages text used for the link in its various states

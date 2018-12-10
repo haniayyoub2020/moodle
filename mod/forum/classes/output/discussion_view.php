@@ -69,7 +69,7 @@ class discussion_view implements \renderable, \templatable {
     protected function get_display_mode() : int {
         global $CFG;
 
-        $displaymode = $this->instance->get_current_layout();
+        $displaymode = $this->forum->get_current_layout();
 
         $post = $this->get_top_post();
         if ($post->id != $this->discussion->firstpost) {

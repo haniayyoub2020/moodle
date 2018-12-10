@@ -61,25 +61,7 @@ $course = $instance->get_course();
 $forum = $instance->get_forum_record();
 $cm = $instance->get_cm()->get_course_module_record();
 
-// Move require_course_login here to use forced language for course.
-// Fix for MDL-6926.
 require_course_login($course, true, $cm);
-$strforums = get_string("modulenameplural", "forum");
-$strforum = get_string("modulename", "forum");
-
-if (!$PAGE->button) {
-    $PAGE->set_button(forum_search_form($course, $search));
-}
-
-$context = $instance->get_context();
-$PAGE->set_context($context);
-
-$instance->add_rss_headers();
-
-// Print header.
-$PAGE->set_title($forum->name);
-$PAGE->add_body_class('forumtype-' . $forum->type);
-$PAGE->set_heading($course->fullname);
 
 if (!$instance->can_see_forum()) {
     // The user cannot view this forum.
@@ -101,16 +83,23 @@ if (!$instance->can_see_discussions()) {
     );
 }
 
-$instance->handle_discussion_list_viewed();
+// Trigger discussion list viewed event.
+$instance->trigger_discussion_list_viewed();
 
-// Some capability checks.
-$courselink = new moodle_url('/course/view.php', ['id' => $cm->course]);
+$instance->add_rss_headers();
+$PAGE->set_title($forum->name);
+$PAGE->set_heading($course->fullname);
+$PAGE->set_context($instance->get_context());
+$PAGE->add_body_class("forumtype-{$forum->type}");
+if (!$PAGE->button) {
+    $PAGE->set_button(forum_search_form($course, $search));
+}
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($forum->name), 2);
-
+echo $OUTPUT->heading(format_string($instance->get_forum_name()), 2);
 echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
 
+// TODO - can this be moved to within the template?
 // Group mode selection.
 groups_print_activity_menu($cm, $instance->get_forum_view_url());
 

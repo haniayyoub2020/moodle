@@ -79,6 +79,16 @@ abstract class instance {
     protected $layout = null;
 
     /**
+     * @var array The list of posts in this discussion which have been read.
+     */
+    protected $readposts = null;
+
+    /**
+     * @var int User's digest preference for this forum.
+     */
+    protected $userdigest = null;
+
+    /**
      * Constructor for a forum.
      *
      * @param   \stdClass   $record The record from the forum table.
@@ -93,6 +103,23 @@ abstract class instance {
             $user = $USER;
         }
         $this->user = $user;
+    }
+
+    /**
+     * Most forums are learning forums, but some are intended for announcements.
+     * Forums are not considered to be for learning if thy are in the site course, or are not in a section.
+     *
+     * @return  bool
+     */
+    public function is_learning_forum() : bool {
+        if (SITEID == $this->get_course()->id) {
+            return false;
+        }
+
+        if (empty($this->get_cm()->sectionnum)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -117,6 +144,27 @@ abstract class instance {
         $this->cm = $cm;
 
         return $this;
+    }
+
+    /**
+     * Get the effective digest preference for the user.
+     *
+     * @return  int
+     */
+    public function get_digest_preference() : int {
+        global $DB;
+        if (null === $this->userdigest) {
+            $this->userdigest = $DB->get_field('forum_digests', 'maildigest', [
+                'userid' => $this->get_user_id(),
+                'forum' => $this->get_forum_id(),
+            ]);
+
+            if (!$this->userdigest) {
+                // Use the default per-forum value.
+                $this->userdigest = -1;
+            }
+        }
+        return $this->userdigest;
     }
 
     /**
@@ -217,6 +265,15 @@ abstract class instance {
      */
     public function get_user_record() : \stdClass {
         return $this->user;
+    }
+
+    /**
+     * Get the user id of the user this instance is customised to.
+     *
+     * @return  int
+     */
+    public function get_user_id() : int {
+        return $this->user->id;
     }
 
     /**
@@ -346,7 +403,15 @@ abstract class instance {
             return false;
         }
 
-        return \mod_forum\subscriptions::is_subscribable($this->record);
+        if (\mod_forum\subscriptions::is_subscribable($this->record)) {
+            return true;
+        }
+
+        if (has_capability('mod/forum:managesubscriptions', $this->get_context(), $this->user)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1052,6 +1117,39 @@ abstract class instance {
     }
 
     /**
+     * Whether the current user tracks this forum.
+     *
+     * @return  bool
+     */
+    public function is_tracked() : bool {
+        global $CFG;
+
+        if (!isloggedin()) {
+            return false;
+        }
+
+        if (!forum_tp_can_track_forums($this->get_forum_record(), $this->user)) {
+            return false;
+        }
+
+        if (!forum_tp_is_tracked($this->get_forum_record(), $this->user)) {
+            return false;
+        }
+
+        // TODO Make this a user preference.
+        return $CFG->forum_usermarksread;
+    }
+
+    /**
+     * Get the tracking type of this forum.
+     *
+     * @return  int
+     */
+    public function get_tracking_type() : int {
+        return $this->record->trackingtype;
+    }
+
+    /**
      * Check to ensure a user can post in a group.
      * Note: Only the group component is checked, not general availability to this user.
      *
@@ -1108,6 +1206,15 @@ abstract class instance {
         }
 
         return false;
+    }
+
+    /**
+     * Whether this is user is subscribed to the forum as whole.
+     *
+     * @return  bool
+     */
+    public function is_subscribed() : bool {
+        return \mod_forum\subscriptions::is_subscribed($this->user->id, $this->record);
     }
 
     /**
@@ -2034,6 +2141,25 @@ abstract class instance {
     }
 
     /**
+     * Whether the post has been marked as read.
+     *
+     * @param   \stdClass   $post
+     * @return  bool
+     */
+    public function is_post_read(\stdClass $post) : bool {
+        global $DB;
+
+        if (null === $this->readposts) {
+            $this->readposts = $DB->get_records('forum_read', [
+                    'forumid' => $this->get_forum_id(),
+                    'userid' => $this->user->id,
+                ], '', 'postid, lastread');
+        }
+
+        return ($this->readposts && isset($this->readposts->{$post->id}));
+    }
+
+    /**
      * Check whether the user has created any discussion in this forum.
      *
      * @param   int     $groupid
@@ -2110,9 +2236,9 @@ abstract class instance {
     }
 
     /**
-     * Handle the discussion list being viewed.
+     * Trigger the discussion list viewed event.
      */
-    public function handle_discussion_list_viewed() {
+    public function trigger_discussion_list_viewed() {
         // Mark viewed and trigger the course_module_viewed event.
         $this->trigger_course_module_viewed();
     }
@@ -2148,8 +2274,6 @@ abstract class instance {
 
         // Add a permalink.
         $commands['permalink'] = [
-            // Maybe move this to ajax??
-            // 'mark' => 'read'
             'url' => $this->get_post_view_url($discussion, $post->id),
             'text' => new \lang_string('permalink', 'forum'),
             'attributes' => [
@@ -2160,23 +2284,32 @@ abstract class instance {
             ]
         ];
 
-        // If is tracked
-        // And user is logged in???? (this should be in the isntance)
-        // TODO Mark as read/unread
-        /*
-        if ($istracked && $CFG->forum_usermarksread && isloggedin()) {
-        $commands['track'] = [
-            'url' => $forum->get_post_view_url($discussion, $post->id),
-            'text' => new \lang_string('markread', 'forum'), // or markunread
-            'attributes' => [
-                [
-                    'key' => 'rel',
-                    'value' => 'bookmark',
-                ],
-            ]
-        ];
+        // Mark as read/unread.
+        // TODO Maybe move this to ajax.
+        if ($this->is_tracked()) {
+            $trackurl = $this->get_post_view_url($discussion, $post->id);
+            $trackurl->param('postid', $post->id);
+            if ($this->is_post_read($post)) {
+                // Link to mark as unread.
+                $trackurl->param('mark', 'unread');
+                $trackstring = new \lang_string('markunread', 'forum');
+            } else {
+                // Link to mark as read.
+                $trackurl->param('mark', 'read');
+                $trackstring = new \lang_string('markread', 'forum');
+            }
+
+            $commands['track'] = [
+                'url' => $trackurl,
+                'text' => $trackstring,
+                'attributes' => [
+                    [
+                        'key' => 'rel',
+                        'value' => 'bookmark',
+                    ],
+                ]
+            ];
         }
-         */
 
         // Link to the parent post.
         if ($post->parent) {

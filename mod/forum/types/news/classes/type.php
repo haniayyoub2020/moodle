@@ -26,6 +26,15 @@ namespace forumtype_news;
 class type extends \mod_forum\instance {
 
     /**
+     * The news/announcements forum is not a learning forum.
+     *
+     * @return  bool
+     */
+    public function is_learning_forum() : bool {
+        return false;
+    }
+
+    /**
      * Get the name of the capability used to post in an existing discussion.
      *
      * @return  string

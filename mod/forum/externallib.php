@@ -1216,12 +1216,12 @@ class mod_forum_external extends external_api {
             throw new \moodle_exception('cannotsubscribe', 'mod_forum');
         }
 
-        $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid]);
-        $forum->set_subscription_state($discussion, $targetstate);
+        $discussion = $DB->get_record('forum_discussions', ['id' => $params['discussionid']]);
+        $forum->set_subscription_state($discussion, $params['targetstate']);
 
         $renderer = $PAGE->get_renderer('mod_forum');
 
-        return (new \mod_forum\output\discussion_subscription_toggle($forum, $discussion, $includetext))
+        return (new \mod_forum\output\discussion_subscription_toggle($forum, $discussion, $params['includetext']))
             ->export_for_template($renderer);
     }
 

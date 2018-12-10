@@ -119,7 +119,7 @@ class tracking {
         }
 
         // TODO
-        forum_tp_delete_read_records($instance->get_user_record(), $postid);
+        forum_tp_delete_read_records($forum->get_user_id(), $postid);
     }
 
     public static function mark_post(instance $forum, int $postid, int $markas) {

@@ -25,17 +25,18 @@
 
 require_once('../../config.php');
 
-$d      = required_param('d', PARAM_INT);                // Discussion ID
+$d      = required_param('d', PARAM_INT);                // Discussion ID.
 $parent = optional_param('parent', null, PARAM_INT);     // If set, then display this post and all children.
-$mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread
-$move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
+
+$mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread.
+$move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum.
 
 $mark   = optional_param('mark', null, PARAM_INT);       // Used for tracking read posts if user initiated.
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 
 $discussion = $DB->get_record('forum_discussions', ['id' => $d], '*', MUST_EXIST);
-$instance = \mod_forum\factory::get_forum_by_discussionid($d->id);
-$cm = $instance->get_cm()->get_course_module_record();
+$instance = \mod_forum\factory::get_forum_by_discussionid($discussion->id);
+$cm = $instance->get_cm();
 $course = $instance->get_course();
 
 $url = $instance->get_discussion_view_url($discussion);
@@ -46,9 +47,6 @@ if ($parent !== null) {
 $PAGE->set_url($pageurl);
 
 require_course_login($course, true, $cm);
-
-// move this down fix for MDL-6926
-require_once($CFG->dirroot.'/mod/forum/lib.php');
 
 if (!$instance->can_see_forum()) {
     // The user cannot view this forum.
@@ -64,24 +62,22 @@ if (!$instance->can_see_discussions()) {
     // The user cannot see discussions in this forum.
     // Redirect back to the forum.
     redirect(
-            $instance->get_forum_view_url(),
-            get_string('noviewdiscussionspermission', 'forum'),
-            \core\output\notification::NOTIFY_ERROR
-        );
+        $instance->get_forum_view_url(),
+        get_string('noviewdiscussionspermission', 'forum'),
+        \core\output\notification::NOTIFY_ERROR
+    );
 }
 
-$instance->add_rss_headers();
-
-if ($move > 0 and confirm_sesskey()) {
+if ($move > 0 && confirm_sesskey()) {
     // Move discussion if requested.
     $target = \mod_forum\factory::get_forum_by_id($move);
     $instance->move_discussion_to_forum($discussion, $target);
 
     redirect(
-            $target->get_discussion_view_url($discussion),
-            get_string('discussionmoved', 'forum', $target->get_cm()->name),
-            \core\output\notification::NOTIFY_INFO
-        );
+        $target->get_discussion_view_url($discussion),
+        get_string('discussionmoved', 'forum', $target->get_cm()->name),
+        \core\output\notification::NOTIFY_INFO
+    );
 }
 
 if ($mode) {
@@ -90,9 +86,9 @@ if ($mode) {
     redirect($instance->get_discussion_view_url($discussion));
 }
 
-$post = $instance->get_top_post_in_discussion_or_specified($discussion, $parent);
+$toppost = $instance->get_top_post_in_discussion_or_specified($discussion, $parent);
 
-if (!$instance->can_see_post($post, $discussion, false)) {
+if (!$instance->can_see_post($toppost, $discussion, false)) {
     // User cannot see this post.
     // Redirect to the forum URL with an error message.
     redirect(
@@ -107,6 +103,7 @@ $instance->trigger_event_discussion_viewed($discussion);
 
 unset($SESSION->fromdiscussion);
 
+$instance->add_rss_headers();
 $PAGE->set_title("$course->shortname: ".format_string($discussion->name));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_button(forum_search_form($course));
@@ -122,8 +119,8 @@ if (empty($forumnode)) {
 
 $node = $forumnode->add(format_string($discussion->name), $url);
 $node->display = false;
-if ($node && $post->id != $discussion->firstpost) {
-    $node->add(format_string($post->subject), $pageurl);
+if ($node && $toppost->id != $discussion->firstpost) {
+    $node->add(format_string($toppost->subject), $pageurl);
 }
 
 // TODO: Find out where $mark is set and update it to use constants.
@@ -133,17 +130,15 @@ if (null !== $mark) {
     \mod_forum\tracking::mark_post($instance, $postid, $mark);
 }
 
-$mode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
+$instance->set_current_layout(get_user_preferences('forum_displaymode', $CFG->forum_displaymode));
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($instance->get_forum_name()), 2);
 echo $OUTPUT->heading(format_string($discussion->name), 3, 'discussionname');
 
-// Hmm. both insance and templatable are usign the mode.
-$instance->set_current_layout($mode);
 
 $templatable = new \mod_forum\output\discussion_view($instance, $discussion);
-$templatable->set_top_post($post);
+$templatable->set_top_post($toppost);
 
 $data = $templatable->export_for_template($renderer);
 echo $renderer->render_from_template($instance->get_template_for_discussion(), $data);
