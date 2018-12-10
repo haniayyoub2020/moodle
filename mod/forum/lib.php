@@ -2289,7 +2289,7 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
                 if (empty($mygroups)) {
                      $groupselect = "AND d.groupid = -1";
                 } else {
-                    list($insqlgroups, $inparamsgroups) = $db->get_in_or_equal($mygroups);
+                    list($insqlgroups, $inparamsgroups) = $DB->get_in_or_equal($mygroups);
                     $groupselect = "and (d.groupid = -1 or d.groupid $insqlgroups)";
                     $params = array_merge($params, $inparamsgroups);
                 }
@@ -4699,7 +4699,7 @@ function forum_get_subscribe_link($forum, $context, $messages = array(), $cantac
  * @return bool
  */
 function forum_user_has_posted_discussion($forumid, $userid, $groupid = null) {
-    $forum = \mod_forum\factory::get_forum_by_id($forumid, \core_user::get_user_by_id($userid));
+    $forum = \mod_forum\factory::get_forum_by_id($forumid, \core_user::get_user($userid));
     return $forum->has_user_created_discussion($groupid);
 }
 

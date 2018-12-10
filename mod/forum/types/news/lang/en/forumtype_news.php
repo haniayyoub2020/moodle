@@ -23,3 +23,4 @@
  */
 
 $string['pluginname'] = 'Announcements';
+$string['privacy:metadata'] = 'The announcements forum type plugin does not store data. It is only responsible for how data is displayed within a forum.';

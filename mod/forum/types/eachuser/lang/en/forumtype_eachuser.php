@@ -23,3 +23,4 @@
  */
 
 $string['pluginname'] = 'Each person posts one discussion';
+$string['privacy:metadata'] = 'Th Each person posts once forum type  plugin does not store data. It is only responsible for how data is displayed within a forum.';

@@ -23,3 +23,4 @@
  */
 
 $string['pluginname'] = 'A single simple discussion';
+$string['privacy:metadata'] = 'The Single Simple Discussion forum type plugin does not store data. It is only responsible for how data is displayed within a forum.';

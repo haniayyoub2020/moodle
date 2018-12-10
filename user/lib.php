@@ -268,13 +268,15 @@ function user_get_user_details($user, $course = null, array $userfields = array(
     require_once($CFG->dirroot . "/lib/filelib.php");      // File handling on description and friends.
 
     $defaultfields = user_get_default_fields();
+    $otherfields = get_all_user_name_fields();
+    $alluserfields = array_merge($defaultfields, $otherfields);
 
     if (empty($userfields)) {
-        $userfields = $defaultfields;
+        $userfields = $alluserfields;
     }
 
     foreach ($userfields as $thefield) {
-        if (!in_array($thefield, $defaultfields)) {
+        if (!in_array($thefield, $alluserfields)) {
             throw new moodle_exception('invaliduserfield', 'error', '', $thefield);
         }
     }
@@ -329,9 +331,8 @@ function user_get_user_details($user, $course = null, array $userfields = array(
     $userdetails = array();
     $userdetails['id'] = $user->id;
 
-    $otherfields = get_all_user_name_fields();
     foreach ($otherfields as $otherfield) {
-        if (isset($user->$otherfield)) {
+        if (isset($user->$otherfield) && in_array($otherfield, $userfields)) {
             $userdetails[$otherfield] = $user->$otherfield;
         }
     }

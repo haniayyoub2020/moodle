@@ -469,7 +469,7 @@ class mod_forum_external extends external_api {
                 }
             }
             // The forum function returns the replies for all the discussions in a given forum.
-            $replies = $instance->count_discussion_replies($sort, -1, $page, $perpage);
+            $replies = $instance->count_discussion_replies($page, $perpage, $sort, -1);
 
             foreach ($alldiscussions as $discussion) {
                 // This function checks for qanda forums.

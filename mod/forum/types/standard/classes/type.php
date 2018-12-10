@@ -17,11 +17,11 @@
 /**
  * The standard forum type.
  *
- * @package    mod_foruforumtype_standard
+ * @package    forumtype_standard
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace forumtype_standard;
 
-class standard extends \mod_forum\instance {
+class type extends \mod_forum\instance {
 }

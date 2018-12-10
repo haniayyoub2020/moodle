@@ -749,6 +749,9 @@ class core_userliblib_testcase extends advanced_testcase {
 
         // Get student details with required fields.
         $result = user_get_user_details($student, $course1, array('id', 'fullname'));
+        if (count($result) !== 2) {
+            print_object($result);
+        }
         $this->assertCount(2, $result);
         $this->assertEquals($student->id, $result['id']);
         $this->assertEquals($studentfullname, $result['fullname']);

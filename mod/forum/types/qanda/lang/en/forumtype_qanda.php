@@ -23,3 +23,4 @@
  */
 
 $string['pluginname'] = 'Q and A forum';
+$string['privacy:metadata'] = 'The Q&A forum type plugin does not store data. It is only responsible for how data is displayed within a forum.';

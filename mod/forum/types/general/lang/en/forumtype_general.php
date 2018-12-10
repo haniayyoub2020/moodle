@@ -22,4 +22,5 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Standard forum for general use';
+$string['pluginname'] = 'General forum for general use';
+$string['privacy:metadata'] = 'The general forum type plugin does not store data. It is only responsible for how data is displayed within a forum.';

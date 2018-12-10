@@ -857,7 +857,7 @@ abstract class instance {
         ];
 
         // TODO CHange to use new API.
-        $discussions = forum_get_discussions($cm, '', false, -1, -1, true, -1, 0, FORUM_POSTS_ALL_USER_GROUPS, $from);
+        $discussions = forum_get_discussions($this->cm, '', false, -1, -1, true, -1, 0, FORUM_POSTS_ALL_USER_GROUPS, $from);
         if (!empty($discussions)) {
             $updates->discussions->updated = true;
             $updates->discussions->itemids = array_keys($discussions);
@@ -1373,7 +1373,7 @@ abstract class instance {
      * @param int $perpage
      * @return array
      */
-    protected function count_discussion_replies(
+    public function count_discussion_replies(
             int $page,
             int $perpage,
             string $forumsort = null,
@@ -2034,7 +2034,7 @@ abstract class instance {
         global $DB;
 
         $params = [
-            'forum' => $tis->get_forum_id(),
+            'forum' => $this->get_forum_id(),
             'userid' => $this->get_user_id(),
         ];
 

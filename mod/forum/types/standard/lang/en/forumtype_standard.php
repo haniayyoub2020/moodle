@@ -23,3 +23,4 @@
  */
 
 $string['pluginname'] = 'Standard forum';
+$string['privacy:metadata'] = 'The Standard forum type plugin does not store data. It is only responsible for how data is displayed within a forum.';
