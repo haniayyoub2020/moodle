@@ -178,6 +178,15 @@ abstract class instance {
     }
 
     /**
+     * Get the name of this forum.
+     *
+     * @return  string
+     */
+    public function get_forum_name() : string {
+        return $this->record->name;
+    }
+
+    /**
      * Get the course record.
      *
      * @return  \stdClass

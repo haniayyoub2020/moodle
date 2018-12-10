@@ -46,11 +46,6 @@ class discussion_view implements \renderable, \templatable {
     protected $discussion;
 
     /**
-     * @var int The displaymode to use.
-     */
-    protected $displaymode;
-
-    /**
      * @var \stdClass The top post to be shown.
      */
     protected $toppost;
@@ -67,18 +62,6 @@ class discussion_view implements \renderable, \templatable {
     }
 
     /**
-     * Set a specific display mode.
-     *
-     * @param   int     $displaymode
-     * @return  $this
-     */
-    public function set_display_mode(int $displaymode) : self {
-        $this->displaymode = $displaymode;
-
-        return $this;
-    }
-
-    /**
      * Get the current displaymode.
      *
      * @return  int
@@ -86,16 +69,18 @@ class discussion_view implements \renderable, \templatable {
     protected function get_display_mode() : int {
         global $CFG;
 
+        $displaymode = $this->instance->get_current_layout();
+
         $post = $this->get_top_post();
         if ($post->id != $this->discussion->firstpost) {
             // Not viewing the whole discussion.
             // If the current displaymode is flat, then switch to nested but do not update any preference.
-            if ($this->displaymode == FORUM_MODE_FLATOLDEST || $this->displaymode == FORUM_MODE_FLATNEWEST) {
-                $this->displaymode = FORUM_MODE_NESTED;
+            if ($displaymode == FORUM_MODE_FLATOLDEST || $displaymode == FORUM_MODE_FLATNEWEST) {
+                $displaymode = FORUM_MODE_NESTED;
             }
         }
 
-        return $this->displaymode;
+        return $displaymode;
     }
 
     /**

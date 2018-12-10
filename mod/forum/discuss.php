@@ -33,9 +33,8 @@ $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this d
 $mark   = optional_param('mark', null, PARAM_INT);       // Used for tracking read posts if user initiated.
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 
-$discussion = $DB->get_record('forum_discussions', array('id' => $d), '*', MUST_EXIST);
-$forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
-$instance = \mod_forum\factory::get_forum_by_record($forum);
+$discussion = $DB->get_record('forum_discussions', ['id' => $d], '*', MUST_EXIST);
+$instance = \mod_forum\factory::get_forum_by_discussionid($d->id);
 $cm = $instance->get_cm()->get_course_module_record();
 $course = $instance->get_course();
 
@@ -137,7 +136,7 @@ if (null !== $mark) {
 $mode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($forum->name), 2);
+echo $OUTPUT->heading(format_string($instance->get_forum_name()), 2);
 echo $OUTPUT->heading(format_string($discussion->name), 3, 'discussionname');
 
 // Hmm. both insance and templatable are usign the mode.
@@ -145,7 +144,6 @@ $instance->set_current_layout($mode);
 
 $templatable = new \mod_forum\output\discussion_view($instance, $discussion);
 $templatable->set_top_post($post);
-$templatable->set_display_mode($mode);
 
 $data = $templatable->export_for_template($renderer);
 echo $renderer->render_from_template($instance->get_template_for_discussion(), $data);
