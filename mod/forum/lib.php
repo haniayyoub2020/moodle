@@ -6616,9 +6616,11 @@ function forum_get_extra_capabilities() {
 function forum_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $forumnode) {
     global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
-    $forumobject = $DB->get_record("forum", array("id" => $PAGE->cm->instance));
+    $instance = \mod_forum\factory::get_forum_by_id($PAGE->cm->instance);
+    $forumobject = $instance->get_forum_record();
+    $modcontext = $instance->get_context();
     if (empty($PAGE->cm->context)) {
-        $PAGE->cm->context = context_module::instance($PAGE->cm->instance);
+        $PAGE->cm->context = $modcontext;
     }
 
     $params = $PAGE->url->params();
@@ -6694,7 +6696,7 @@ function forum_extend_settings_navigation(settings_navigation $settingsnav, navi
         $url = new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'sesskey'=>sesskey()));
         $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
 
-        if (isset($discussionid)) {
+        if (isset($discussionid) && $instance->can_subscribe_to_discussions()) {
             if (\mod_forum\subscriptions::is_subscribed($USER->id, $forumobject, $discussionid, $PAGE->cm)) {
                 $linktext = get_string('unsubscribediscussion', 'forum');
             } else {

@@ -33,15 +33,13 @@
     }
 }}
 <div id="{{uniqid}}">
-    {{#can_subscribe}}
+    {{#subscription_toggle_form}}
         <div class="d-flex flex-row-reverse">
             <div class="p-2">
-                {{#subscription_toggle_form}}
-                    {{> mod_forum/discussion_subscription_toggle}}
-                {{/subscription_toggle_form}}
+                {{> mod_forum/discussion_subscription_toggle}}
             </div>
         </div>
-    {{/can_subscribe}}
+    {{/subscription_toggle_form}}
 
     {{!TODO}}
     {{{neighbour_links}}}

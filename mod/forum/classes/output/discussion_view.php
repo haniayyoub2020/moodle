@@ -131,7 +131,13 @@ class discussion_view implements \renderable, \templatable {
             get_string('move')
         );
 
-        $return = [
+        $cansubscribe = $this->forum->can_subscribe();
+        $subscriptiontoggle = '';
+        if ($cansubscribe && $this->forum->can_subscribe_to_discussions()) {
+            $subscriptiontoggle = (new discussion_subscription_toggle($this->forum, $this->discussion))->export_for_template($renderer);
+        }
+
+        return [
             // The discussion.
             // TODO Change to renderable.
             'discussion' => $this->discussion,
@@ -146,8 +152,8 @@ class discussion_view implements \renderable, \templatable {
             'can_see_posts_structure' => $this->forum->can_see_posts_structure($this->discussion),
 
             // Subscription handling.
-            'can_subscribe' => $this->forum->can_subscribe(),
-            'subscription_toggle_form' => (new discussion_subscription_toggle($this->forum, $this->discussion))->export_for_template($renderer),
+            'can_subscribe' => $cansubscribe,
+            'subscription_toggle_form' => $subscriptiontoggle,
             'pin_toggle_form' => (new discussion_pin_toggle($this->forum, $this->discussion))->export_for_template($renderer),
 
             // TODO Move to template
@@ -171,8 +177,6 @@ class discussion_view implements \renderable, \templatable {
 
             // TODO Decide how to handle displayig the Q&A Notification.
         ];
-
-        return $return;
     }
 
     /**

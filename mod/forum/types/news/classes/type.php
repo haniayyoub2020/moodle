@@ -102,4 +102,13 @@ class type extends \mod_forum\instance {
 
         return false;
     }
+
+    /**
+     * Get the string to use for the create discussion buttons.
+     *
+     * @return  string
+     */
+    public function get_create_discussion_string() : string {
+        return get_string('addanewtopic', 'forum');
+    }
 }

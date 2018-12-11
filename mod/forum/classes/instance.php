@@ -442,6 +442,15 @@ abstract class instance {
     }
 
     /**
+     * Whether it is possible to subscribe to discussions in this forum.
+     *
+     * @return  bool
+     */
+    public function can_subscribe_to_discussions() : bool {
+        return true;
+    }
+
+    /**
      * Can track read posts.
      *
      * @return  bool

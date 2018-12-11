@@ -31,7 +31,6 @@ class type extends \mod_forum\instance {
      * @return  string
      */
     public function get_create_discussion_string() : string {
-        // TODO Move this to the subplugin.
         return get_string('addanewtopic', 'forum');
     }
 }

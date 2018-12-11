@@ -633,11 +633,10 @@ $mformpost->set_data(
 );
 
 if ($mformpost->is_cancelled()) {
-    if (!isset($discussion->id) || $forum->type === 'qanda') {
-        // Q and A forums don't have a discussion page, so treat them like a new thread..
-        redirect(new moodle_url('/mod/forum/view.php', array('f' => $forum->id)));
+    if (isset($discussion)) {
+        redirect($instance->get_discussion_view_url($discussion));
     } else {
-        redirect(new moodle_url('/mod/forum/discuss.php', array('d' => $discussion->id)));
+        redirect($instance->get_discussion_list_url());
     }
 } else if ($fromform = $mformpost->get_data()) {
 
@@ -918,8 +917,6 @@ if ($mformpost->is_cancelled()) {
     }
 }
 
-
-
 // To get here they need to edit a post, and the $post
 // variable will be loaded with all the particulars,
 // so bring up the form.
@@ -927,13 +924,11 @@ if ($mformpost->is_cancelled()) {
 // Vars $course, $forum are defined. $discussion is for edit and reply only.
 
 if ($post->discussion) {
-    if (! $toppost = $DB->get_record("forum_posts", array("discussion" => $post->discussion, "parent" => 0))) {
-        print_error('cannotfindparentpost', 'forum', '', $post->id);
-    }
+    $toppost = $instance->get_top_post_in_discussion_or_specified($discussion);
 } else {
-    $toppost = new stdClass();
-    $toppost->subject = ($forum->type == "news") ? get_string("addanewtopic", "forum") :
-        get_string("addanewdiscussion", "forum");
+    $toppost = (object) [
+        'subject' => $instance->get_create_discussion_string(),
+    ];
 }
 
 if (empty($post->edit)) {

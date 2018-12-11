@@ -117,11 +117,25 @@ class factory {
     public static function get_forum_by_id(int $id, \stdClass $user = null) : instance {
         global $DB;
 
-        $record = $DB->get_record('forum', [
-                'id' => $id,
-            ], '*', MUST_EXIST);
+        $forumfields = $DB->get_preload_columns('forum', 'f');
+        $coursefields = $DB->get_preload_columns('course', 'c');
 
-        return static::get_forum_by_record($record, $user);
+        $forumfieldsql = $DB->get_preload_columns_sql($forumfields, 'f');
+        $coursefieldsql = $DB->get_preload_columns_sql($coursefields, 'c');
+
+        $sql = "SELECT {$forumfieldsql}, {$coursefieldsql}
+                  FROM {forum} f
+                  JOIN {course} c ON c.id = f.course
+                 WHERE f.id = :id
+            ";
+        $record = $DB->get_record_sql($sql, ['id' => $id], MUST_EXIST);
+
+        $forum = $DB->extract_fields_from_object($forumfields, $record);
+
+        $instance = static::get_forum_by_record($forum, $user);
+        $instance->set_course($DB->extract_fields_from_object($coursefields, $record));
+
+        return $instance;
     }
 
     /**

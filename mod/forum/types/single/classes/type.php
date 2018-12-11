@@ -88,6 +88,15 @@ class type extends \mod_forum\instance {
     }
 
     /**
+     * Discussions cannot be pinned in a single discussion.
+     *
+     * @return  bool
+     */
+    public function can_pin_discussions() : bool {
+        return false;
+    }
+
+    /**
      * Discussions cannot be moved into, or out of, a Single Discussion.
      */
     public function can_move_discussions($require = false) : bool {
@@ -159,6 +168,15 @@ class type extends \mod_forum\instance {
     }
 
     public function has_discussion_list() : bool {
+        return false;
+    }
+
+    /**
+     * There is only one discussion in a single discussion forum so there is no point subscribing to a discussion.
+     *
+     * @return  bool
+     */
+    public function can_subscribe_to_discussions() : bool {
         return false;
     }
 }

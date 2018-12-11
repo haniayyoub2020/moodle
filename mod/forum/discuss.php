@@ -137,7 +137,9 @@ $instance->set_current_layout(get_user_preferences('forum_displaymode', $CFG->fo
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($instance->get_forum_name()), 2);
-echo $OUTPUT->heading(format_string($discussion->name), 3, 'discussionname');
+if ($instance->has_discussion_list()) {
+    echo $OUTPUT->heading(format_string($discussion->name), 3, 'discussionname');
+}
 
 
 $templatable = new \mod_forum\output\discussion_view($instance, $discussion);
