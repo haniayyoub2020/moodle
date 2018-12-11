@@ -26,12 +26,27 @@ namespace forumtype_single;
 class type extends \mod_forum\instance {
 
     /**
+     * @var \stdClass The discussion in the single forum.
+     */
+    protected $discussion = null;
+
+    public function get_discussion() : \stdClass {
+        global $DB;
+
+        if (null === $this->discussion) {
+            $this->discussion = $DB->get_record('forum_discussions', ['forum' => $this->get_forum_id()]);
+        }
+
+        return $this->discussion;
+    }
+
+    /**
      * Check whether the user can create a new discussion in the specified group.
      *
      * @param   \stdClass   $currentgroup
      * @return  bool
      */
-    function forum_user_can_post_discussion($currentgroup = null) : bool {
+    public function forum_user_can_post_discussion($currentgroup = null) : bool {
         return false;
     }
 
@@ -69,9 +84,7 @@ class type extends \mod_forum\instance {
         global $DB;
 
         // There is only one discussion in the single view. No point showing the list with a single discussion.
-        $discussion = $DB->get_record('forum_discussions', ['forum' => $this->get_forum_id()]);
-
-        redirect($this->get_discussion_view_url($discussion));
+        redirect($this->get_discussion_view_url($this->get_discussion()));
     }
 
     /**
@@ -125,4 +138,27 @@ class type extends \mod_forum\instance {
         return parent::get_post_edit_url($discussion, $post);
     }
 
+    /**
+     * Get the URL used to view this discussion.
+     *
+     * @param   \stdClass   $discussion
+     * @return  \moodle_url
+     */
+    public function aget_discussion_view_url(\stdClass $discussion) : \moodle_url {
+        return $this->get_forum_view_url();
+    }
+
+    /**
+     * Get the URL used to view this forum.
+     *
+     * @return  \moodle_url
+     */
+    public function get_discussion_list_url() : \moodle_url {
+        // Need the first discussion.
+        return $this->get_discussion_view_url($this->get_discussion());
+    }
+
+    public function has_discussion_list() : bool {
+        return false;
+    }
 }

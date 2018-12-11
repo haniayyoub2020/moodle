@@ -85,7 +85,7 @@ class mod_forum_post_form extends moodleform {
         $mform =& $this->_form;
 
         $forum = $this->_customdata['forum'];
-        $instance = \mod_forum\factory::get_forum_by_record($forum);
+        $instance = $this->_customdata['instance'];
         $course = $this->_customdata['course'];
         $cm = $this->_customdata['cm'];
         $coursecontext = $this->_customdata['coursecontext'];

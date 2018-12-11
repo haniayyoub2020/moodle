@@ -143,7 +143,7 @@ class discussion_view implements \renderable, \templatable {
             // General information.
             'is_discussion_locked' => $this->forum->is_discussion_locked($this->discussion),
             'is_throttled' => $this->forum->is_throttled(),
-            'can_see_posts' => $this->forum->can_see_posts_in_discussion($this->discussion),
+            'can_see_posts_structure' => $this->forum->can_see_posts_structure($this->discussion),
 
             // Subscription handling.
             'can_subscribe' => $this->forum->can_subscribe(),
@@ -242,8 +242,10 @@ class discussion_view implements \renderable, \templatable {
         $author = $authors[$post->userid];
         $firstpost = new discussion_post($this->forum, $this->discussion, $post, $authors[$post->userid]);
 
-        // Note: $posts are passed by reference.
-        $this->get_post_children($posts, $authors, $post, $firstpost);
+        if ($this->forum->can_see_posts_structure($this->discussion)) {
+            // Note: $posts is passed by reference.
+            $this->get_post_children($posts, $authors, $post, $firstpost);
+        }
 
         return $firstpost;
     }
@@ -261,9 +263,11 @@ class discussion_view implements \renderable, \templatable {
         });
 
         foreach ($children as $childobj) {
-            if (!$this->forum->can_see_post($childobj, $this->discussion)) {
+            if (!$this->forum->can_see_posts_structure($this->discussion)) {
+                // The structure of posts cannot be viewed.
                 continue;
             }
+
             $author = $authors[$childobj->userid];
             $child = new discussion_post($this->forum, $this->discussion, $childobj, $author);
             $post->add_child($child);

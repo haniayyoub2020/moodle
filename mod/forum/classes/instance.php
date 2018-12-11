@@ -106,23 +106,6 @@ abstract class instance {
     }
 
     /**
-     * Most forums are learning forums, but some are intended for announcements.
-     * Forums are not considered to be for learning if thy are in the site course, or are not in a section.
-     *
-     * @return  bool
-     */
-    public function is_learning_forum() : bool {
-        if (SITEID == $this->get_course()->id) {
-            return false;
-        }
-
-        if (empty($this->get_cm()->sectionnum)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Set the cm_info record for this forum.
      *
      * @param   \cm_info    $cm
@@ -142,6 +125,22 @@ abstract class instance {
         }
 
         $this->cm = $cm;
+
+        return $this;
+    }
+
+    /**
+     * Set the course record for the course that this forum is in.
+     *
+     * @param   \stdClass   $course
+     * @return  $this
+     */
+    public function set_course(\stdClass $course) : self {
+        if ($course->id != $this->record->course) {
+            throw new \coding_exception('Invalid course passed');
+        }
+
+        $this->course = $course;
 
         return $this;
     }
@@ -174,7 +173,7 @@ abstract class instance {
      */
     public function get_cm() {
         if (null === $this->cm) {
-            list(, $cm) = get_course_and_cm_from_instance($this->record->id, 'forum', $this->record->course, $this->user->id);
+            list(, $cm) = get_course_and_cm_from_instance($this->record, 'forum', $this->get_course(), $this->user->id);
             $this->cm = $cm;
         }
 
@@ -283,6 +282,34 @@ abstract class instance {
      */
     public function get_course_id() : int {
         return $this->get_course_modinfo()->courseid;
+    }
+
+    /**
+     * Whether this forum type supports discussion lists.
+     *
+     * If not, the page will be redirected to the URL provided by get_discussion_list_url.
+     *
+     * @return  bool
+     */
+    public function has_discussion_list() : bool {
+        return true;
+    }
+
+    /**
+     * Most forums are learning forums, but some are intended for announcements.
+     * Forums are not considered to be for learning if thy are in the site course, or are not in a section.
+     *
+     * @return  bool
+     */
+    public function is_learning_forum() : bool {
+        if (SITEID == $this->get_course()->id) {
+            return false;
+        }
+
+        if (empty($this->get_cm()->sectionnum)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -891,11 +918,23 @@ abstract class instance {
 
     /**
      * Get the URL used to view this forum.
+     * TODO Deprecate?
      *
      * @return  \moodle_url
      */
     public function get_forum_view_url() : \moodle_url {
         return new \moodle_url('/mod/forum/view.php', [
+                'f' => $this->record->id,
+            ]);
+    }
+
+    /**
+     * Get the URL used to view this forum.
+     *
+     * @return  \moodle_url
+     */
+    public function get_discussion_list_url() : \moodle_url {
+        return new \moodle_url('/mod/forum/discussions.php', [
                 'f' => $this->record->id,
             ]);
     }
@@ -978,9 +1017,20 @@ abstract class instance {
     }
 
     /**
+     * Check whether a user can see the structure of posts in the specified discussion, even if they cannot see the
+     * actual post content.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @return  bool
+     */
+    public function can_see_posts_structure(\stdClass $discussion) : bool {
+        return true;
+    }
+
+    /**
      * Check whether a user can see the posts in the specified discussion.
      *
-     * Note: This is different ot can_see_discussion as some forum types may want to display the post, but not the
+     * Note: This is different to can_see_discussion as some forum types may want to display the post, but not the
      * content, until a user has posted.
      *
      * @param   \stdClass $discussion The discussion the post is in
@@ -1059,6 +1109,9 @@ abstract class instance {
      * @return  boolean     Whether the user can see the discussion or not.
      */
     public function can_see_group_discussion(\stdClass $discussion) : bool {
+        if (!isset($discussion->groupid)) {
+            throw new \coding_exception('');
+        }
         if ($discussion->groupid <= 0) {
             // This is not a group discussion, or it's a discussion to all groups.
             return true;

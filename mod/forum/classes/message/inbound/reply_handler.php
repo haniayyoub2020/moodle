@@ -70,30 +70,24 @@ class reply_handler extends \core\message\inbound\handler {
         global $DB, $USER;
 
         // Load the post being replied to.
-        $instance = \mod_forum\factory::get_forum_by_postid($record->datavalue);
-
-        $post = $DB->get_record('forum_posts', array('id' => $record->datavalue));
-        if (!$post) {
+        try {
+            $data = \mod_forum\factory::get_data_by_postid($record->datavalue);
+        } catch (\dml_missing_record_exception $e) {
             mtrace("--> Unable to find a post matching with id {$record->datavalue}");
             return false;
         }
 
-        // Load the discussion that this post is in.
-        $discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion));
-        if (!$post) {
-            mtrace("--> Unable to find the discussion for post {$record->datavalue}");
-            return false;
-        }
-
         // Load the other required data.
-        $forum = $DB->get_record('forum', array('id' => $discussion->forum));
-        $course = $DB->get_record('course', array('id' => $forum->course));
-        $cm = get_fast_modinfo($course->id)->instances['forum'][$forum->id];
-        $modcontext = \context_module::instance($cm->id);
+        $instance = $data->instance;
+        $post = $data->post;
+        $discussion = $data->discussion;
+        $forum = $instance->get_forum_record();
+        $course = $instance->get_course();
+        $cm = $instance->get_cm();
+        $modcontext = $instance->get_context();
         $usercontext = \context_user::instance($USER->id);
 
         // Make sure user can post in this discussion.
-        // TODO really check this - I just removed a lot of code!
         $canpost = $instance->can_post_to_discussion($discussion);
 
         if (!$canpost) {

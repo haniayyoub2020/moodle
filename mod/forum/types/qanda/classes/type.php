@@ -72,13 +72,13 @@ class type extends \mod_forum\instance {
     /**
      * Check whether a user can see the posts in the specified discussion.
      *
-     * Note: This is different ot can_see_discussion as some forum types may want to display the post, but not the
+     * Note: This is different to can_see_discussion as some forum types may want to display the post, but not the
      * content, until a user has posted.
      *
      * @param   \stdClass $discussion The discussion the post is in
      * @return  bool
      */
-    public function acan_see_posts_in_discussion(\stdClass $discussion) : bool {
+    public function can_see_posts_in_discussion(\stdClass $discussion) : bool {
         if (!$this->can_see_discussion($discussion)) {
             return false;
         }
@@ -174,5 +174,15 @@ class type extends \mod_forum\instance {
         }
 
         return $notifications;
+    }
+
+    /**
+     * Get the URL used to view this discussion.
+     *
+     * @param   \stdClass   $discussion
+     * @return  \moodle_url
+     */
+    public function aget_discussion_view_url(\stdClass $discussion) : \moodle_url {
+        return $this->get_forum_view_url();
     }
 }

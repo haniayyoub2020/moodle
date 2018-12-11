@@ -88,12 +88,10 @@
         {{!Show the notification}}
     {{/is_throttled}}
 
-    {{#can_see_posts}}
-        {{#post_structure}}
-            {{> mod_forum/discussion_view_posts}}
-        {{/post_structure}}
-        {{{posts}}}
-    {{/can_see_posts}}
+    {{#post_structure}}
+        {{> mod_forum/discussion_view_posts}}
+    {{/post_structure}}
+    {{{posts}}}
 
     {{{neighbour_links}}}
 </div>

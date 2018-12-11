@@ -516,19 +516,11 @@ if (!empty($forum)) {
     die;
 } else {
     print_error('unknowaction');
-
 }
-
-if (!isset($coursecontext)) {
-    // Has not yet been set by post.php.
-    $coursecontext = context_course::instance($forum->course);
-}
-
 
 // From now on user must be logged on properly.
-
-$instance = \mod_forum\factory::get_forum_by_id($forum->id);
-$modcontext = context_module::instance($cm->id);
+$modcontext = $instance->get_context();
+$coursecontext = $instance->get_course_context();
 require_login($instance->get_course(), false, $instance->get_cm());
 
 if (isguestuser()) {
@@ -538,6 +530,7 @@ if (isguestuser()) {
 
 $thresholdwarning = forum_check_throttling($forum, $cm);
 $mformpost = new mod_forum_post_form('post.php', array('course' => $course,
+    'instance' => $instance,
     'cm' => $cm,
     'coursecontext' => $coursecontext,
     'modcontext' => $modcontext,

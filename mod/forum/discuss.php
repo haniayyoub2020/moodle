@@ -34,8 +34,9 @@ $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this d
 $mark   = optional_param('mark', null, PARAM_INT);       // Used for tracking read posts if user initiated.
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 
-$discussion = $DB->get_record('forum_discussions', ['id' => $d], '*', MUST_EXIST);
-$instance = \mod_forum\factory::get_forum_by_discussionid($discussion->id);
+$data = \mod_forum\factory::get_data_by_discussionid($d);
+$discussion = $data->discussion;
+$instance = $data->instance;
 $cm = $instance->get_cm();
 $course = $instance->get_course();
 
@@ -117,10 +118,12 @@ if (empty($forumnode)) {
     $forumnode->make_active();
 }
 
-$node = $forumnode->add(format_string($discussion->name), $url);
-$node->display = false;
-if ($node && $toppost->id != $discussion->firstpost) {
-    $node->add(format_string($toppost->subject), $pageurl);
+if ($instance->has_discussion_list()) {
+    $node = $forumnode->add(format_string($discussion->name), $url);
+    $node->display = false;
+    if ($node && $toppost->id != $discussion->firstpost) {
+        $node->add(format_string($toppost->subject), $pageurl);
+    }
 }
 
 // TODO: Find out where $mark is set and update it to use constants.

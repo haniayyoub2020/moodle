@@ -28,7 +28,7 @@ $mode        = optional_param('mode', 0, PARAM_INT);     // Display mode (for si
 $page        = optional_param('page', 0, PARAM_INT);     // which page to show
 $search      = optional_param('search', '', PARAM_CLEAN);// search string
 
-$pageurl = new \moodle_url('/mod/forum/view.php');
+$pageurl = new \moodle_url('/mod/forum/discussions.php');
 if ($id) {
     $pageurl->param('id', $id);
 } else {
@@ -73,4 +73,46 @@ if (!$instance->can_see_forum()) {
     );
 }
 
-redirect($instance->get_discussion_list_url());
+if (!$instance->can_see_discussions()) {
+    // The user cannot see discussions in this forum.
+    // Redirect back to the forum.
+    redirect(
+        $instance->get_forum_view_url(),
+        get_string('noviewdiscussionspermission', 'forum'),
+        \core\output\notification::NOTIFY_ERROR
+    );
+}
+
+// Trigger discussion list viewed event.
+$instance->trigger_discussion_list_viewed();
+
+$instance->add_rss_headers();
+$PAGE->set_title($forum->name);
+$PAGE->set_heading($course->fullname);
+$PAGE->set_context($instance->get_context());
+$PAGE->add_body_class("forumtype-{$forum->type}");
+if (!$PAGE->button) {
+    $PAGE->set_button(forum_search_form($course, $search));
+}
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($instance->get_forum_name()), 2);
+echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+
+// TODO - can this be moved to within the template?
+// Group mode selection.
+groups_print_activity_menu($cm, $instance->get_forum_view_url());
+
+// Return here if we post or set subscription etc
+$SESSION->fromdiscussion = qualified_me();
+
+$templatable = new \mod_forum\output\discussion_list($instance);
+$templatable->set_current_page($page);
+$templatable->set_current_url($PAGE->url);
+
+$renderer = $PAGE->get_renderer('mod_forum');
+echo $renderer->render_from_template(
+    $instance->get_template_for_discussion_list(),
+    $templatable->export_for_template($renderer)
+);
+echo $OUTPUT->footer($course);

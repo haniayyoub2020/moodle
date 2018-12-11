@@ -61,11 +61,18 @@ class discussion_post implements \renderable, \templatable {
      */
     protected $children = [];
 
+    /**
+     * @var bool Whether post detail is visible.
+     */
+    protected $canseedetail = true;
+
     public function __construct(\mod_forum\instance $forum, \stdClass $discussion, \stdClass $post, \stdClass $author) {
         $this->forum = $forum;
         $this->discussion = $discussion;
         $this->post = $post;
         $this->author = $author;
+
+        $this->canseedetail = $this->forum->can_see_post($post, $discussion);
     }
 
     /**
@@ -107,6 +114,14 @@ class discussion_post implements \renderable, \templatable {
             $children[] = $child->export_for_template($renderer);
         }
 
+
+        $authorinfo = null;
+        $commands = [];
+        if ($this->canseedetail) {
+            $commands = array_values($this->forum->get_post_actions($this->discussion, $this->post));
+            $authorinfo = $this->get_user_info($renderer, $this->author);
+        }
+
         return [
             'id'                            => $this->post->id,
 
@@ -114,11 +129,11 @@ class discussion_post implements \renderable, \templatable {
             'message'                       => $this->get_message_body($renderer),
             // TODO Replace.
             'attachments'                   => $this->get_attachment_html($renderer),
-            'commands'                      => array_values($this->forum->get_post_actions($this->discussion, $this->post)),
+            'commands'                      => $commands,
 
-            'can_see_post'                  => $this->forum->can_see_post($this->post, $this->discussion),
+            'can_see_post'                  => $this->canseedetail,
             'can_reply'                     => $this->forum->can_post_to_discussion($this->discussion),
-            'author'                        => $this->get_user_info($renderer, $this->author),
+            'author'                        => $authorinfo,
             'bynameondate'                  => $this->get_author_line($renderer),
 
             'haschildren'                   => !empty($children),
@@ -130,53 +145,8 @@ class discussion_post implements \renderable, \templatable {
             'lastpost'                      => false,
 
             // TODO.
-            // author
             // groups
-            // post date
             'postdate'                      => $this->get_postdate(),
-            // permalink
-            // edit
-            // delete
-            // reply
-            // split
-            // show parent?? (or can we use {{../post.id}}
-            // isread
-            // canedit
-            // candelete
-            // cansplit
-        ];
-
-        $foo = [
-            'coursename'                    => $this->get_coursename(),
-            'courselink'                    => $this->get_courselink(),
-            'forumname'                     => $this->get_forumname(),
-            'showdiscussionname'            => $this->get_showdiscussionname(),
-            'discussionname'                => $this->get_discussionname(),
-            'subject'                       => $this->get_subject(),
-            'authorfullname'                => $this->get_author_fullname(),
-            'postdate'                      => $this->get_postdate(),
-
-            // Format some components according to the renderer.
-            'message'                       => $renderer->format_message_text($this->cm, $this->post),
-            'attachments'                   => $renderer->format_message_attachments($this->cm, $this->post),
-
-            'canreply'                      => $this->canreply,
-            'permalink'                     => $this->get_permalink(),
-            'firstpost'                     => $this->get_is_firstpost(),
-            'replylink'                     => $this->get_replylink(),
-            'unsubscribediscussionlink'     => $this->get_unsubscribediscussionlink(),
-            'unsubscribeforumlink'          => $this->get_unsubscribeforumlink(),
-            'parentpostlink'                => $this->get_parentpostlink(),
-
-            'forumindexlink'                => $this->get_forumindexlink(),
-            'forumviewlink'                 => $this->get_forumviewlink(),
-            'discussionlink'                => $this->get_discussionlink(),
-
-            'authorlink'                    => $this->get_authorlink(),
-            'authorpicture'                 => $this->get_author_picture(),
-
-            'grouppicture'                  => $this->get_group_picture(),
-
         ];
     }
 
@@ -187,6 +157,10 @@ class discussion_post implements \renderable, \templatable {
      * @return  string
      */
     public function get_subject(\renderer_base $renderer) : string {
+        if (!$this->canseedetail) {
+            return new \lang_string('forumsubjecthidden', 'mod_forum');
+        }
+
         return format_string($this->post->subject, true);
     }
 
@@ -197,6 +171,10 @@ class discussion_post implements \renderable, \templatable {
      * @return  string
      */
     public function get_message_body(\renderer_base $renderer) : string {
+        if (!$this->canseedetail) {
+            return new \lang_string('forumbodyhidden', 'mod_forum');
+        }
+
         $message = file_rewrite_pluginfile_urls(
                 $this->post->message,
                 'pluginfile.php',
@@ -219,6 +197,10 @@ class discussion_post implements \renderable, \templatable {
      * @return  string
      */
     public function get_attachment_html(\renderer_base $renderer) : string {
+        if (!$this->canseedetail) {
+            return '';
+        }
+
         return forum_print_attachments($this->post, $this->forum->get_cm(), "html");
     }
 
@@ -228,6 +210,10 @@ class discussion_post implements \renderable, \templatable {
      * @return  string
      */
     protected function get_author_line(\renderer_base $renderer) : string {
+        if (!$this->canseedetail) {
+            return new \lang_string('forumauthorhidden', 'mod_forum');
+        }
+
         return get_string('bynameondate', 'forum', (object) [
             'date' => userdate_htmltime($this->get_postdate()),
             'name' => \html_writer::link(

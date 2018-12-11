@@ -35,68 +35,6 @@ defined('MOODLE_INTERNAL') || die();
  */
 class factory {
 
-    protected static $forumfields = [
-        'id',
-        'course',
-        'type',
-        'name',
-        'intro',
-        'introformat',
-        'assessed',
-        'assesstimestart',
-        'assesstimefinish',
-        'scale',
-        'maxbytes',
-        'maxattachments',
-        'forcesubscribe',
-        'trackingtype',
-        'rsstype',
-        'rssarticles',
-        'timemodified',
-        'warnafter',
-        'blockafter',
-        'blockperiod',
-        'completiondiscussions',
-        'completionreplies',
-        'completionposts',
-        'displaywordcount',
-        'lockdiscussionafter',
-    ];
-
-    protected static $discussionfields = [
-        'id',
-        'course',
-        'forum',
-        'name',
-        'firstpost',
-        'userid',
-        'groupid',
-        'assessed',
-        'timemodified',
-        'usermodified',
-        'timestart',
-        'timeend',
-        'pinned',
-    ];
-
-    protected static $postfields = [
-        'id',
-        'discussion',
-        'parent',
-        'userid',
-        'created',
-        'modified',
-        'mailed',
-        'subject',
-        'message',
-        'messageformat',
-        'messagetrust',
-        'attachment',
-        'totalscore',
-        'mailnow',
-        'deleted',
-    ];
-
     /**
      * Get the forum instance using the database record for a forum.
      *
@@ -246,24 +184,30 @@ class factory {
     public static function get_data_by_discussionid(int $discussionid, \stdClass $user = null) : \stdClass {
         global $DB;
 
-        $forumfields = self::get_forum_preload_columns('f');
-        $discussionfields = self::get_discussion_preload_columns('d');
+        $discussionfields = $DB->get_preload_columns('forum_discussions', 'd');
+        $forumfields = $DB->get_preload_columns('forum', 'f');
+        $coursefields = $DB->get_preload_columns('course', 'c');
 
-        $forumfieldsql = self::get_preload_columns_sql($forumfields, 'f');
-        $discussionfieldsql = self::get_preload_columns_sql($discussionfields, 'd');
+        $discussionfieldsql = $DB->get_preload_columns_sql($discussionfields, 'd');
+        $forumfieldsql = $DB->get_preload_columns_sql($forumfields, 'f');
+        $coursefieldsql = $DB->get_preload_columns_sql($coursefields, 'c');
 
-        $sql = "SELECT {$forumfieldsql}, {$discussionfieldsql}
+        $sql = "SELECT {$discussionfieldsql}, {$forumfieldsql}, {$coursefieldsql}
                   FROM {forum_discussions} d
                   JOIN {forum} f ON f.id = d.forum
-                 WHERE p.id = :postid
+                  JOIN {course} c ON c.id = f.course
+                 WHERE d.id = :discussionid
             ";
-        $record = $DB->get_record_sql($sql, ['postid' => $postid], MUST_EXIST);
+        $record = $DB->get_record_sql($sql, ['discussionid' => $discussionid], MUST_EXIST);
 
-        $forum = self::extract_from_fields($forumfields, $record);
-        $discussion = self::extract_from_fields($discussionfields, $record);
+        $forum = $DB->extract_fields_from_object($forumfields, $record);
+        $discussion = $DB->extract_fields_from_object($discussionfields, $record);
+
+        $instance = static::get_forum_by_record($forum, $user);
+        $instance->set_course($DB->extract_fields_from_object($coursefields, $record));
 
         return (object) [
-            'instance' => static::get_forum_by_record($forum, $user),
+            'instance' => $instance,
             'discussion' => $discussion,
         ];
     }
@@ -277,76 +221,38 @@ class factory {
     public static function get_data_by_postid(int $postid, \stdClass $user = null) : \stdClass {
         global $DB;
 
-        $forumfields = self::get_forum_preload_columns('f');
-        $discussionfields = self::get_discussion_preload_columns('d');
-        $postfields = self::get_post_preload_columns('p');
+        $postfields = $DB->get_preload_columns('forum_posts', 'p');
+        $discussionfields = $DB->get_preload_columns('forum_discussions', 'd');
+        $forumfields = $DB->get_preload_columns('forum', 'f');
+        $coursefields = $DB->get_preload_columns('course', 'c');
 
-        $forumfieldsql = self::get_preload_columns_sql($forumfields, 'f');
-        $discussionfieldsql = self::get_preload_columns_sql($discussionfields, 'd');
-        $postfieldsql = self::get_preload_columns_sql($postfields, 'p');
+        $discussionfieldsql = $DB->get_preload_columns_sql($discussionfields, 'd');
+        $postfieldsql = $DB->get_preload_columns_sql($postfields, 'p');
+        $forumfieldsql = $DB->get_preload_columns_sql($forumfields, 'f');
+        $coursefieldsql = $DB->get_preload_columns_sql($coursefields, 'c');
 
-        $sql = "SELECT {$forumfieldsql}, {$discussionfieldsql}, {$postfieldsql}
+        $sql = "SELECT {$coursefieldsql}, {$forumfieldsql}, {$discussionfieldsql}, {$postfieldsql}
                   FROM {forum_posts} p
                   JOIN {forum_discussions} d ON d.id = p.discussion
                   JOIN {forum} f ON f.id = d.forum
+                  JOIN {course} c ON c.id = f.course
                  WHERE p.id = :postid
             ";
         $record = $DB->get_record_sql($sql, ['postid' => $postid], MUST_EXIST);
 
-        $forum = self::extract_from_fields($forumfields, $record);
-        $discussion = self::extract_from_fields($discussionfields, $record);
-        $post = self::extract_from_fields($postfields, $record);
+        $post = $DB->extract_fields_from_object($postfields, $record);
+        $discussion = $DB->extract_fields_from_object($discussionfields, $record);
+        $forum = $DB->extract_fields_from_object($forumfields, $record);
+
+        $instance = static::get_forum_by_record($forum, $user);
+        $instance->set_course($DB->extract_fields_from_object($coursefields, $record));
+
 
         return (object) [
-            'instance' => static::get_forum_by_record($forum, $user),
+            'instance' => $instance,
             'discussion' => $discussion,
             'post' => $post,
         ];
-    }
-
-    protected static function get_preload_columns_sql(array $fieldlist, string $tablealias) : string {
-        return implode(', ', array_map(function($fieldname, $alias) use ($tablealias) {
-            return "{$tablealias}.{$fieldname} AS {$alias}";
-        }, $fieldlist, array_keys($fieldlist)));
-    }
-
-    protected static function extract_from_fields(array $fieldlist, \stdClass $data) : \stdClass {
-        $newdata = (object) [];
-        foreach ($fieldlist as $alias => $fieldname) {
-            if (isset($data->$alias)) {
-                $newdata->$fieldname = $data->$alias;
-                unset($data->$alias);
-            }
-        }
-
-        return $newdata;
-    }
-
-    protected static function get_forum_preload_columns(string $prefix = 'f_') : array {
-        $fields = [];
-        foreach (self::$forumfields as $fieldname) {
-            $fields["{$prefix}{$fieldname}"] = $fieldname;
-        }
-
-        return $fields;
-    }
-
-    protected static function get_discussion_preload_columns(string $prefix = 'f_') : array {
-        $fields = [];
-        foreach (self::$discussionfields as $fieldname) {
-            $fields["{$prefix}{$fieldname}"] = $fieldname;
-        }
-
-        return $fields;
-    }
-
-    protected static function get_post_preload_columns(string $prefix = 'p_') : array {
-        $fields = [];
-        foreach (self::$postfields as $fieldname) {
-            $fields["{$prefix}{$fieldname}"] = $fieldname;
-        }
-
-        return $fields;
     }
 
     /**
