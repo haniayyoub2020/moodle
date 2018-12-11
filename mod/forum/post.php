@@ -53,8 +53,6 @@ $PAGE->set_url('/mod/forum/post.php', array(
 // These page_params will be passed as hidden variables later in the form.
 $pageparams = array('reply' => $reply, 'forum' => $forum, 'edit' => $edit);
 
-$sitecontext = context_system::instance();
-
 if (!isloggedin() or isguestuser()) {
 
     if (!isloggedin() and !get_local_referer()) {
@@ -66,21 +64,20 @@ if (!isloggedin() or isguestuser()) {
     if (!empty($forum)) {
         // User is starting a new discussion in a forum.
         $instance = \mod_forum\factory::get_forum_by_id($forum);
-        $forum = $instance->get_forum_record();
-    } else if (!empty($reply)) {
-        // User is writing a new reply.
-        $instance = \mod_forum\factory::get_forum_by_postid($reply);
-        $forum = $instance->get_forum_record();
+    } else {
+        $postid = $reply || $prune || $edit || $delete;
 
-        if (!$parent = forum_get_post_full($reply)) {
-            print_error('invalidparentpostid', 'forum');
-        }
-        if (!$discussion = $DB->get_record('forum_discussions', array('id' => $parent->discussion))) {
-            print_error('notpartofdiscussion', 'forum');
-        }
+        // User is writing a new reply.
+        $data = \mod_forum\factory::get_data_by_postid($postid);
+        $instance = $data->instance;
+        $parent = $data->post;
+        $discussion = $data->discussion;
     }
-    $cm = $instance->get_cm();
+
+    $forum = $instance->get_forum_record();
     $modcontext = $instance->get_context();
+    $cm = $instance->get_cm();
+    $course = $instance->get_course();
     $coursecontext = $instance->get_course_context();
 
     $PAGE->set_cm($cm, $course, $forum);
@@ -156,20 +153,18 @@ if (!empty($forum)) {
 
 } else if (!empty($reply)) {
     // User is writing a new reply
-    $instance = \mod_forum\factory::get_forum_by_postid($reply);
+    $data = \mod_forum\factory::get_data_by_postid($reply);
+
+    $instance = $data->instance;
+    $parent = $data->post;
+    $discussion = $data->discussion;
+
     $forum = $instance->get_forum_record();
     $course = $instance->get_course();
     $cm = $instance->get_cm();
     $modcontext = $instance->get_context();
     $coursecontext = $instance->get_course_context();
 
-    // TODO  - remove?
-    if (!$parent = forum_get_post_full($reply)) {
-        print_error('invalidparentpostid', 'forum');
-    }
-    if (!$discussion = $DB->get_record("forum_discussions", array("id" => $parent->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
-    }
 
     // Ensure lang, theme, etc. is set up properly. MDL-6926.
     $PAGE->set_cm($cm, $course, $forum);
@@ -235,24 +230,21 @@ if (!empty($forum)) {
 
 } else if (!empty($edit)) {
     // User is editing their own post
-    $instance = \mod_forum\factory::get_forum_by_postid($edit);
+    $data = \mod_forum\factory::get_data_by_postid($edit);
+
+    $instance = $data->instance;
+    $post = $data->post;
+    $discussion = $data->discussion;
+
     $forum = $instance->get_forum_record();
     $course = $instance->get_course();
     $cm = $instance->get_cm();
     $modcontext = $instance->get_context();
 
-    if (!$post = forum_get_post_full($edit)) {
-        print_error('invalidpostid', 'forum');
-    }
-
     if ($post->parent) {
         if (!$parent = forum_get_post_full($post->parent)) {
             print_error('invalidparentpostid', 'forum');
         }
-    }
-
-    if (!$discussion = $DB->get_record("forum_discussions", array("id" => $post->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
     }
 
     $PAGE->set_cm($cm, $course, $forum);
@@ -279,15 +271,16 @@ if (!empty($forum)) {
 
 } else if (!empty($delete)) {
     // User is deleting a post
-    $instance = \mod_forum\factory::get_forum_by_postid($delete);
+    $data = \mod_forum\factory::get_data_by_postid($delete);
+
+    $instance = $data->instance;
+    $post = $data->post;
+    $discussion = $data->discussion;
+
     $forum = $instance->get_forum_record();
     $course = $instance->get_course();
     $cm = $instance->get_cm();
     $modcontext = $instance->get_context();
-
-    if (!$discussion = $DB->get_record("forum_discussions", array("id" => $post->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
-    }
 
     require_login($course, false, $cm);
 
@@ -407,15 +400,15 @@ if (!empty($forum)) {
 
 } else if (!empty($prune)) {
     // User is pruning (splitting) the post..
-    $instance = \mod_forum\factory::get_forum_by_postid($prune);
+    $data = \mod_forum\factory::get_data_by_postid($prune);
+
+    $instance = $data->instance;
+    $post = $data->post;
+    $discussion = $data->discussion;
     $forum = $instance->get_forum_record();
     $course = $instance->get_course();
     $cm = $instance->get_cm();
     $modcontext = $instance->get_context();
-
-    if (!$discussion = $DB->get_record("forum_discussions", array("id" => $post->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
-    }
 
     if (!$instance->can_split_discussion($discussion, $post)) {
         print_error('cannotsplit', 'forum');
