@@ -856,9 +856,11 @@ abstract class moodle_database {
     public function extract_fields_from_object(array $fieldlist, \stdClass $data) : \stdClass {
         $newdata = (object) [];
         foreach ($fieldlist as $alias => $fieldname) {
-            if (isset($data->$alias)) {
+            if (property_exists($data, $alias)) {
                 $newdata->$fieldname = $data->$alias;
                 unset($data->$alias);
+            } else {
+                debugging("Field '{fieldname}' not found", DEBUG_DEVELOPER);
             }
         }
 
