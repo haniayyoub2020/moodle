@@ -3026,7 +3026,7 @@ class mod_forum_lib_testcase extends advanced_testcase {
     public function test_forum_is_author_hidden() {
         // First post, different forum type.
         $post = (object) ['parent' => 0];
-        $forum = (object) ['type' => 'standard'];
+        $forum = (object) ['type' => 'general'];
         $this->assertFalse(forum_is_author_hidden($post, $forum));
 
         // Child post, different forum type.
@@ -3232,17 +3232,17 @@ class mod_forum_lib_testcase extends advanced_testcase {
     public function forum_discussion_is_locked_provider() {
         return [
             'Unlocked: lockdiscussionafter is unset' => [
-                (object) ['type' => 'standard'],
+                (object) ['type' => 'general'],
                 (object) [],
                 false
             ],
             'Unlocked: lockdiscussionafter is false' => [
-                (object) ['lockdiscussionafter' => false, 'type' => 'standard'],
+                (object) ['lockdiscussionafter' => false, 'type' => 'general'],
                 (object) [],
                 false
             ],
             'Unlocked: lockdiscussionafter is null' => [
-                (object) ['lockdiscussionafter' => null, 'type' => 'standard'],
+                (object) ['lockdiscussionafter' => null, 'type' => 'general'],
                 (object) [],
                 false
             ],
