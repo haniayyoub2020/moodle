@@ -5964,6 +5964,7 @@ function forum_tp_get_untracked_forums($userid, $courseid) {
  * @return boolean
  */
 function forum_tp_can_track_forums($forum=false, $user=false) {
+    // TODO Deprecate. Repalced by instance::can_track_reads() when $forum is specified.
     global $USER, $CFG, $DB;
 
     // if possible, avoid expensive
@@ -6019,6 +6020,7 @@ function forum_tp_can_track_forums($forum=false, $user=false) {
  * @return boolean
  */
 function forum_tp_is_tracked($forum, $user=false) {
+    // TODO Deprecate. Replaced by 
     global $USER, $CFG, $DB;
 
     if ($user === false) {
@@ -6575,11 +6577,18 @@ function forum_get_layout_modes() {
  * TODO switch to using subplugin functins.
  */
 function forum_get_forum_types() {
-    return array ('general'  => get_string('generalforum', 'forum'),
-                  'eachuser' => get_string('eachuserforum', 'forum'),
-                  'single'   => get_string('singleforum', 'forum'),
-                  'qanda'    => get_string('qandaforum', 'forum'),
-                  'blog'     => get_string('blogforum', 'forum'));
+    $plugins = [];
+    foreach (array_keys(\core_component::get_plugin_list('forumtype')) as $pluginname) {
+        // TODO Filter.
+        
+        $classname = "\\forumtype_{$pluginname}\\type";
+        // TODO.
+        //if ($classname::can_add_type()) {
+            $plugins[$pluginname] = get_string('pluginname', "forumtype_{$pluginname}");
+        //}
+    }
+
+    return $plugins;
 }
 
 /**

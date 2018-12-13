@@ -126,11 +126,10 @@ if ($instance->has_discussion_list()) {
     }
 }
 
-// TODO: Find out where $mark is set and update it to use constants.
-// TODO: Can we remove this to an AJAX call to mark as read from the discussion list instead?
-// Probably not, because this is a byproduct only?
+// TODO: Convert to an AJAX call where the post is updated.
 if (null !== $mark) {
     \mod_forum\tracking::mark_post($instance, $postid, $mark);
+    redirect($instance->get_post_view_url($discussion, $postid));
 }
 
 $instance->set_current_layout(get_user_preferences('forum_displaymode', $CFG->forum_displaymode));
@@ -145,7 +144,9 @@ if ($instance->has_discussion_list()) {
 $templatable = new \mod_forum\output\discussion_view($instance, $discussion);
 $templatable->set_top_post($toppost);
 
-$data = $templatable->export_for_template($renderer);
-echo $renderer->render_from_template($instance->get_template_for_discussion(), $data);
+echo $renderer->render_from_template(
+        $instance->get_template_for_discussion(),
+        $templatable->export_for_template($renderer)
+    );
 
 echo $OUTPUT->footer();

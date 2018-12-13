@@ -89,6 +89,11 @@ abstract class instance {
     protected $userdigest = null;
 
     /**
+     * @var bool Whether this forum is tracked by the current user.
+     */
+    protected $tracked = null;
+
+    /**
      * Constructor for a forum.
      *
      * @param   \stdClass   $record The record from the forum table.
@@ -456,7 +461,30 @@ abstract class instance {
      * @return  bool
      */
     public function can_track_reads() : bool {
-        return forum_tp_can_track_forums($this->record);
+        global $USER, $CFG, $DB;
+
+        if (empty($CFG->forum_trackreadposts)) {
+            // Read tracking is disabled at the system level.
+            return false;
+        }
+
+        if (isguestuser($this->user) or empty($this->user->id)) {
+            // Guests cannot track, ever.
+            return false;
+        }
+
+        if (FORUM_TRACKING_OFF == $this->get_tracking_type()) {
+            // Read tracking is disabled for this forum.
+            return false;
+        }
+
+        if ($this->tracking_is_forced()) {
+            // The forum is forcibly read tracked.
+            return true;
+        }
+
+        // Return the user preference.
+        return (bool) $this->get_user_record()->trackforums;
     }
 
     /**
@@ -1184,22 +1212,66 @@ abstract class instance {
      * @return  bool
      */
     public function is_tracked() : bool {
-        global $CFG;
+        global $DB;
 
-        if (!isloggedin()) {
+        if (null === $this->tracked) {
+            $trackingallowed = true;
+
+            if (!isloggedin()) {
+                $trackingallowed = false;
+            }
+
+            if ($trackingallowed && !tracking::is_read_tracking_enabled()) {
+                $trackingallowed = false;
+            }
+
+            if ($trackingallowed && !$this->can_track_reads()) {
+                $trackingallowed = false;
+            }
+
+            if ($trackingallowed && !forum_tp_is_tracked($this->get_forum_record(), $this->user)) {
+                $trackingallowed = false;
+            }
+
+            if ($trackingallowed) {
+                if ($this->tracking_is_forced()) {
+                    $this->tracked = true;
+                } else {
+                    // Read tracking is allowed.
+                    // If no record exists, then it is enabled for this user.
+                    $this->tracked = !$DB->record_exists('forum_track_prefs', [
+                        'userid' => $this->get_user_id(),
+                        'forumid' => $this->get_forum_id(),
+                    ]);
+                }
+            } else {
+                $this->tracked = false;
+            }
+
+        }
+
+        return $this->tracked;
+    }
+
+    /**
+     * Whether read-tracking is forced for this forum.
+     *
+     * @return  bool
+     */
+    public function tracking_is_forced() : bool {
+        global $USER, $CFG, $DB;
+
+        if (empty($CFG->forum_trackreadposts)) {
+            // Read tracking is disabled at the system level.
             return false;
         }
 
-        if (!forum_tp_can_track_forums($this->get_forum_record(), $this->user)) {
+        if (isguestuser($this->user) or empty($this->user->id)) {
+            // Guests cannot track, ever.
             return false;
         }
 
-        if (!forum_tp_is_tracked($this->get_forum_record(), $this->user)) {
-            return false;
-        }
-
-        // TODO Make this a user preference.
-        return $CFG->forum_usermarksread;
+        return $CFG->forum_allowforcedreadtracking && (FORUM_TRACKING_FORCED == $this->get_tracking_type());
     }
 
     /**
@@ -2218,7 +2290,7 @@ abstract class instance {
                 ], '', 'postid, lastread');
         }
 
-        return ($this->readposts && isset($this->readposts->{$post->id}));
+        return ($this->readposts && isset($this->readposts[$post->id]));
     }
 
     /**
@@ -2330,8 +2402,9 @@ abstract class instance {
      *
      * @param   \stdClass $discussion The discussion the post is in
      * @param   \stdClass $post The post to be tested
+     * @return  array
      */
-    public function get_post_actions(\stdClass $discussion, \stdClass $post) {
+    public function get_post_actions(\stdClass $discussion, \stdClass $post) : array {
         $commands = [];
 
         // Add a permalink.
@@ -2346,31 +2419,8 @@ abstract class instance {
             ]
         ];
 
-        // Mark as read/unread.
-        // TODO Maybe move this to ajax.
-        if ($this->is_tracked()) {
-            $trackurl = $this->get_post_view_url($discussion, $post->id);
-            $trackurl->param('postid', $post->id);
-            if ($this->is_post_read($post)) {
-                // Link to mark as unread.
-                $trackurl->param('mark', 'unread');
-                $trackstring = new \lang_string('markunread', 'forum');
-            } else {
-                // Link to mark as read.
-                $trackurl->param('mark', 'read');
-                $trackstring = new \lang_string('markread', 'forum');
-            }
-
-            $commands['track'] = [
-                'url' => $trackurl,
-                'text' => $trackstring,
-                'attributes' => [
-                    [
-                        'key' => 'rel',
-                        'value' => 'bookmark',
-                    ],
-                ]
-            ];
+        if ($track = $this->get_post_mark_action($discussion, $post)) {
+            $commands['track'] = $track;
         }
 
         // Link to the parent post.
@@ -2444,6 +2494,42 @@ abstract class instance {
         }
 
         return $commands;
+    }
+
+    /**
+     * Get the post action to mark this post as read or unread.
+     *
+     * @param   \stdClass $discussion The discussion the post is in
+     * @param   \stdClass $post The post to be tested
+     * @return  array
+     */
+    public function get_post_mark_action(\stdClass $discussion, \stdClass $post) : ?array {
+        if (!$this->is_tracked()) {
+            return null;
+        }
+
+        $trackurl = $this->get_post_view_url($discussion, $post->id);
+        $trackurl->param('postid', $post->id);
+        if ($this->is_post_read($post)) {
+            // Link to mark as unread.
+            $trackurl->param('mark', \mod_forum\tracking::UNREAD);
+            $trackstring = new \lang_string('markunread', 'forum');
+        } else {
+            // Link to mark as read.
+            $trackurl->param('mark', \mod_forum\tracking::READ);
+            $trackstring = new \lang_string('markread', 'forum');
+        }
+
+        return [
+            'url' => $trackurl,
+            'text' => $trackstring,
+            'attributes' => [
+                [
+                    'key' => 'rel',
+                    'value' => 'bookmark',
+                ],
+            ]
+        ];
     }
 
     /**

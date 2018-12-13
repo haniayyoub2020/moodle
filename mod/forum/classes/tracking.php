@@ -110,7 +110,7 @@ class tracking {
         }
 
         // TODO
-        forum_tp_add_read_record($instance->get_user_record(), $postid);
+        forum_tp_add_read_record($forum->get_user_id(), $postid);
     }
 
     public static function mark_post_as_unread(instance $forum, int $postid) {
@@ -136,19 +136,7 @@ class tracking {
         return !empty($CFG->forum_usermarksread);
     }
 
-    public static function is_read_tracking_enabled_for_forum(instance $forum) {
-        if (!static::is_read_tracking_enabled()) {
-            return false;
-        }
-
-        if (!forum_tp_can_track_forums($forum->get_forum_record())) {
-            return false;
-        }
-
-        if (!forum_tp_is_tracked($forum->get_forum_record())) {
-            return false;
-        }
-
-        return true;
+    public static function is_read_tracking_enabled_for_forum(instance $instance) {
+        return $instance->is_tracked();
     }
 }
