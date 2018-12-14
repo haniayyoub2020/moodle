@@ -2277,13 +2277,14 @@ class mod_assign_locallib_testcase extends advanced_testcase {
     }
 
     public function test_show_student_summary() {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $DB;
 
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course();
         $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
         $this->setUser($teacher);
         $assign = $this->create_instance($course);
         $PAGE->set_url(new moodle_url('/mod/assign/view.php', ['id' => $assign->get_course_module()->id]));
@@ -2318,6 +2319,23 @@ class mod_assign_locallib_testcase extends advanced_testcase {
         $this->setUser($student);
         $output = $assign->view_student_summary($student, true);
         $this->assertNotRegexp('/Feedback/', $output, 'Do not show feedback if the grade is hidden in the gradebook');
+
+        // Remove the submit capability for students (make this readonly).
+        $this->setAdminUser();
+        unassign_capability('mod/assign:submit', $studentrole->id);
+
+        // No feedback should be available because the grade is hidden.
+        $this->setUser($student);
+        $output = $assign->view_student_summary($student, true);
+        $this->assertNotRegexp('/Feedback/', $output, 'Do not show feedback if the grade is hidden in the gradebook');
+
+        // Show the feedback again - it should still be visible even in a frozen context.
+        $this->setUser($teacher);
+        $gradeitem->set_hidden(0, false);
+
+        $this->setUser($student);
+        $output = $assign->view_student_summary($student, true);
+        $this->assertRegexp('/Feedback/', $output, 'Show feedback if there is a grade');
     }
 
     public function test_show_student_summary_with_feedback() {
