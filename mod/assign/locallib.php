@@ -2009,12 +2009,22 @@ class assign {
                 $params['markerid'] = $USER->id;
             }
 
+            $params['asubassign'] = (int) $instance->id;
+            $params['asubstatusnew'] = ASSIGN_SUBMISSION_STATUS_NEW;
             $sql = "SELECT $fields
                       FROM {user} u
-                      JOIN ($esql) je ON je.id = u.id
-                           $additionaljoins
+                      JOIN (
+                            SELECT iu.id
+                              FROM {user} iu
+                         LEFT JOIN {assign_submission} asub
+                                ON asub.userid = iu.id
+                               AND asub.assignment = :asubassign
+                               AND asub.status <> :asubstatusnew
+                         LEFT JOIN ($esql) je ON je.id = iu.id
+                               $additionaljoins
+                             WHERE asub.id IS NOT NULL OR je.id IS NOT NULL
+                           ) su ON su.id = u.id
                      WHERE u.deleted = 0
-                           $additionalfilters
                   ORDER BY $orderby";
 
             $users = $DB->get_records_sql($sql, $params);
