@@ -77,6 +77,11 @@ class delete_existing_deleted_users extends scheduled_task {
             $createdrequests = 0;
 
             foreach ($deletedusers as $user) {
+                if (isguestuser($user->id) || is_siteadmin($user->id)) {
+                    // Do not allow deletion of guests or admins.
+                    // Although it should not be possible to delete the guest, we check in case of stale data.
+                    continue;
+                }
                 api::create_data_request($user->id, api::DATAREQUEST_TYPE_DELETE,
                     get_string('datarequestcreatedfromscheduledtask', 'tool_dataprivacy'),
                     data_request::DATAREQUEST_CREATION_AUTO);
