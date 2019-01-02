@@ -295,6 +295,10 @@ class expired_contexts_manager {
 
             if ($context instanceof \context_user) {
                 $purpose = $userpurpose;
+                if (isguestuser($context->instanceid) || is_siteadmin($context->instanceid)) {
+                    // Do not allow deletion of guests or admins.
+                    continue;
+                }
             } else {
                 $purposevalue = $record->purposeid !== null ? $record->purposeid : context_instance::NOTSET;
                 $purpose = api::get_effective_context_purpose($context, $purposevalue);
@@ -382,6 +386,13 @@ class expired_contexts_manager {
                 // We have no context to delete.
                 $expiredctx->delete();
                 continue;
+            }
+
+            if ($context instanceof \context_user) {
+                if (isguestuser($context->instanceid) || is_siteadmin($context->instanceid)) {
+                    // This is an admin, or the guest and cannot expire.
+                    continue;
+                }
             }
 
             $this->trace->output("Deleting data for " . $context->get_context_name(), 2);

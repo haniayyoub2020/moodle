@@ -279,5 +279,24 @@ function xmldb_tool_dataprivacy_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2017111356, 'tool', 'dataprivacy');
     }
 
+    if ($oldversion < 2017111358) {
+        $sql = "SELECT dpctx.*, ctx.instanceid
+                  FROM {tool_dataprivacy_ctxexpired} dpctx
+                  JOIN {context} ctx ON ctx.id = dpctx.contextid
+                 WHERE ctx.contextlevel = :contextuser";
+        $contexts = $DB->get_recordset_sql($sql, ['contextuser' => CONTEXT_USER]);
+        foreach ($contexts as $contextdata) {
+            if (isguestuser($contextdata->instanceid) || is_siteadmin($contextdata->instanceid)) {
+                unset($contextdata->instanceid);
+                $expiredcontext = new \tool_dataprivacy\expired_context(0, $contextdata);
+                $expiredcontext->delete();
+            }
+        }
+
+        $contexts->close();
+
+        upgrade_plugin_savepoint(true, 2017111358, 'tool', 'dataprivacy');
+    }
+
     return true;
 }
