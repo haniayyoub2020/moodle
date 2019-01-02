@@ -316,5 +316,24 @@ function xmldb_tool_dataprivacy_upgrade($oldversion) {
     // Automatically generated Moodle v3.6.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2019010200) {
+        $sql = "SELECT dpctx.*, ctx.instanceid
+                  FROM {tool_dataprivacy_ctxexpired} dpctx
+                  JOIN {context} ctx ON ctx.id = dpctx.contextid
+                 WHERE ctx.contextlevel = :contextuser";
+        $contexts = $DB->get_recordset_sql($sql, ['contextuser' => CONTEXT_USER]);
+        foreach ($contexts as $contextdata) {
+            if (isguestuser($contextdata->instanceid) || is_siteadmin($contextdata->instanceid)) {
+                unset($contextdata->instanceid);
+                $expiredcontext = new \tool_dataprivacy\expired_context(0, $contextdata);
+                $expiredcontext->delete();
+            }
+        }
+
+        $contexts->close();
+
+        upgrade_plugin_savepoint(true, 2019010200, 'tool', 'dataprivacy');
+    }
+
     return true;
 }
