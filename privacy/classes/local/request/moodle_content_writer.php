@@ -53,6 +53,11 @@ class moodle_content_writer implements content_writer {
     protected $files = [];
 
     /**
+     * @var string[] The list of data files to be exported.
+     */
+    protected $datafiles = [];
+
+    /**
      * @var array The list of plugins that have been checked to see if they are installed.
      */
     protected $checkedplugins = [];
@@ -89,7 +94,7 @@ class moodle_content_writer implements content_writer {
     public function export_data(array $subcontext, \stdClass $data) : content_writer {
         $path = $this->get_path($subcontext, 'data.json');
 
-        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), true);
 
         return $this;
     }
@@ -120,7 +125,7 @@ class moodle_content_writer implements content_writer {
         ];
 
         $path = $this->get_path($subcontext, 'metadata.json');
-        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), true);
 
         return $this;
     }
@@ -136,7 +141,7 @@ class moodle_content_writer implements content_writer {
     public function export_related_data(array $subcontext, $name, $data) : content_writer {
         $path = $this->get_path($subcontext, "{$name}.json");
 
-        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), true);
 
         return $this;
     }
@@ -149,9 +154,18 @@ class moodle_content_writer implements content_writer {
      * @param   string          $filecontent    The content to be exported.
      */
     public function export_custom_file(array $subcontext, $filename, $filecontent) : content_writer {
+        $isdata = false;
+        if ('.json' === substr($filename, -5)) {
+            // Ensure that all json files are pretty-printed.
+            if ($decoded = json_decode($filecontent)) {
+                $filecontent = json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                $isdata = true;
+            }
+        }
+
         $filename = clean_param($filename, PARAM_FILE);
         $path = $this->get_path($subcontext, $filename);
-        $this->write_data($path, $filecontent);
+        $this->write_data($path, $filecontent, $isdata);
 
         return $this;
     }
@@ -246,7 +260,7 @@ class moodle_content_writer implements content_writer {
             'value' => $value,
             'description' => $description,
         ];
-        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $this->write_data($path, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), true);
 
         return $this;
     }
@@ -376,12 +390,30 @@ class moodle_content_writer implements content_writer {
      *
      * @param   string          $path       The path to export the data at.
      * @param   string          $data       The data to be exported.
+     * @param   bool            $isdata     Whether this data is a JSON data string.
      */
-    protected function write_data(string $path, string $data) {
+    protected function write_data(string $path, string $data, bool $isdata = false) {
+        $targetpath = $this->add_file_to_archive($path, $data);
+
+        $this->files[$path] = $targetpath;
+        if ($isdata) {
+            $this->datafiles[$path] = $targetpath;
+        }
+    }
+
+    /**
+     * Add the file to the archive.
+     *
+     * @param   string          $path       The path to export the data at.
+     * @param   string          $data       The data to be exported.
+     * @return  string                      The full path on disk of the stored file.
+     */
+    protected function add_file_to_archive(string $path, string $data) : string {
         $targetpath = $this->path . DIRECTORY_SEPARATOR . $path;
         check_dir_exists(dirname($targetpath), true, true);
         file_put_contents($targetpath, $data);
-        $this->files[$path] = $targetpath;
+
+        return $targetpath;
     }
 
     /**
@@ -417,46 +449,40 @@ class moodle_content_writer implements content_writer {
         $tree = [];
         $treekey = [];
         $allfiles = [];
-        $i = 1;
-        foreach ($this->files as $shortpath => $fullfile) {
 
+        $i = 1;
+        foreach ($this->datafiles as $shortpath => $fullfile) {
             // Generate directory tree as an associative array.
             $items = explode(DIRECTORY_SEPARATOR, $shortpath);
             $newitems = $this->condense_array($items);
             $tree = array_merge_recursive($tree, $newitems);
 
-            if (is_string($fullfile)) {
-                $filearray = explode(DIRECTORY_SEPARATOR, $shortpath);
-                $filename = array_pop($filearray);
-                $filenamearray = explode('.', $filename);
-                // Don't process files that are not json files.
-                if (end($filenamearray) !== 'json') {
-                    continue;
-                }
-                // Chop the last two characters of the extension. json => js.
-                $filename = substr($filename, 0, -2);
-                array_push($filearray, $filename);
-                $newshortpath = implode(DIRECTORY_SEPARATOR, $filearray);
+            $newshortpath = "{$shortpath}.js";
 
-                $varname = 'data_file_' . $i;
-                $i++;
+            $varname = 'data_file_' . $i;
+            $i++;
 
-                $quicktemp = clean_param($shortpath, PARAM_PATH);
-                $treekey[$quicktemp] = $varname;
-                $allfiles[$varname] = clean_param($newshortpath, PARAM_PATH);
+            $quicktemp = clean_param($shortpath, PARAM_PATH);
+            $treekey[$quicktemp] = $varname;
+            $allfiles[$varname] = clean_param($newshortpath, PARAM_PATH);
 
-                // Need to load up the current json file and add a variable (varname mentioned above) at the start.
-                // Then save it as a js file.
-                $content = $this->get_file_content($fullfile);
-                $jsondecodedcontent = json_decode($content);
-                $jsonencodedcontent = json_encode($jsondecodedcontent, JSON_PRETTY_PRINT);
-                $variablecontent = 'var ' . $varname . ' = ' . $jsonencodedcontent;
+            // Need to load up the current json file and add a variable (varname mentioned above) at the start.
+            // Then save it as a js file.
+            $variablecontent = 'var ' . $varname . ' = ' . file_get_contents($fullfile);
 
-                $this->write_data($newshortpath, $variablecontent);
-            } else {
-                $treekey[clean_param($shortpath, PARAM_PATH)] = 'No var';
-            }
+            $this->add_file_to_archive($newshortpath, $variablecontent);
         }
+
+        foreach ($this->files as $shortpath => $fullfile) {
+            // Generate directory tree as an associative array.
+            $items = explode(DIRECTORY_SEPARATOR, $shortpath);
+            $newitems = $this->condense_array($items);
+            $tree = array_merge_recursive($tree, $newitems);
+
+            $treekey[clean_param($shortpath, PARAM_PATH)] = 'No var';
+        }
+
+
         return [$tree, $treekey, $allfiles];
     }
 
@@ -645,11 +671,11 @@ class moodle_content_writer implements content_writer {
         $this->copy_data($csspath, $destination);
 
         // Create an index file that lists all, to be newly created, js files.
-        $encoded = json_encode($allfiles,  JSON_PRETTY_PRINT);
+        $encoded = json_encode($allfiles,  JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $encoded = 'var user_data_index = ' . $encoded;
 
         $path = 'js' . DIRECTORY_SEPARATOR . 'data_index.js';
-        $this->write_data($path, $encoded);
+        $this->add_file_to_archive($path, $encoded);
 
         $output = $PAGE->get_renderer('core_privacy');
         $navigationpage = new \core_privacy\output\exported_navigation_page(current($richtree));
@@ -663,7 +689,7 @@ class moodle_content_writer implements content_writer {
         $rtl = right_to_left();
         $htmlpage = new \core_privacy\output\exported_html_page($navigationhtml, $systemname, $fullusername, $rtl, $siteurl);
         $outputpage = $output->render_html_page($htmlpage);
-        $this->write_data('index.html', $outputpage);
+        $this->add_file_to_archive('index.html', $outputpage);
     }
 
     /**
@@ -699,20 +725,5 @@ class moodle_content_writer implements content_writer {
             return [$array[0] => $this->condense_array(array_slice($array, 1))];
         }
         return [];
-    }
-
-    /**
-     * Get the contents of a file.
-     *
-     * @param  string $filepath The file path.
-     * @return string contents of the file.
-     */
-    protected function get_file_content(string $filepath) : String {
-        $filepointer = fopen($filepath, 'r');
-        $content = '';
-        while (!feof($filepointer)) {
-            $content .= fread($filepointer, filesize($filepath));
-        }
-        return $content;
     }
 }
