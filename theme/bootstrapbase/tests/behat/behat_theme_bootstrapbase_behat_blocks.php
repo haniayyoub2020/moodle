@@ -35,16 +35,18 @@ require_once(__DIR__ . '/../../../../blocks/tests/behat/behat_blocks.php');
  * @copyright  2012 David Monllaó
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_theme_boost_behat_blocks extends behat_blocks {
+class behat_theme_bootstrapbase_behat_blocks extends behat_blocks {
 
     public function i_add_the_block($blockname) {
-        $addblock = get_string('addblock');
-        $this->execute('behat_navigation::i_select_from_flat_navigation_drawer', $addblock);
+        $this->execute('behat_forms::i_set_the_field_to',
+                array("bui_addblock", $this->escape($blockname))
+        );
 
+        // If we are running without javascript we need to submit the form.
         if (!$this->running_javascript()) {
-            $this->execute('behat_general::i_click_on_in_the', [$blockname, 'link_exact', '#region-main', 'css_element']);
-        } else {
-            $this->execute('behat_general::i_click_on_in_the', [$blockname, 'link_exact', $addblock, 'dialogue']);
+            $this->execute('behat_general::i_click_on_in_the',
+                    array(get_string('go'), "button", "#add_block", "css_element")
+            );
         }
     }
 
@@ -62,36 +64,16 @@ class behat_theme_boost_behat_blocks extends behat_blocks {
         }
 
         $this->execute('behat_general::i_click_on_in_the',
-            array("a[data-toggle='dropdown']", "css_element", $this->escape($blockname), "block")
+                array(get_string('actions'), "link", $this->escape($blockname), "block")
         );
     }
 
     public function the_add_block_selector_should_contain_block($blockname) {
-        $addblock = get_string('addblock');
-        $this->execute('behat_navigation::i_select_from_flat_navigation_drawer', $addblock);
-
-        $cancelstr = get_string('cancel');
-        if (!$this->running_javascript()) {
-            $this->execute('behat_general::should_exist_in_the', [$blockname, 'link_exact', '#region-main', 'css_element']);
-            $this->execute('behat_general::i_click_on_in_the', [$cancelstr, 'link_exact', '#region-main', 'css_element']);
-        } else {
-            $this->execute('behat_general::should_exist_in_the', [$blockname, 'link_exact', $addblock, 'dialogue']);
-            $this->execute('behat_general::i_click_on_in_the', [$cancelstr, 'button', $addblock, 'dialogue']);
-        }
+        $this->execute('behat_forms::the_select_box_should_contain', [get_string('addblock'), $blockname]);
     }
 
     public function the_add_block_selector_should_not_contain_block($blockname) {
-        $addblock = get_string('addblock');
-        $this->execute('behat_navigation::i_select_from_flat_navigation_drawer', $addblock);
-
-        $cancelstr = get_string('cancel');
-        if (!$this->running_javascript()) {
-            $this->execute('behat_general::should_not_exist_in_the', [$blockname, 'link_exact', '#region-main', 'css_element']);
-            $this->execute('behat_general::i_click_on_in_the', [$cancelstr, 'link_exact', '#region-main', 'css_element']);
-        } else {
-            $this->execute('behat_general::should_not_exist_in_the', [$blockname, 'link_exact', $addblock, 'dialogue']);
-            $this->execute('behat_general::i_click_on_in_the', [$cancelstr, 'button', $addblock, 'dialogue']);
-        }
+        $this->execute('behat_forms::the_select_box_should_not_contain', [get_string('addblock'), $blockname]);
     }
 
 }
