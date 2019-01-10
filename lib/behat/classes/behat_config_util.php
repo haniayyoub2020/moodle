@@ -56,11 +56,6 @@ class behat_config_util {
     private $themecontexts;
 
     /**
-     * @var array list of all contexts in theme suite.
-     */
-    private $themesuitecontexts;
-
-    /**
      * @var array list of overridden theme contexts.
      */
     private $overriddenthemescontexts;
@@ -304,6 +299,7 @@ class behat_config_util {
      * @return array
      */
     public function get_components_contexts($component = '') {
+        global $CFG;
 
         // If we already have a list created then just return that, as it's up-to-date.
         if (!empty($this->contexts)) {
@@ -314,6 +310,10 @@ class behat_config_util {
 
         $this->contexts = array();
         foreach ($components as $componentname => $componentpath) {
+            if (false !== strpos($componentname, 'theme_')) {
+                // TODO = check this.
+                continue;
+            }
             $componentpath = self::clean_path($componentpath);
 
             if (!file_exists($componentpath . self::get_behat_tests_path())) {
@@ -493,24 +493,23 @@ class behat_config_util {
 
         $suites = $this->get_behat_suites($parallelruns, $currentrun);
 
-        $overriddenthemescontexts = $this->get_overridden_theme_contexts();
-        if (!empty($overriddenthemescontexts)) {
-            $allcontexts = array_merge($this->contexts, $overriddenthemescontexts);
-        } else {
-            $allcontexts = $this->contexts;
-        }
-
-        // Remove selectors from step definitions.
-        $themes = $this->get_list_of_themes();
         $selectortypes = ['named_partial', 'named_exact'];
-        foreach ($themes as $theme) {
+        $allpaths = [];
+        foreach (array_keys($suites) as $theme) {
+            // Remove selectors from step definitions.
             foreach ($selectortypes as $selectortype) {
                 // Don't include selector classes.
                 $selectorclass = self::get_behat_theme_selector_override_classname($theme, $selectortype);
-                if (isset($allcontexts[$selectorclass])) {
-                    unset($allcontexts[$selectorclass]);
+                if (isset($suites[$theme]['contexts'][$selectorclass])) {
+                    unset($suites[$theme]['contexts'][$selectorclass]);
                 }
             }
+
+            // Get a list of all step definition paths.
+            $allpaths = array_merge($allpaths, $suites[$theme]['contexts']);
+
+            // Convert the contexts array to a list of names only.
+            $suites[$theme]['contexts'] = array_keys($suites[$theme]['contexts']);
         }
 
         // Comments use black color, so failure path is not visible. Using color other then black/white is safer.
@@ -532,7 +531,7 @@ class behat_config_util {
                     ),
                     'Moodle\BehatExtension' => array(
                         'moodledirroot' => $CFG->dirroot,
-                        'steps_definitions' => $allcontexts,
+                        'steps_definitions' => $allpaths,
                     )
                 )
             )
@@ -996,9 +995,8 @@ class behat_config_util {
 
         // Create list of theme suite features and contexts.
         foreach ($themes as $theme) {
-            // Get theme features.
+            // Get theme features and contexts.
             $themefeatures[$theme] = $this->get_behat_features_for_theme($theme);
-
             $themecontexts[$theme] = $this->get_behat_contexts_for_theme($theme);
         }
 
@@ -1006,20 +1004,6 @@ class behat_config_util {
         foreach ($themefeatures as $themename => $removethemefeatures) {
             if (!empty($removethemefeatures['features'])) {
                 $features = $this->remove_blacklisted_features_from_list($features, $removethemefeatures['features']);
-            }
-        }
-
-        // Remove list of theme contexts form other suite contexts, as suite don't require other theme specific contexts.
-        foreach ($themecontexts as $themename => $themecontext) {
-            if (!empty($themecontext['contexts'])) {
-                foreach ($themecontext['contexts'] as $contextkey => $contextpath) {
-                    // Remove theme specific contexts from other themes.
-                    foreach ($themes as $currenttheme) {
-                        if (($currenttheme != $themename) && isset($themecontexts[$currenttheme]['suitecontexts'][$contextkey])) {
-                            unset($themecontexts[$currenttheme]['suitecontexts'][$contextkey]);
-                        }
-                    }
-                }
             }
         }
 
@@ -1054,12 +1038,14 @@ class behat_config_util {
                 $suitename = $theme;
             }
 
+            // TODO Blacklist contextfiles here :)
+
             // Add suite no matter what. If there is no feature in suite then it will just exist successfully with no
             // scenarios. But if we don't set this then the user has to know which run doesn't have suite and which run do.
             $suites = array_merge($suites, array(
                 $suitename => array(
                     'paths'    => array_values($themesuitefeatures),
-                    'contexts' => array_keys($themecontexts[$theme]['suitecontexts']),
+                    'contexts' => $themecontexts[$theme],
                 )
             ));
         }
@@ -1288,90 +1274,85 @@ class behat_config_util {
     }
 
     /**
-     * Return list of contexts overridden by themes.
-     *
-     * @return array.
-     */
-    protected function get_overridden_theme_contexts() {
-        if (empty($this->overriddenthemescontexts)) {
-            $this->overriddenthemescontexts = array();
-        }
-
-        return $this->overriddenthemescontexts;
-    }
-
-    /**
      * Return list of behat contexts for theme and update $this->stepdefinitions list.
      *
      * @param string $theme theme name.
-     * @return array list($themecontexts, $themesuitecontexts)
+     * @return  List of contexts
      */
-    protected function get_behat_contexts_for_theme($theme) {
-
+    protected function get_behat_contexts_for_theme($theme) : array {
         // If we already have this list then just return. This will not change by run.
-        if (!empty($this->themecontexts[$theme]) && !empty($this->themesuitecontexts)) {
-            return array(
-                'contexts' => $this->themecontexts[$theme],
-                'suitecontexts' => $this->themesuitecontexts[$theme],
-            );
+        if (!empty($this->themecontexts[$theme])) {
+            return $this->themecontexts[$theme];
         }
 
-        if (empty($this->overriddenthemescontexts)) {
-            $this->overriddenthemescontexts = array();
+        try {
+            $themeconfig = theme_config::load($theme);
+        } catch (Exception $e) {
+            // This theme has no theme config.
+            return [];
         }
 
-        $contexts = $this->get_components_contexts();
+        // The theme will use all core contexts, except the one overridden by theme or its parent.
+        $parentcontexts = [];
+        if (isset($themeconfig->parents)) {
+            foreach ($themeconfig->parents as $parent) {
+                if ($parentcontexts = $this->get_behat_contexts_for_theme($parent)) {
+                    break;
+                }
+            }
+        }
 
-        // Create list of contexts used by theme suite.
-        $themecontexts = $this->get_tests_for_theme($theme, 'contexts');
+        if (empty($parentcontexts)) {
+            $parentcontexts = $this->get_components_contexts();
+        }
+
+        // Remove contexts which have been actively blacklisted.
+        // TODO Move this to the calling code?
         $blacklistedcontexts = $this->get_blacklisted_tests_for_theme($theme, 'contexts');
-
-        // Theme suite will use all core contexts, except the one overridden by theme.
-        $themesuitecontexts = $contexts;
-
-        foreach ($themecontexts as $context => $path) {
-
-            // If a context in theme starts with behat_theme_{themename}_behat_* then it's overriding core context.
-            if (preg_match('/^behat_theme_'.$theme.'_(\w+)$/', $context, $match)) {
-
-                if (!empty($themesuitecontexts[$match[1]])) {
-                    unset($themesuitecontexts[$match[1]]);
-                }
-
-                // Add this to the list of overridden paths, so it can be added to final contexts list for class resolver.
-                $this->overriddenthemescontexts[$context] = $path;
-            }
-
-            $selectortypes = ['named_partial', 'named_exact'];
-            foreach ($selectortypes as $selectortype) {
-                // Don't include selector classes.
-                if ($context === self::get_behat_theme_selector_override_classname($theme, $selectortype)) {
-                    unset($this->contexts[$context]);
-                    unset($themesuitecontexts[$context]);
-                    continue;
-                }
-            }
-
-            // Add theme specific contexts with suffix to steps definitions.
-            $themesuitecontexts[$context] = $path;
-        }
-
-        // Remove blacklisted contexts.
         foreach ($blacklistedcontexts as $blacklistpath) {
             $blacklistcontext = basename($blacklistpath, '.php');
 
-            unset($themesuitecontexts[$blacklistcontext]);
+            unset($parentcontexts[$blacklistcontext]);
         }
 
-        // We are only interested in the class name of context.
-        $this->themesuitecontexts[$theme] = $themesuitecontexts;
-        $this->themecontexts[$theme] = $themecontexts;
+        // Apply overrides.
+        $contexts = array_merge($parentcontexts, $this->get_tests_for_theme($theme, 'contexts'));
 
-        $retval = array(
-            'contexts' => $themecontexts,
-            'suitecontexts' => $themesuitecontexts,
-        );
+        // Remove classes which are overridden.
+        foreach ($contexts as $contextclass => $path) {
+            require_once($path);
+            if (!class_exists($contextclass)) {
+                // This may be a Poorly named class.
+                continue;
+            }
 
-        return $retval;
+            $rc = new \ReflectionClass($contextclass);
+            $parent = $rc->getParentClass();
+            while($rc = $rc->getParentClass()) {
+                if (isset($contexts[$rc->name])) {
+                    unset($contexts[$rc->name]);
+                }
+            }
+        }
+
+        // Remove classes which are overridden by name.
+        // Note: This is foul and relates primarily to an originally incorrect usage of a class instead of a trait in
+        // core_files and repository_filepicker.
+        // Here be Dragons!
+        foreach (array_keys($contexts) as $contextclass) {
+            if ('behat_theme_' === substr($contextclass, 0, 12)) {
+                [,,,$overriddenclass] = explode('_', $contextclass, 4);
+                if (isset($contexts[$overriddenclass])) {
+                    unset($contexts[$overriddenclass]);
+                }
+            }
+        }
+
+        // Sort the list of contexts.
+        ksort($contexts);
+
+        $this->themecontexts[$theme] = $contexts;
+
+        return $contexts;
     }
 }
