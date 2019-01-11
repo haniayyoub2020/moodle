@@ -635,7 +635,13 @@ class behat_config_util {
 
         // Selenium2 config values.
         $behatprofileextension = array();
-        $seleniumconfig = array();
+        $seleniumconfig = [
+            'capabilities' => [
+                'extra_capabilities' => [
+                    'marionette' => false,
+                ],
+            ]
+        ];
         if (isset($values['browser'])) {
             $seleniumconfig['browser'] = $values['browser'];
         }
@@ -643,7 +649,7 @@ class behat_config_util {
             $seleniumconfig['wd_host'] = $values['wd_host'];
         }
         if (isset($values['capabilities'])) {
-            $seleniumconfig['capabilities'] = $values['capabilities'];
+            $seleniumconfig['capabilities'] = array_replace_recursive($seleniumconfig['capabilities'], $values['capabilities']);
         }
         if (!empty($seleniumconfig)) {
             $behatprofileextension = array(
