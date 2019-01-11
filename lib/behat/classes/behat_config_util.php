@@ -1335,19 +1335,6 @@ class behat_config_util {
             }
         }
 
-        // Remove classes which are overridden by name.
-        // Note: This is foul and relates primarily to an originally incorrect usage of a class instead of a trait in
-        // core_files and repository_filepicker.
-        // Here be Dragons!
-        foreach (array_keys($contexts) as $contextclass) {
-            if ('behat_theme_' === substr($contextclass, 0, 12)) {
-                [,,,$overriddenclass] = explode('_', $contextclass, 4);
-                if (isset($contexts[$overriddenclass])) {
-                    unset($contexts[$overriddenclass]);
-                }
-            }
-        }
-
         // Sort the list of contexts.
         ksort($contexts);
 
