@@ -320,7 +320,7 @@ class behat_config_util {
                 continue;
             }
             $diriterator = new DirectoryIterator($componentpath . self::get_behat_tests_path());
-            $regite = new RegexIterator($diriterator, '|behat_.*\.php$|');
+            $regite = new RegexIterator($diriterator, '|^behat_.*\.php$|');
 
             // All behat_*.php inside self::get_behat_tests_path() are added as steps definitions files.
             foreach ($regite as $file) {
@@ -1193,7 +1193,7 @@ class behat_config_util {
 
         $tests = array();
         $testtypes = array(
-            'contexts' => '|behat_.*\.php$|',
+            'contexts' => '|^behat_.*\.php$|',
             'features' => '|.*\.feature$|',
         );
 

@@ -25,7 +25,7 @@
 
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
-require_once(__DIR__ . '/../../../../lib/behat/behat_file_helper.php');
+require_once(__DIR__ . '/../../../../lib/behat/core_behat_file_helper.php');
 
 use Behat\Mink\Exception\ExpectationException as ExpectationException,
     Behat\Gherkin\Node\TableNode as TableNode;
@@ -40,7 +40,7 @@ use Behat\Mink\Exception\ExpectationException as ExpectationException,
  */
 class behat_repository_upload extends behat_base {
 
-    use behat_file_helper;
+    use core_behat_file_helper;
 
     /**
      * Uploads a file to the specified filemanager leaving other fields in upload form default. The paths should be relative to moodle codebase.

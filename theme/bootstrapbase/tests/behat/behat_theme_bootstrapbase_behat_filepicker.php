@@ -23,7 +23,7 @@
 
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
-require_once(__DIR__ . '/behat_theme_bootstrapbase_behat_file_helper.php');
+require_once(__DIR__ . '/theme_bootstrapbase_behat_file_helper.php');
 
 use Behat\Mink\Exception\ExpectationException as ExpectationException,
     Behat\Gherkin\Node\TableNode as TableNode;
@@ -35,7 +35,7 @@ use Behat\Mink\Exception\ExpectationException as ExpectationException,
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_theme_bootstrapbase_behat_filepicker extends behat_filepicker {
-    use behat_theme_bootstrapbase_behat_file_helper;
+    use theme_bootstrapbase_behat_file_helper;
 
     /**
      * Creates a folder with specified name in the current folder and in the specified filemanager field.

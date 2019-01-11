@@ -44,7 +44,7 @@ use Behat\Mink\Exception\ExpectationException as ExpectationException,
  * @copyright  2013 David Monllaó
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-trait behat_file_helper {
+trait core_behat_file_helper {
 
     /**
      * Gets the NodeElement for filepicker of filemanager moodleform element.
