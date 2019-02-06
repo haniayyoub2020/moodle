@@ -161,11 +161,81 @@ class core_exporter_testcase extends advanced_testcase {
         // Export simulated in the course context where the filter is enabled.
         $exporter = new core_testable_exporter($data, ['context' => $coursecontext] + $this->validrelated);
         $result = $exporter->export($output);
+
         $youtube = '<a href="https://moodle.org" class="_blanktarget">https://moodle.org</a>';
         $fileurl = (new moodle_url('/webservice/pluginfile.php/' . $coursecontext->id . '/test/area/9/test.pdf'))->out(false);
         $expected = "<p><strong>Watch out:</strong> $youtube <a href=\"$fileurl\" class=\"_blanktarget\">$fileurl</a></p>\n";
         $this->assertEquals($expected, $result->stringA);
         $this->assertEquals(FORMAT_HTML, $result->stringAformat);
+    }
+
+    public function test_nested_format_text() {
+        global $PAGE;
+
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $syscontext = context_system::instance();
+        $coursecontext = context_course::instance($course->id);
+
+        external_settings::get_instance()->set_filter(true);
+        filter_set_global_state('urltolink', TEXTFILTER_OFF);
+        filter_set_local_state('urltolink', $coursecontext->id, TEXTFILTER_ON);
+        set_config('formats', FORMAT_MARKDOWN, 'filter_urltolink');
+        filter_manager::reset_caches();
+
+        $data = [
+            'bar' => '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf',
+            'barformat' => FORMAT_MARKDOWN,
+            'foo' => [
+                'bar' => '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf',
+                'barformat' => FORMAT_MARKDOWN,
+            ],
+            'baz' => [
+                [
+                    'bar' => '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf',
+                    'barformat' => FORMAT_MARKDOWN,
+                ],
+            ],
+        ];
+
+        $formatvalues = [
+            'context' => $coursecontext,
+            'component' => 'test',
+            'filearea' => 'area',
+            'itemid' => 9,
+            ];
+
+        $mock = $this->getMockBuilder(\core_exporter_testcase_nested_text_exporter::class)
+            ->setMethods([
+                'get_other_values',
+                'get_format_parameters_for_bar',
+                'get_format_parameters_for__foo__bar',
+                'get_format_parameters_for__baz__bar',
+            ])
+            ->setConstructorArgs([[], ['context' => $coursecontext]])
+            ->getMock();
+
+        $mock->method('get_other_values')
+            ->willReturn($data);
+
+        $mock->method('get_format_parameters_for_bar')
+             ->willReturn($formatvalues);
+        $mock->method('get_format_parameters_for__foo__bar')
+             ->willReturn($formatvalues);
+        $mock->method('get_format_parameters_for__baz__bar')
+             ->willReturn($formatvalues);
+
+        $output = $PAGE->get_renderer('core');
+        $result = $mock->export($output);
+
+        $moodleorg = '<a href="https://moodle.org" class="_blanktarget">https://moodle.org</a>';
+        $fileurl = (new moodle_url('/webservice/pluginfile.php/' . $coursecontext->id . '/test/area/9/test.pdf'))->out(false);
+        $expected = "<p><strong>Watch out:</strong> $moodleorg <a href=\"$fileurl\" class=\"_blanktarget\">$fileurl</a></p>\n";
+
+        $this->assertEquals($expected, $result->bar);
+        $this->assertEquals($expected, $result->foo->bar);
+        $this->assertEquals($expected, $result->baz[0]->bar);
+        $this->assertEquals(FORMAT_HTML, $result->barformat);
     }
 
     public function test_properties_description() {
@@ -252,6 +322,47 @@ class core_testable_exporter extends \core\external\exporter {
     protected function get_format_parameters_for_otherstrings() {
         return [
             'context' => context_system::instance(),
+        ];
+    }
+}
+
+/**
+ * Example testcase with nested text exporters.
+ */
+class core_exporter_testcase_nested_text_exporter extends \core\external\exporter {
+    /**
+     * The list of additional properties.
+     *
+     * @return  array
+     */
+    public static function define_other_properties() : array {
+        return [
+            'bar' => ['type' => PARAM_RAW],
+            'barformat' => ['type' => PARAM_INT],
+            'foo' => [
+                'type' => [
+                    'bar' => ['type' => PARAM_RAW],
+                    'barformat' => ['type' => PARAM_INT],
+                ],
+            ],
+            'baz' => [
+                'multiple' => true,
+                'type' => [
+                    'bar' => ['type' => PARAM_RAW],
+                    'barformat' => ['type' => PARAM_INT],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * The list of related properties.
+     *
+     * @return  array
+     */
+    protected static function define_related() {
+        return [
+            'context' => 'context',
         ];
     }
 }
