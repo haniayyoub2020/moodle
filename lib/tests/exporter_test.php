@@ -183,18 +183,33 @@ class core_exporter_testcase extends advanced_testcase {
         set_config('formats', FORMAT_MARKDOWN, 'filter_urltolink');
         filter_manager::reset_caches();
 
+        $source = '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf';
         $data = [
-            'bar' => '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf',
-            'barformat' => FORMAT_MARKDOWN,
-            'foo' => [
-                'bar' => '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf',
-                'barformat' => FORMAT_MARKDOWN,
+            'first' => $source,
+            'firstformat' => FORMAT_MARKDOWN,
+            'second' => [
+                'third' => $source,
+                'thirdformat' => FORMAT_MARKDOWN,
             ],
-            'baz' => [
+            'fourth' => [
                 [
-                    'bar' => '__Watch out:__ https://moodle.org @@PLUGINFILE@@/test.pdf',
-                    'barformat' => FORMAT_MARKDOWN,
+                    'fifth' => $source,
+                    'fifthformat' => FORMAT_MARKDOWN,
+                    'sixth' => [
+                        'seventh' => $source,
+                        'seventhformat' => FORMAT_MARKDOWN,
+                    ],
                 ],
+                /*
+                [
+                    'fifth' => $source,
+                    'fifthformat' => FORMAT_MARKDOWN,
+                    'sixth' => [
+                        'seventh' => $source,
+                        'seventhformat' => FORMAT_MARKDOWN,
+                    ],
+                ],
+                 */
             ],
         ];
 
@@ -208,9 +223,10 @@ class core_exporter_testcase extends advanced_testcase {
         $mock = $this->getMockBuilder(\core_exporter_testcase_nested_text_exporter::class)
             ->setMethods([
                 'get_other_values',
-                'get_format_parameters_for_bar',
-                'get_format_parameters_for__foo__bar',
-                'get_format_parameters_for__baz__bar',
+                'get_format_parameters_for_first',
+                'get_format_parameters_for__second__third',
+                'get_format_parameters_for__fourth__fifth',
+                'get_format_parameters_for__fourth_sixth__seventh',
             ])
             ->setConstructorArgs([[], ['context' => $coursecontext]])
             ->getMock();
@@ -218,24 +234,28 @@ class core_exporter_testcase extends advanced_testcase {
         $mock->method('get_other_values')
             ->willReturn($data);
 
-        $mock->method('get_format_parameters_for_bar')
+        $mock->method('get_format_parameters_for_first')
              ->willReturn($formatvalues);
-        $mock->method('get_format_parameters_for__foo__bar')
+        $mock->method('get_format_parameters_for__second__third')
              ->willReturn($formatvalues);
-        $mock->method('get_format_parameters_for__baz__bar')
+        $mock->method('get_format_parameters_for__fourth__fifth')
+             ->willReturn($formatvalues);
+        $mock->method('get_format_parameters_for__fourth_sixth__seventh')
              ->willReturn($formatvalues);
 
         $output = $PAGE->get_renderer('core');
         $result = $mock->export($output);
+        print_object($result);
 
         $moodleorg = '<a href="https://moodle.org" class="_blanktarget">https://moodle.org</a>';
         $fileurl = (new moodle_url('/webservice/pluginfile.php/' . $coursecontext->id . '/test/area/9/test.pdf'))->out(false);
         $expected = "<p><strong>Watch out:</strong> $moodleorg <a href=\"$fileurl\" class=\"_blanktarget\">$fileurl</a></p>\n";
 
-        $this->assertEquals($expected, $result->bar);
-        $this->assertEquals($expected, $result->foo->bar);
-        $this->assertEquals($expected, $result->baz[0]->bar);
-        $this->assertEquals(FORMAT_HTML, $result->barformat);
+        $this->assertEquals($expected, $result->first);
+        $this->assertEquals($expected, $result->second->third);
+        $this->assertEquals($expected, $result->fourth[0]->fifth);
+        //$this->assertEquals($expected, $result->fourth[0]->sixth->seventh);
+        $this->assertEquals(FORMAT_HTML, $result->firstformat);
     }
 
     public function test_properties_description() {
@@ -337,19 +357,25 @@ class core_exporter_testcase_nested_text_exporter extends \core\external\exporte
      */
     public static function define_other_properties() : array {
         return [
-            'bar' => ['type' => PARAM_RAW],
-            'barformat' => ['type' => PARAM_INT],
-            'foo' => [
+            'first' => ['type' => PARAM_RAW],
+            'firstformat' => ['type' => PARAM_INT],
+            'second' => [
                 'type' => [
-                    'bar' => ['type' => PARAM_RAW],
-                    'barformat' => ['type' => PARAM_INT],
+                    'third' => ['type' => PARAM_RAW],
+                    'thirdformat' => ['type' => PARAM_INT],
                 ],
             ],
-            'baz' => [
+            'fourth' => [
                 'multiple' => true,
                 'type' => [
-                    'bar' => ['type' => PARAM_RAW],
-                    'barformat' => ['type' => PARAM_INT],
+                    'fifth' => ['type' => PARAM_RAW],
+                    'fifthformat' => ['type' => PARAM_INT],
+                    'sixth' => [
+                        'type' => [
+                            'seventh' => ['type' => PARAM_RAW],
+                            'seventhformat' => ['type' => PARAM_INT],
+                        ],
+                    ],
                 ],
             ],
         ];
