@@ -620,34 +620,22 @@ class behat_general extends behat_base {
         }
 
         // If the element is there we should be sure that it is not visible.
-        $this->spin(
-            function($context, $args) {
-
-                foreach ($args['nodes'] as $node) {
-                    // If element is removed from dom, then just exit.
-                    try {
-                        // If element is visible then throw exception, so we keep spinning.
-                        if ($node->isVisible()) {
-                            throw new ExpectationException('"' . $args['text'] . '" text was found in the page',
-                                $context->getSession());
-                        }
-                    } catch (WebDriver\Exception\NoSuchElement $e) {
-                        // Do nothing just return, as element is no more on page.
-                        return true;
-                    } catch (ElementNotFoundException $e) {
-                        // Do nothing just return, as element is no more on page.
-                        return true;
-                    }
+        foreach ($nodes as $node) {
+            // If element is removed from dom, then just exit.
+            try {
+                // If element is visible then throw exception, so we keep spinning.
+                if ($node->isVisible()) {
+                    throw new ExpectationException('"' . $text . '" text was found in the page',
+                        $context->getSession());
                 }
-
-                // If non of the found nodes is visible we consider that the text is not visible.
-                return true;
-            },
-            array('nodes' => $nodes, 'text' => $text),
-            self::REDUCED_TIMEOUT,
-            false,
-            true
-        );
+            } catch (WebDriver\Exception\NoSuchElement $e) {
+                // Do nothing just return, as element is no more on page.
+                continue;
+            } catch (ElementNotFoundException $e) {
+                // Do nothing just return, as element is no more on page.
+                continue;
+            }
+        }
     }
 
     /**
