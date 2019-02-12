@@ -22,4 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$subplugins = array('assignsubmission'=>'mod/assign/submission', 'assignfeedback'=>'mod/assign/feedback');
+// This is a compat layer which won't be included in core modules, but will be recommended for contrib modules who want
+// a single branch for all versions.
+$subplugins = (array) json_decode(file_get_contents(__DIR__ . "/subplugins.json"));
