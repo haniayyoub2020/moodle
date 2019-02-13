@@ -6956,15 +6956,10 @@ class context_module extends context {
         $module = $DB->get_record('modules', array('id'=>$cm->module));
 
         $subcaps = array();
-        $subpluginsfile = "$CFG->dirroot/mod/$module->name/db/subplugins.php";
-        if (file_exists($subpluginsfile)) {
-            $subplugins = array();  // should be redefined in the file
-            include($subpluginsfile);
-            if (!empty($subplugins)) {
-                foreach (array_keys($subplugins) as $subplugintype) {
-                    foreach (array_keys(core_component::get_plugin_list($subplugintype)) as $subpluginname) {
-                        $subcaps = array_merge($subcaps, array_keys(load_capability_def($subplugintype.'_'.$subpluginname)));
-                    }
+        if ($subplugins = \core_component::get_subplugins("mod_{$module->name}")) {
+            foreach (array_keys($subplugins) as $subplugintype) {
+                foreach (array_keys(core_component::get_plugin_list($subplugintype)) as $subpluginname) {
+                    $subcaps = array_merge($subcaps, array_keys(load_capability_def($subplugintype.'_'.$subpluginname)));
                 }
             }
         }

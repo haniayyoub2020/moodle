@@ -131,10 +131,7 @@ function uninstall_plugin($type, $name) {
     // Recursively uninstall all subplugins first.
     $subplugintypes = core_component::get_plugin_types_with_subplugins();
     if (isset($subplugintypes[$type])) {
-        $base = core_component::get_plugin_directory($type, $name);
-        if (file_exists("$base/db/subplugins.php")) {
-            $subplugins = array();
-            include("$base/db/subplugins.php");
+        if ($subplugins = \core_component::get_subplugins("{$type}_{$name}")) {
             foreach ($subplugins as $subplugintype=>$dir) {
                 $instances = core_component::get_plugin_list($subplugintype);
                 foreach ($instances as $subpluginname => $notusedpluginpath) {
@@ -142,7 +139,6 @@ function uninstall_plugin($type, $name) {
                 }
             }
         }
-
     }
 
     $component = $type . '_' . $name;  // eg. 'qtype_multichoice' or 'workshopgrading_accumulative' or 'mod_forum'

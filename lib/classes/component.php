@@ -519,7 +519,7 @@ $cache = '.var_export($cache, true).';
         $types = array();
         $subplugins = array();
         if (file_exists("$ownerdir/db/subplugins.json")) {
-            $subplugins = json_decode(file_get_contents("$ownerdir/db/subplugins.json"));
+            $subplugins = (array) json_decode(file_get_contents("$ownerdir/db/subplugins.json"));
         } else if (file_exists("$ownerdir/db/subplugins.php")) {
             // Fallback - TODO Add debugging and warn of deprecation.
             include("$ownerdir/db/subplugins.php");

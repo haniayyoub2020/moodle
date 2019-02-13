@@ -510,11 +510,9 @@ class core_plugin_manager {
     }
 
     /**
-     * Returns list of plugins that define their subplugins and the information
-     * about them from the db/subplugins.php file.
+     * Returns list of plugins that define their subplugins and the information about them.
      *
-     * @return array with keys like 'mod_quiz', and values the data from the
-     *      corresponding db/subplugins.php file.
+     * @return array with keys like 'mod_quiz', and values the data from the corresponding subplugins metadata file.
      */
     public function get_subplugins() {
 
