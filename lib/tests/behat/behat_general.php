@@ -568,24 +568,14 @@ class behat_general extends behat_base {
         // We spin as we don't have enough checking that the element is there, we
         // should also ensure that the element is visible. Using microsleep as this
         // is a repeated step and global performance is important.
-        $this->spin(
-            function($context, $args) {
+        foreach ($nodes as $node) {
+            if ($node->isVisible()) {
+                return true;
+            }
+        }
 
-                foreach ($args['nodes'] as $node) {
-                    if ($node->isVisible()) {
-                        return true;
-                    }
-                }
-
-                // If non of the nodes is visible we loop again.
-                throw new ExpectationException('"' . $args['text'] . '" text was found but was not visible', $context->getSession());
-            },
-            array('nodes' => $nodes, 'text' => $text),
-            false,
-            false,
-            true
-        );
-
+        // If non of the nodes is visible we loop again.
+        throw new ExpectationException("The \"{$text}\" text was found but was not visible", $this->getSession());
     }
 
     /**
@@ -626,7 +616,7 @@ class behat_general extends behat_base {
                 // If element is visible then throw exception, so we keep spinning.
                 if ($node->isVisible()) {
                     throw new ExpectationException('"' . $text . '" text was found in the page',
-                        $context->getSession());
+                        $this->getSession());
                 }
             } catch (WebDriver\Exception\NoSuchElement $e) {
                 // Do nothing just return, as element is no more on page.
@@ -725,27 +715,14 @@ class behat_general extends behat_base {
         // If we are not running javascript we have enough with the
         // element not being found as we can't check if it is visible.
         if (!$this->running_javascript()) {
-            throw new ExpectationException('"' . $text . '" text was found in the "' . $element . '" element', $this->getSession());
+            throw new ExpectationException("\"{$text}\" text was found in the \"{$element}\" element", $this->getSession());
         }
 
-        // We need to ensure all the found nodes are hidden.
-        $this->spin(
-            function($context, $args) {
-
-                foreach ($args['nodes'] as $node) {
-                    if ($node->isVisible()) {
-                        throw new ExpectationException('"' . $args['text'] . '" text was found in the "' . $args['element'] . '" element', $context->getSession());
-                    }
-                }
-
-                // If all the found nodes are hidden we are happy.
-                return true;
-            },
-            array('nodes' => $nodes, 'text' => $text, 'element' => $element),
-            self::REDUCED_TIMEOUT,
-            false,
-            true
-        );
+        foreach ($nodes as $node) {
+            if ($node->isVisible()) {
+                throw new ExpectationException("\"{$text}\" text was found in the \"{$element}\" element", $this->getSession());
+            }
+        }
     }
 
     /**
@@ -905,32 +882,17 @@ class behat_general extends behat_base {
 
         // Getting Mink selector and locator.
         list($selector, $locator) = $this->transform_selector($selectortype, $element);
+        $session = $this->getSession();
 
         try {
+            $session->getPage()->findAll($selector, $locator);
 
-            // Using directly the spin method as we want a reduced timeout but there is no
-            // need for a 0.1 seconds interval because in the optimistic case we will timeout.
-            $params = array('selector' => $selector, 'locator' => $locator);
-            // The exception does not really matter as we will catch it and will never "explode".
-            $exception = new ElementNotFoundException($this->getSession(), $selectortype, null, $element);
-
-            // If all goes good it will throw an ElementNotFoundExceptionn that we will catch.
-            $this->spin(
-                function($context, $args) {
-                    return $context->getSession()->getPage()->findAll($args['selector'], $args['locator']);
-                },
-                $params,
-                self::REDUCED_TIMEOUT,
-                $exception,
-                false
-            );
+            throw new ExpectationException("The \"{$element}\" \"{$selectortype}\" exists in the current page", $session);
         } catch (ElementNotFoundException $e) {
             // It passes.
             return;
         }
 
-        throw new ExpectationException('The "' . $element . '" "' . $selectortype .
-                '" exists in the current page', $this->getSession());
     }
 
     /**

@@ -483,29 +483,13 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @return void
      */
     protected function ensure_element_exists($element, $selectortype) {
-
         // Getting the behat selector & locator.
         list($selector, $locator) = $this->transform_selector($selectortype, $element);
 
-        // Exception if it timesout and the element is still there.
-        $msg = 'The "' . $element . '" element does not exist and should exist';
-        $exception = new ExpectationException($msg, $this->getSession());
-
         // It will stop spinning once the find() method returns true.
-        $this->spin(
-            function($context, $args) {
-                // We don't use behat_base::find as it is already spinning.
-                if ($context->getSession()->getPage()->find($args['selector'], $args['locator'])) {
-                    return true;
-                }
-                return false;
-            },
-            array('selector' => $selector, 'locator' => $locator),
-            self::EXTENDED_TIMEOUT,
-            $exception,
-            true
-        );
-
+        if (!$this->getSession()->getPage()->find($selector, $locator)) {
+            throw new ExpectationException("The \"{$element}\" element does not exist and should exist", $this->getSession());
+        }
     }
 
     /**
@@ -517,28 +501,13 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @return void
      */
     protected function ensure_element_does_not_exist($element, $selectortype) {
-
         // Getting the behat selector & locator.
         list($selector, $locator) = $this->transform_selector($selectortype, $element);
 
-        // Exception if it timesout and the element is still there.
+        if ($this->getSession()->getPage()->find($selector, $locator)) {
         $msg = 'The "' . $element . '" element exists and should not exist';
-        $exception = new ExpectationException($msg, $this->getSession());
-
-        // It will stop spinning once the find() method returns false.
-        $this->spin(
-            function($context, $args) {
-                // We don't use behat_base::find() as we are already spinning.
-                if (!$context->getSession()->getPage()->find($args['selector'], $args['locator'])) {
-                    return true;
-                }
-                return false;
-            },
-            array('selector' => $selector, 'locator' => $locator),
-            self::EXTENDED_TIMEOUT,
-            $exception,
-            true
-        );
+            throw new ExpectationException("The \"{$element}\" element exists ands houdl not exist", $this->getSession());
+        }
     }
 
     /**
@@ -555,22 +524,10 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         }
 
         // Exception if it timesout and the element is still there.
-        $msg = 'The "' . $node->getXPath() . '" xpath node is not visible and it should be visible';
-        $exception = new ExpectationException($msg, $this->getSession());
-
-        // It will stop spinning once the isVisible() method returns true.
-        $this->spin(
-            function($context, $args) {
-                if ($args->isVisible()) {
-                    return true;
-                }
-                return false;
-            },
-            $node,
-            self::EXTENDED_TIMEOUT,
-            $exception,
-            true
-        );
+        if (!$node->isVisible()) {
+            $msg = 'The "' . $node->getXPath() . '" xpath node is not visible and it should be visible';
+            throw new ExpectationException($msg, $this->getSession());
+        }
     }
 
     /**

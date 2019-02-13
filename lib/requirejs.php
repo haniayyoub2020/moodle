@@ -87,12 +87,12 @@ if ($rev > 0 and $rev < (time() + 60 * 60)) {
     } else {
         $jsfiles = array();
         if ($lazyload) {
-            $jsfiles = core_requirejs::find_one_amd_module($component, $module);
+            $jsfiles = core_requirejs::find_one_amd_module($component, $module, true);
         } else {
             // Here we respond to the request by returning ALL amd modules. This saves
             // round trips in production.
 
-            $jsfiles = core_requirejs::find_all_amd_modules();
+            $jsfiles = core_requirejs::find_all_amd_modules(true);
         }
 
         $content = '';
