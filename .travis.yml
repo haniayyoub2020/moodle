@@ -72,10 +72,6 @@ install:
                 --key_buffer_size=768M \
                 --table_open_cache=12000
 
-          sleep 2
-
-          docker exec db bash -c "mysql -e 'CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'" ;
-
         fi
     - >
         if [ "$DB" = 'pgsql' ];
@@ -156,6 +152,8 @@ before_script:
 
         if [ "$DB" = 'mysqli' ];
         then
+          docker exec db bash -c "mysql -e 'CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'" ;
+
           # MySQL-specific setup.
           sed -i \
             -e "s%= 'pgsql'%= 'mysqli'%" \
