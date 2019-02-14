@@ -128,15 +128,11 @@ install:
         fi
 
 before_script:
-    - phpenv config-rm xdebug.ini
     - >
       if [ "$TASK" = 'PHPUNIT' -o "$TASK" = 'UPGRADE' ];
       then
         # Copy generic configuration in place.
         cp config-dist.php config.php ;
-
-        # Create the moodledata directory.
-        mkdir -p "$HOME"/roots/base
 
         # The database name and password.
         sed -i \
@@ -167,9 +163,6 @@ before_script:
     - >
       if [ "$TASK" = 'PHPUNIT' ];
       then
-        # Create a directory for the phpunit dataroot.
-        mkdir -p "$HOME"/roots/phpunit
-
         # The phpunit dataroot and prefix..
         # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
         # -e "/require_once/i \\define('TEST_SESSION_REDIS_HOST', '127.0.0.1');" \
