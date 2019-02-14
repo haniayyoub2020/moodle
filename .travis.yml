@@ -113,7 +113,7 @@ install:
               --network testing \
               -v "${HOME}/.composer:/var/www/.composer:rw" \
               --tmpfs /srv/moodledata \
-              moodlehq/moodle-php-apache:${PHP_VERSION}}
+              "moodlehq/moodle-php-apache:${PHP}"
 
             # Enable Redis.
             # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
