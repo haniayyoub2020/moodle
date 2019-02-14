@@ -23,8 +23,9 @@ addons:
     - mysql-client-core-5.6
     - mysql-client-5.6
 
+services:
+    - docker
 # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
-# services:
 #     - redis-server
 
 env:
@@ -187,8 +188,8 @@ before_script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        npm install --no-spin;
-        npm install --no-spin -g grunt ;
+        docker pull node/8-slim;
+        docker run -v "${HOME}/.npm":/root/.npm node/8-slim npm install --no-spin;
       fi
 
     ########################################################################
@@ -260,7 +261,7 @@ script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        grunt ;
+        docker run -v "${HOME}/.npm":/root/.npm node/8-slim bash -c 'npm install --no-spin -g grunt && grunt';
         # Add all files to the git index and then run diff --cached to see all changes.
         # This ensures that we get the status of all files, including new files.
         # We ignore npm-shrinkwrap.json to make the tasks immune to npm changes.
