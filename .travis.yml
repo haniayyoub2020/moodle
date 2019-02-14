@@ -16,13 +16,6 @@ php:
     - 7.2
     - 7.1
 
-addons:
-  postgresql: "9.6"
-  packages:
-    - mysql-server-5.6
-    - mysql-client-core-5.6
-    - mysql-client-5.6
-
 services:
     - docker
 # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
@@ -85,12 +78,32 @@ install:
     - >
         if [ "$DB" = 'pgsql' ];
         then
-            sudo mkdir /mnt/ramdisk
-            sudo mount -t tmpfs -o size=1024m tmpfs /mnt/ramdisk
-            sudo service postgresql stop
-            sudo mv /var/lib/postgresql /mnt/ramdisk
-            sudo ln -s /mnt/ramdisk/postgresql /var/lib/postgresql
-            sudo service postgresql start 9.6
+
+            docker run \
+              --detach \
+              --name db \
+              --port 5432:5432
+              --shm-size=256MB \
+              -e POSTGRES_USER=moodle \
+              -e POSTGRES_PASSWORD=moodle \
+              -e POSTGRES_DB=initial \
+              -c 'shared_buffers = 2GB' \
+              -c 'work_mem = 128MB' \
+              -c 'maintenance_work_mem = 256MB' \
+              -c 'effective_cache_size = 4GB ' \
+              -c 'synchronous_commit = off' \
+              -c 'checkpoint_completion_target = 0.9' \
+              -c 'fsync = off' \
+              -c 'full_page_writes = off' \
+              -c 'bgwriter_lru_maxpages = 0' \
+              --tmpfs /var/lib/postgresql/data:rw \
+              postgres:9.6.7-alpine ;
+
+            # Wait few sec, before executing commands.
+            sleep 10 ;
+
+            # Create dbs.
+            docker exec db psql -U postgres -c "CREATE DATABASE travis_ci_test WITH OWNER postgres ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
         fi
     - >
         if [ "$TASK" = 'PHPUNIT' ];
@@ -140,16 +153,6 @@ before_script:
           -e "s%/home/example/moodledata%/home/travis/roots/base%" \
           config.php ;
 
-        if [ "$DB" = 'pgsql' ];
-        then
-          # Postgres-specific setup.
-          sed -i \
-            -e "s%= 'username'%= 'postgres'%" \
-            config.php ;
-
-          psql -c 'CREATE DATABASE travis_ci_test;' -U postgres;
-        fi
-
         if [ "$DB" = 'mysqli' ];
         then
           # MySQL-specific setup.
@@ -187,7 +190,7 @@ before_script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        docker run -v "${HOME}/.npm":/root/.npm node:8-slim npm install --no-spin;
+          docker run -v `pwd`:/srv -w /srv -v "${HOME}/.npm":/root/.npm node:8-slim npm install --no-spin;
       fi
 
     ########################################################################
@@ -259,13 +262,13 @@ script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        docker run -v "${HOME}/.npm":/root/.npm node:8-slim bash -c 'npm install --no-spin -g grunt && grunt';
-        # Add all files to the git index and then run diff --cached to see all changes.
-        # This ensures that we get the status of all files, including new files.
-        # We ignore npm-shrinkwrap.json to make the tasks immune to npm changes.
-        git add . ;
-        git reset -- npm-shrinkwrap.json ;
-        git diff --cached --exit-code ;
+          docker run -w /srv -v `pwd`:/srv -v "${HOME}/.npm":/root/.npm node:8-slim bash -c 'npm install --no-spin -g grunt && grunt';
+          # Add all files to the git index and then run diff --cached to see all changes.
+          # This ensures that we get the status of all files, including new files.
+          # We ignore npm-shrinkwrap.json to make the tasks immune to npm changes.
+          git add . ;
+          git reset -- npm-shrinkwrap.json ;
+          git diff --cached --exit-code ;
       fi
 
     ########################################################################
