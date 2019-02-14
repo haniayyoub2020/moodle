@@ -145,8 +145,9 @@ before_script:
         # The wwwroot and dataroot.
         sed -i \
           -e "s%http://example.com/moodle%https://runner%" \
-          -e "s%/home/example/moodledata%/srv/moodledata%" \
+          -e "s%/home/example/moodledata%/srv/moodledata/dirroot%" \
           config.php ;
+        docker exec -it runner bash -c 'mkdir /srv/moodledata/dirroot'
 
         if [ "$DB" = 'mysqli' ];
         then
@@ -168,11 +169,12 @@ before_script:
         # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
         # -e "/require_once/i \\define('TEST_SESSION_REDIS_HOST', '127.0.0.1');" \
         sed -i \
-          -e "/require_once/i \\\$CFG->phpunit_dataroot = '\/home\/travis\/roots\/phpunit';" \
+          -e "/require_once/i \\\$CFG->phpunit_dataroot = '\/srv\/moodledata\/phpunit';" \
           -e "/require_once/i \\\$CFG->phpunit_prefix = 'p_';" \
           config.php ;
 
         # Initialise PHPUnit for Moodle.
+        docker exec -it runner bash -c 'mkdir /srv/moodledata/phpunit'
         docker exec -it runner bash -c 'php admin/tool/phpunit/cli/init.php'
       fi
 
