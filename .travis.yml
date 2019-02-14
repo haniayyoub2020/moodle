@@ -85,7 +85,7 @@ install:
               --shm-size=256MB \
               -e POSTGRES_USER=moodle \
               -e POSTGRES_PASSWORD=moodle \
-              -e POSTGRES_DB=unused_db \
+              -e POSTGRES_DB=initial \
               --tmpfs /var/lib/postgresql/data:rw \
               postgres:9.6-alpine \
               -c 'shared_buffers=2048MB' \
@@ -98,11 +98,6 @@ install:
               -c 'full_page_writes=off' \
               -c 'bgwriter_lru_maxpages=0' ;
 
-            # Wait few sec, before executing commands.
-            sleep 10 ;
-
-            # Create dbs.
-            docker exec db psql -U moodle -c "CREATE DATABASE moodle WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
         fi
     - >
         if [ "$TASK" = 'PHPUNIT' ];
@@ -160,6 +155,10 @@ before_script:
             -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" \
             config.php;
         fi
+        if [ "$DB" = 'pgsql' ];
+        then
+            docker exec db bash -c "psql -U moodle -c \"CREATE DATABASE moodle WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;\" initial"
+        fi
       fi
 
     - >
@@ -173,6 +172,7 @@ before_script:
           -e "/require_once/i \\\$CFG->phpunit_prefix = 'p_';" \
           config.php ;
 
+        cat config.php
         # Initialise PHPUnit for Moodle.
         docker exec -it runner bash -c 'mkdir /srv/moodledata/phpunit'
         docker exec -it runner bash -c 'php admin/tool/phpunit/cli/init.php'
