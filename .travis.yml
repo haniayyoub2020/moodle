@@ -58,7 +58,7 @@ install:
                 --detach \
                 --name db \
                 --network testing \
-                -e MYSQL_ROOT_PASSWORD="moodle" \
+                -e MYSQL_ROOT_PASSWORD="" \
                 -e MYSQL_USER="moodle" \
                 -e MYSQL_PASSWORD="moodle" \
                 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
@@ -71,6 +71,11 @@ install:
                 --innodb_large_prefix=On \
                 --key_buffer_size=768M \
                 --table_open_cache=12000
+
+          sleep 2
+
+          docker exec db bash -c "mysql -e 'CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'" ;
+
         fi
     - >
         if [ "$DB" = 'pgsql' ];
@@ -101,7 +106,7 @@ install:
             sleep 10 ;
 
             # Create dbs.
-            docker exec db psql -U postgres -c "CREATE DATABASE travis_ci_test WITH OWNER postgres ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
+            docker exec db psql -U moodle -c "CREATE DATABASE travis_ci_test WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
         fi
     - >
         if [ "$TASK" = 'PHPUNIT' ];
@@ -156,8 +161,6 @@ before_script:
             -e "s%= 'pgsql'%= 'mysqli'%" \
             -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" \
             config.php;
-
-          docker exec db bash -c "mysql -e 'CREATE DATABASE travis_ci_test DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'" ;
         fi
       fi
 
