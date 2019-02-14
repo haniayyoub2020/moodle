@@ -112,6 +112,7 @@ install:
               --name runner \
               --network testing \
               -v "${HOME}/.composer:/var/www/.composer:rw" \
+              -v `pwd`:/var/www/html:rw \
               --tmpfs /srv/moodledata \
               "moodlehq/moodle-php-apache:${PHP}"
 
