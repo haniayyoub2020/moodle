@@ -114,7 +114,7 @@ install:
     - >
         if [ "$TASK" = 'GRUNT' ];
         then
-            docker pull node/8-slim;
+            docker pull node:8-slim;
         fi
 
 before_script:
@@ -187,7 +187,7 @@ before_script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        docker run -v "${HOME}/.npm":/root/.npm node/8-slim npm install --no-spin;
+        docker run -v "${HOME}/.npm":/root/.npm node:8-slim npm install --no-spin;
       fi
 
     ########################################################################
@@ -259,7 +259,7 @@ script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        docker run -v "${HOME}/.npm":/root/.npm node/8-slim bash -c 'npm install --no-spin -g grunt && grunt';
+        docker run -v "${HOME}/.npm":/root/.npm node:8-slim bash -c 'npm install --no-spin -g grunt && grunt';
         # Add all files to the git index and then run diff --cached to see all changes.
         # This ensures that we get the status of all files, including new files.
         # We ignore npm-shrinkwrap.json to make the tasks immune to npm changes.
