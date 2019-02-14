@@ -150,7 +150,7 @@ before_script:
         if [ "$DB" = 'mysqli' ];
         then
           docker exec db bash -c "mysql -e 'CREATE DATABASE moodle DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'" ;
-          docker exec db bash -c "mysql -e 'GRANT ALL ON moodle.* TO 'moodle'@'%' WITH GRANT OPTION'" ;
+          docker exec db bash -c "mysql -e \"GRANT ALL ON moodle.* TO 'moodle'@'%' \"" ;
 
           # MySQL-specific setup.
           sed -i \
