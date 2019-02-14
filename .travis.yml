@@ -273,6 +273,12 @@ script:
         # Perform the upgrade
         php admin/cli/upgrade.php --non-interactive --allow-unstable ;
 
+        if [[ $? -ne 0 ]]
+        then
+          echo "Upgrade failed"
+          exit 1
+        fi
+
         # The local_ci repository can be used to check upgrade savepoints.
         git clone https://github.com/moodlehq/moodle-local_ci.git local/ci ;
 
