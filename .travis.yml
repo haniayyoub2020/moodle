@@ -58,9 +58,9 @@ install:
                 --detach \
                 --name db \
                 --network testing \
-                -e MYSQL_ROOT_PASSWORD="" \
-                -e MYSQL_USER="travis" \
-                -e MYSQL_PASSWORD="" \
+                -e MYSQL_ROOT_PASSWORD="moodle" \
+                -e MYSQL_USER="moodle" \
+                -e MYSQL_PASSWORD="moodle" \
                 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
                 --tmpfs /var/lib/mysql:rw \
                 mysql:5\
@@ -137,9 +137,9 @@ before_script:
 
         # The database name and password.
         sed -i \
-          -e "s%= 'moodle'%= 'travis_ci_test'%" \
+          -e "s%= 'username'%= 'moodle'%" \
+          -e "s%= 'password'%= 'moodle'%" \
           -e "s%= 'localhost'%= 'db'%" \
-          -e "s%= 'password'%= ''%" \
           config.php ;
 
         # The wwwroot and dataroot.
@@ -154,7 +154,6 @@ before_script:
           # MySQL-specific setup.
           sed -i \
             -e "s%= 'pgsql'%= 'mysqli'%" \
-            -e "s%= 'username'%= 'travis'%" \
             -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" \
             config.php;
 
