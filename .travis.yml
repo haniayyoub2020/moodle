@@ -57,7 +57,7 @@ matrix:
     include:
           # Run grunt/npm install on highest version ('node' is an alias for the latest node.js version.)
         - php: 7.2
-          env: DB=none     TASK=GRUNT   NVM_VERSION='lts/carbon'
+          env: DB=none     TASK=GRUNT
 
     exclude:
         # MySQL - it's just too slow.
@@ -114,8 +114,7 @@ install:
     - >
         if [ "$TASK" = 'GRUNT' ];
         then
-            nvm install $NVM_VERSION ;
-            nvm use $NVM_VERSION ;
+            docker pull node/8-slim;
         fi
 
 before_script:
@@ -188,7 +187,6 @@ before_script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-        docker pull node/8-slim;
         docker run -v "${HOME}/.npm":/root/.npm node/8-slim npm install --no-spin;
       fi
 
