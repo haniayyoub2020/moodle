@@ -121,7 +121,7 @@ install:
     - >
         if [ "$TASK" = 'GRUNT' ];
         then
-            docker pull node:8-slim;
+            docker pull node:8-alpine;
         fi
 
 before_script:
@@ -175,7 +175,6 @@ before_script:
           -e "/require_once/i \\\$CFG->phpunit_prefix = 'p_';" \
           config.php ;
 
-        cat config.php
         # Initialise PHPUnit for Moodle.
         docker exec -it runner bash -c 'mkdir /srv/moodledata/phpunit'
         docker exec -it runner bash -c 'php admin/tool/phpunit/cli/init.php'
@@ -184,7 +183,7 @@ before_script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-          docker run -v `pwd`:/srv -w /srv -v "${HOME}/.npm":/root/.npm node:8-slim npm install --no-spin;
+          docker run -v `pwd`:/srv -w /srv -v "${HOME}/.npm":/root/.npm node:8-alpine npm install --no-spin;
       fi
 
     ########################################################################
@@ -266,7 +265,7 @@ script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
-          docker run -w /srv -v `pwd`:/srv -v "${HOME}/.npm":/root/.npm node:8-slim bash -c 'npm install --no-spin -g grunt && grunt';
+          docker run -w /srv -v `pwd`:/srv -v "${HOME}/.npm":/root/.npm node:8-alpine bash -c 'npm install --no-spin -g grunt && grunt';
           # Add all files to the git index and then run diff --cached to see all changes.
           # This ensures that we get the status of all files, including new files.
           # We ignore npm-shrinkwrap.json to make the tasks immune to npm changes.
