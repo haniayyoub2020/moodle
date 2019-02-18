@@ -236,12 +236,6 @@ before_script:
 
         # Return to the previous commit
         git checkout -;
-
-        # Perform the upgrade
-        php admin/cli/upgrade.php --non-interactive --allow-unstable ;
-
-        # The local_ci repository can be used to check upgrade savepoints.
-        git clone https://github.com/moodlehq/moodle-local_ci.git local/ci ;
       fi
 
 script:
@@ -275,6 +269,12 @@ script:
     - >
       if [ "$TASK" = 'UPGRADE' ];
       then
+        # Perform the upgrade
+        php admin/cli/upgrade.php --non-interactive --allow-unstable ;
+
+        # The local_ci repository can be used to check upgrade savepoints.
+        git clone https://github.com/moodlehq/moodle-local_ci.git local/ci ;
+
         cp local/ci/check_upgrade_savepoints/check_upgrade_savepoints.php ./check_upgrade_savepoints.php
         result=`php check_upgrade_savepoints.php`;
         # Check if there are problems
