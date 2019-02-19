@@ -1,0 +1,2 @@
+define("core_message/message_drawer_helper",["core/pubsub","core_message/message_drawer_events"],function(a,b){return{createConversationWithUser:function d(c){a.publish(b.CREATE_CONVERSATION_WITH_USER,c)},show:function c(){a.publish(b.SHOW)},showConversation:function d(c){a.publish(b.SHOW_CONVERSATION,c)},showSettings:function c(){a.publish(b.SHOW_SETTINGS)}}});
+//# sourceMappingURL=message_drawer_helper.es6.js.map

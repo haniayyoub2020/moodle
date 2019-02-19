@@ -1,0 +1,2 @@
+define("mod_lti/tool_proxy",["core/ajax","core/notification"],function(a,b){return{query:function e(c){var d=a.call([{methodname:"mod_lti_get_tool_proxies",args:c||{}}])[0];d.fail(b.exception);return d},delete:function e(c){var d=a.call([{methodname:"mod_lti_delete_tool_proxy",args:{id:c}}])[0];d.fail(b.exception);return d},create:function d(b){var c=a.call([{methodname:"mod_lti_create_tool_proxy",args:b}])[0];return c}}});
+//# sourceMappingURL=tool_proxy.es6.js.map

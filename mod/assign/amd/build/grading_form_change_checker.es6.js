@@ -1,0 +1,2 @@
+define("mod_assign/grading_form_change_checker",["jquery"],function(a){return{saveFormState:function d(b){a(b).trigger("save-form-state");var c=a(b).serialize();a(b).data("saved-form-state",c)},checkFormForChanges:function e(b){a(b).trigger("save-form-state");var c=a(b).serialize(),d=a(b).data("saved-form-state");if("undefined"==typeof d){return!1}return d!=c}}});
+//# sourceMappingURL=grading_form_change_checker.es6.js.map
