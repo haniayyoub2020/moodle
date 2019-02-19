@@ -91,6 +91,7 @@ module.exports = ({ template, types }) => {
      * @return {string} Moodle component
      */
     function getModuleNameFromFileName(searchFileName) {
+        searchFileName = fs.realpathSync(searchFileName);
         const relativeFileName = searchFileName.replace(`${cwd}/`, '');
         const [componentPath, file] = relativeFileName.split('/amd/src/');
         const fileName = file.replace('.js', '');
