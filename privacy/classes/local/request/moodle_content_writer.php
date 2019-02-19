@@ -624,8 +624,8 @@ class moodle_content_writer implements content_writer {
         $destination = ['js', 'require.min.js'];
         $this->copy_data($requirecurrentpath, $destination);
 
-        $treepath = ['lib', 'amd', 'build', 'tree.min.js'];
-        $destination = ['js', 'tree.min.js'];
+        $treepath = ['lib', 'amd', 'build', 'tree.es6.js'];
+        $destination = ['js', 'tree.es6.js'];
         $this->copy_data($treepath, $destination);
 
         // Icons to be used.

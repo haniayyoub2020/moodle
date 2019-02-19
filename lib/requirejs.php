@@ -87,17 +87,17 @@ if ($rev > 0 and $rev < (time() + 60 * 60)) {
     } else {
         $jsfiles = array();
         if ($lazyload) {
-            $jsfiles = core_requirejs::find_one_amd_module($component, $module);
+            $jsfiles = core_requirejs::find_one_module($component, $module);
         } else {
             // Here we respond to the request by returning ALL amd modules. This saves
             // round trips in production.
 
-            $jsfiles = core_requirejs::find_all_amd_modules();
+            $jsfiles = core_requirejs::find_all_modules();
         }
 
         $content = '';
-        foreach ($jsfiles as $modulename => $jsfile) {
-            $js = file_get_contents($jsfile);
+        foreach ($jsfiles as $modulename => $fileconfig) {
+            $js = file_get_contents($fileconfig->build);
             if ($js === false) {
                 error_log('Failed to load JavaScript file ' . $jsfile);
                 $js = "/* Failed to load JavaScript file {$jsfile}. */\n";
@@ -109,13 +109,15 @@ if ($rev > 0 and $rev < (time() + 60 * 60)) {
             $js = rtrim($js);
             $js .= "\n";
 
-            if (preg_match('/define\(\s*\[/', $js)) {
-                // If the JavaScript module has been defined without specifying a name then we'll
-                // add the Moodle module name now.
+            if ($fileconfig->legacy) {
+                // Inject the module name into the define.
                 $replace = 'define(\'' . $modulename . '\', ';
                 $search = 'define(';
-                // Replace only the first occurrence.
-                $js = implode($replace, explode($search, $js, 2));
+
+                if (strpos($js, $search) !== false) {
+                    // Replace only the first occurrence.
+                    $js = implode($replace, explode($search, $js, 2));
+                }
             }
 
             $content .= $js;
@@ -141,9 +143,9 @@ define('NO_UPGRADE_CHECK', true);
 require("$CFG->dirroot/lib/setup.php");
 
 if ($lazyload) {
-    $jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
+    $jsfiles = core_requirejs::find_one_module($component, $module);
 } else {
-    $jsfiles = core_requirejs::find_all_amd_modules(false);
+    $jsfiles = core_requirejs::find_all_modules();
 }
 
 // The content of the resulting file.
@@ -151,25 +153,31 @@ $result = [];
 // Sort the files to ensure consistent ordering for source map generation.
 asort($jsfiles);
 
-foreach ($jsfiles as $modulename => $jsfile) {
+foreach ($jsfiles as $modulename => $fileconfig) {
+    if ($fileconfig->legacy) {
+        $jsfile = $fileconfig->src;
+    } else {
+        $jsfile = $fileconfig->build;
+    }
     $shortfilename = str_replace($CFG->dirroot, '', $jsfile);
 
     $js = file_get_contents($jsfile);
     // Remove source map link.
     $js = preg_replace('~//# sourceMappingURL.*$~s', '', $js);
     $js = rtrim($js);
-    $search = 'define(';
 
-    if (preg_match('/define\(\s*\[/', $js)) {
-        // If the JavaScript module has been defined without specifying a name then we'll
-        // add the Moodle module name now.
+    if ($fileconfig->legacy) {
+        // Inject the module name into the define.
         $replace = 'define(\'' . $modulename . '\', ';
+        $search = 'define(';
 
-        // Replace only the first occurrence.
-        $js = implode($replace, explode($search, $js, 2));
-    } else if (strpos($js, $search) === false) {
-        debugging('JS file: ' . $shortfilename . ' cannot be loaded, or does not contain a javascript' .
-                  ' module in AMD format. "define()" not found.', DEBUG_DEVELOPER);
+        if (strpos($js, $search) !== false) {
+            // Replace only the first occurrence.
+            $js = implode($replace, explode($search, $js, 2));
+        } else {
+            debugging('JS file: ' . $shortfilename . ' cannot be loaded, or does not contain a javascript' .
+                    ' module in AMD format. "define()" not found.', DEBUG_DEVELOPER);
+        }
     }
 
     $result[] = $js;

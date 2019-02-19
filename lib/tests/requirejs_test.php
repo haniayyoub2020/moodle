@@ -43,11 +43,12 @@ class core_requirejs_testcase extends advanced_testcase {
 
         // Find a core module.
         $result = core_requirejs::find_one_amd_module('core', 'templates', false);
-        $expected = ['core/templates' => $CFG->dirroot . '/lib/amd/build/templates.min.js'];
+        $expected = ['core/templates' => $CFG->dirroot . '/lib/amd/build/templates.es6.js'];
         $this->assertEquals($expected, $result);
 
+        // Debug has no effect for core modules because source maps are used instead.
         $result = core_requirejs::find_one_amd_module('core', 'templates', true);
-        $expected = ['core/templates' => $CFG->dirroot . '/lib/amd/src/templates.js'];
+        $expected = ['core/templates' => $CFG->dirroot . '/lib/amd/build/templates.es6.js'];
         $this->assertEquals($expected, $result);
 
         // Find a subsystem module (none exist yet).
@@ -56,8 +57,9 @@ class core_requirejs_testcase extends advanced_testcase {
         $this->assertEquals($expected, $result);
 
         // Find a plugin module.
+        // Debug has no effect for core modules because source maps are used instead.
         $result = core_requirejs::find_one_amd_module('mod_assign', 'grading_panel', true);
-        $expected = ['mod_assign/grading_panel' => $CFG->dirroot . '/mod/assign/amd/src/grading_panel.js'];
+        $expected = ['mod_assign/grading_panel' => $CFG->dirroot . '/mod/assign/amd/build/grading_panel.es6.js'];
         $this->assertEquals($expected, $result);
 
         // Find all modules - no debugging.
@@ -73,7 +75,6 @@ class core_requirejs_testcase extends advanced_testcase {
             if (strpos($component, '_') === false) {
                 $this->assertEquals('core', $component);
             }
-            $this->assertNotContains('.min', $path);
         }
 
         // Find all modules - debugging.
@@ -87,8 +88,6 @@ class core_requirejs_testcase extends advanced_testcase {
             if (strpos($component, '_') === false) {
                 $this->assertEquals('core', $component);
             }
-
-            $this->assertContains('.min', $path);
         }
 
     }

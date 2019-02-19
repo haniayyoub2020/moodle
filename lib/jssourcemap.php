@@ -63,9 +63,9 @@ $lazysuffix = "-lazy.js";
 $lazyload = (strpos($module, $lazysuffix) !== false);
 
 if ($lazyload) {
-    $jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
+    $jsfiles = core_requirejs::find_one_module($component, $module, $rev);
 } else {
-    $jsfiles = core_requirejs::find_all_amd_modules(false);
+    $jsfiles = core_requirejs::find_all_modules($rev);
 }
 
 // Create the empty source map.
@@ -79,27 +79,41 @@ $line = 0;
 // Sort the files to ensure consistent ordering for source map generation.
 asort($jsfiles);
 
-foreach ($jsfiles as $modulename => $jsfile) {
-    $shortfilename = str_replace($CFG->dirroot, '', $jsfile);
-    $srcfilename = str_replace('/amd/build/', '/amd/src/', $shortfilename);
-    $srcfilename = str_replace('.min.js', '.js', $srcfilename);
+foreach ($jsfiles as $modulename => $fileconfig) {
+    // In debug mode, legacy builds use the actual src.
+    if ($fileconfig->legacy) {
+        $jsfile = $fileconfig->src;
+    } else {
+        $jsfile = $fileconfig->build;
+    }
 
-    $mapfile = $jsfile . '.map';
-    if (file_exists($mapfile)) {
+    $mapfile = "{$fileconfig->build}.map";
+    if (!$fileconfig->legacy && file_exists($mapfile)) {
+        // Only support maps for ES6 builds.
         $mapdata = file_get_contents($mapfile);
         $mapdata = json_decode($mapdata, true);
         unset($mapdata['sourcesContent']);
-        $mapdata['sources'][0] = $CFG->wwwroot . $srcfilename;
+        $mapdata['sources'][0] = $CFG->wwwroot . str_replace($CFG->dirroot, '', $fileconfig->src);
 
         $map['sections'][] = [
             'offset' => [
                 'line' => $line,
-                'column' => 0
+                'column' => 0,
             ],
-            'map' => $mapdata
+            'map' => $mapdata,
+        ];
+    } else {
+        // No sourcemap for this section.
+        // We have to provide an empty sourceap to ensure that this section is not treated as part of the previous map.
+        $map['sections'][] = [
+            'offset' => [
+                'line' => $line,
+                'column' => 0,
+            ],
         ];
     }
 
+    // Determine the length of the current JS file. This is required for the line offset.
     $js = file_get_contents($jsfile);
     // Remove source map link.
     $js = preg_replace('~//# sourceMappingURL.*$~s', '', $js);

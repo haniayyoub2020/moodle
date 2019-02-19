@@ -78,7 +78,7 @@ module.exports = function(grunt) {
      */
     var babelRename = function(destPath, srcPath) {
         destPath = srcPath.replace('src', 'build');
-        destPath = destPath.replace('.js', '.min.js');
+        destPath = destPath.replace('.js', '.es6.js');
         return destPath;
     };
 
