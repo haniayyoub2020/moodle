@@ -62,9 +62,9 @@ module.exports = ({ template, types }) => {
             }
         }
 
-        for (const [component, path] of Object.entries(components.plugintypes)) {
-            if (path) {
-                moodlePlugins[path] = component;
+        for (const [component, pluginConfig] of Object.entries(components.plugintypes)) {
+            if (pluginConfig && pluginConfig.path) {
+                moodlePlugins[pluginConfig.path] = component;
             }
         }
 

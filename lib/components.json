@@ -1,42 +1,490 @@
 {
     "plugintypes": {
-        "antivirus": "lib\/antivirus",
-        "availability": "availability\/condition",
-        "qtype": "question\/type",
-        "mod": "mod",
-        "auth": "auth",
-        "calendartype": "calendar\/type",
-        "customfield": "customfield\/field",
-        "enrol": "enrol",
-        "message": "message\/output",
-        "block": "blocks",
-        "media": "media\/player",
-        "filter": "filter",
-        "editor": "lib\/editor",
-        "format": "course\/format",
-        "dataformat": "dataformat",
-        "profilefield": "user\/profile\/field",
-        "report": "report",
-        "coursereport": "course\/report",
-        "gradeexport": "grade\/export",
-        "gradeimport": "grade\/import",
-        "gradereport": "grade\/report",
-        "gradingform": "grade\/grading\/form",
-        "mlbackend": "lib\/mlbackend",
-        "mnetservice": "mnet\/service",
-        "webservice": "webservice",
-        "repository": "repository",
-        "portfolio": "portfolio",
-        "search": "search\/engine",
-        "qbehaviour": "question\/behaviour",
-        "qformat": "question\/format",
-        "plagiarism": "plagiarism",
-        "tool": "admin\/tool",
-        "cachestore": "cache\/stores",
-        "cachelock": "cache\/locks",
-        "fileconverter": "files\/converter",
-        "theme": "theme",
-        "local": "local"
+        "antivirus": {
+            "path": "lib\/antivirus",
+            "standardplugins": [
+                "clamav"
+            ]
+        },
+        "availability": {
+            "path": "availability\/condition",
+            "standardplugins": [
+                "completion",
+                "date",
+                "grade",
+                "group",
+                "grouping",
+                "profile"
+            ]
+        },
+        "qtype": {
+            "path": "question\/type",
+            "standardplugins": [
+                "calculated",
+                "calculatedmulti",
+                "calculatedsimple",
+                "ddimageortext",
+                "ddmarker",
+                "ddwtos",
+                "description",
+                "essay",
+                "gapselect",
+                "match",
+                "missingtype",
+                "multianswer",
+                "multichoice",
+                "numerical",
+                "random",
+                "randomsamatch",
+                "shortanswer",
+                "truefalse"
+            ]
+        },
+        "mod": {
+            "path": "mod",
+            "standardplugins": [
+                "assign",
+                "assignment",
+                "book",
+                "chat",
+                "choice",
+                "data",
+                "feedback",
+                "folder",
+                "forum",
+                "glossary",
+                "imscp",
+                "label",
+                "lesson",
+                "lti",
+                "page",
+                "quiz",
+                "resource",
+                "scorm",
+                "survey",
+                "url",
+                "wiki",
+                "workshop"
+            ]
+        },
+        "auth": {
+            "path": "auth",
+            "standardplugins": [
+                "cas",
+                "db",
+                "email",
+                "ldap",
+                "lti",
+                "manual",
+                "mnet",
+                "nologin",
+                "none",
+                "oauth2",
+                "shibboleth",
+                "webservice"
+            ]
+        },
+        "calendartype": {
+            "path": "calendar\/type",
+            "standardplugins": [
+                "gregorian"
+            ]
+        },
+        "customfield": {
+            "path": "customfield\/field",
+            "standardplugins": [
+                "checkbox",
+                "date",
+                "select",
+                "text",
+                "textarea"
+            ]
+        },
+        "enrol": {
+            "path": "enrol",
+            "standardplugins": [
+                "category",
+                "cohort",
+                "database",
+                "flatfile",
+                "guest",
+                "imsenterprise",
+                "ldap",
+                "lti",
+                "manual",
+                "meta",
+                "mnet",
+                "paypal",
+                "self"
+            ]
+        },
+        "message": {
+            "path": "message\/output",
+            "standardplugins": [
+                "airnotifier",
+                "email",
+                "jabber",
+                "popup"
+            ]
+        },
+        "block": {
+            "path": "blocks",
+            "standardplugins": [
+                "activity_modules",
+                "activity_results",
+                "admin_bookmarks",
+                "badges",
+                "blog_menu",
+                "blog_recent",
+                "blog_tags",
+                "calendar_month",
+                "calendar_upcoming",
+                "comments",
+                "community",
+                "completionstatus",
+                "course_list",
+                "course_summary",
+                "feedback",
+                "globalsearch",
+                "glossary_random",
+                "html",
+                "login",
+                "lp",
+                "mentees",
+                "mnet_hosts",
+                "myoverview",
+                "myprofile",
+                "navigation",
+                "news_items",
+                "online_users",
+                "participants",
+                "private_files",
+                "quiz_results",
+                "recent_activity",
+                "recentlyaccesseditems",
+                "recentlyaccessedcourses",
+                "rss_client",
+                "search_forums",
+                "section_links",
+                "selfcompletion",
+                "settings",
+                "site_main_menu",
+                "social_activities",
+                "starredcourses",
+                "tag_flickr",
+                "tag_youtube",
+                "tags",
+                "timeline"
+            ]
+        },
+        "media": {
+            "path": "media\/player",
+            "standardplugins": [
+                "html5audio",
+                "html5video",
+                "swf",
+                "videojs",
+                "vimeo",
+                "youtube"
+            ]
+        },
+        "filter": {
+            "path": "filter",
+            "standardplugins": [
+                "activitynames",
+                "algebra",
+                "censor",
+                "emailprotect",
+                "emoticon",
+                "mathjaxloader",
+                "mediaplugin",
+                "multilang",
+                "tex",
+                "tidy",
+                "urltolink",
+                "data",
+                "glossary"
+            ]
+        },
+        "editor": {
+            "path": "lib\/editor",
+            "standardplugins": [
+                "atto",
+                "textarea",
+                "tinymce"
+            ]
+        },
+        "format": {
+            "path": "course\/format",
+            "standardplugins": [
+                "singleactivity",
+                "social",
+                "topics",
+                "weeks"
+            ]
+        },
+        "dataformat": {
+            "path": "dataformat",
+            "standardplugins": [
+                "html",
+                "csv",
+                "json",
+                "excel",
+                "ods"
+            ]
+        },
+        "profilefield": {
+            "path": "user\/profile\/field",
+            "standardplugins": [
+                "checkbox",
+                "datetime",
+                "menu",
+                "text",
+                "textarea"
+            ]
+        },
+        "report": {
+            "path": "report",
+            "standardplugins": [
+                "backups",
+                "competency",
+                "completion",
+                "configlog",
+                "courseoverview",
+                "eventlist",
+                "insights",
+                "log",
+                "loglive",
+                "outline",
+                "participation",
+                "progress",
+                "questioninstances",
+                "security",
+                "stats",
+                "performance",
+                "usersessions"
+            ]
+        },
+        "coursereport": {
+            "path": "course\/report",
+            "standardplugins": []
+        },
+        "gradeexport": {
+            "path": "grade\/export",
+            "standardplugins": [
+                "ods",
+                "txt",
+                "xls",
+                "xml"
+            ]
+        },
+        "gradeimport": {
+            "path": "grade\/import",
+            "standardplugins": [
+                "csv",
+                "direct",
+                "xml"
+            ]
+        },
+        "gradereport": {
+            "path": "grade\/report",
+            "standardplugins": [
+                "grader",
+                "history",
+                "outcomes",
+                "overview",
+                "user",
+                "singleview"
+            ]
+        },
+        "gradingform": {
+            "path": "grade\/grading\/form",
+            "standardplugins": [
+                "rubric",
+                "guide"
+            ]
+        },
+        "mlbackend": {
+            "path": "lib\/mlbackend",
+            "standardplugins": [
+                "php",
+                "python"
+            ]
+        },
+        "mnetservice": {
+            "path": "mnet\/service",
+            "standardplugins": [
+                "enrol"
+            ]
+        },
+        "webservice": {
+            "path": "webservice",
+            "standardplugins": [
+                "rest",
+                "soap",
+                "xmlrpc"
+            ]
+        },
+        "repository": {
+            "path": "repository",
+            "standardplugins": [
+                "areafiles",
+                "boxnet",
+                "coursefiles",
+                "dropbox",
+                "equella",
+                "filesystem",
+                "flickr",
+                "flickr_public",
+                "googledocs",
+                "local",
+                "merlot",
+                "nextcloud",
+                "onedrive",
+                "picasa",
+                "recent",
+                "skydrive",
+                "s3",
+                "upload",
+                "url",
+                "user",
+                "webdav",
+                "wikimedia",
+                "youtube"
+            ]
+        },
+        "portfolio": {
+            "path": "portfolio",
+            "standardplugins": [
+                "boxnet",
+                "download",
+                "flickr",
+                "googledocs",
+                "mahara",
+                "picasa"
+            ]
+        },
+        "search": {
+            "path": "search\/engine",
+            "standardplugins": [
+                "simpledb",
+                "solr"
+            ]
+        },
+        "qbehaviour": {
+            "path": "question\/behaviour",
+            "standardplugins": [
+                "adaptive",
+                "adaptivenopenalty",
+                "deferredcbm",
+                "deferredfeedback",
+                "immediatecbm",
+                "immediatefeedback",
+                "informationitem",
+                "interactive",
+                "interactivecountback",
+                "manualgraded",
+                "missing"
+            ]
+        },
+        "qformat": {
+            "path": "question\/format",
+            "standardplugins": [
+                "aiken",
+                "blackboard_six",
+                "examview",
+                "gift",
+                "missingword",
+                "multianswer",
+                "webct",
+                "xhtml",
+                "xml"
+            ]
+        },
+        "plagiarism": {
+            "path": "plagiarism",
+            "standardplugins": []
+        },
+        "tool": {
+            "path": "admin\/tool",
+            "standardplugins": [
+                "analytics",
+                "availabilityconditions",
+                "behat",
+                "capability",
+                "cohortroles",
+                "customlang",
+                "dataprivacy",
+                "dbtransfer",
+                "filetypes",
+                "generator",
+                "health",
+                "httpsreplace",
+                "innodb",
+                "installaddon",
+                "langimport",
+                "log",
+                "lp",
+                "lpimportcsv",
+                "lpmigrate",
+                "messageinbound",
+                "mobile",
+                "multilangupgrade",
+                "monitor",
+                "oauth2",
+                "phpunit",
+                "policy",
+                "profiling",
+                "recyclebin",
+                "replace",
+                "spamcleaner",
+                "task",
+                "templatelibrary",
+                "uploadcourse",
+                "uploaduser",
+                "unsuproles",
+                "usertours",
+                "xmldb"
+            ]
+        },
+        "cachestore": {
+            "path": "cache\/stores",
+            "standardplugins": [
+                "file",
+                "memcached",
+                "mongodb",
+                "session",
+                "static",
+                "apcu",
+                "redis"
+            ]
+        },
+        "cachelock": {
+            "path": "cache\/locks",
+            "standardplugins": [
+                "file"
+            ]
+        },
+        "fileconverter": {
+            "path": "files\/converter",
+            "standardplugins": [
+                "unoconv",
+                "googledrive"
+            ]
+        },
+        "theme": {
+            "path": "theme",
+            "standardplugins": [
+                "boost",
+                "bootstrapbase",
+                "clean",
+                "more"
+            ]
+        },
+        "local": {
+            "path": "local",
+            "standardplugins": []
+        }
     },
     "subsystems": {
         "access": null,

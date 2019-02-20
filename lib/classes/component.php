@@ -432,8 +432,8 @@ $cache = '.var_export($cache, true).';
         global $CFG;
 
         $types = [];
-        foreach (self::fetch_component_source('plugintypes') as $plugintype => $path) {
-            $types[$plugintype] = "{$CFG->dirroot}/{$path}";
+        foreach (self::fetch_component_source('plugintypes') as $plugintype => $plugintypeconfig) {
+            $types[$plugintype] = "{$CFG->dirroot}/{$plugintypeconfig->path}";
         }
 
         $parents = array();

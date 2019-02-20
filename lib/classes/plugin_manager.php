@@ -87,6 +87,8 @@ class core_plugin_manager {
     protected $codemanager = null;
     /** @var \core\update\api client instance to use for accessing download.moodle.org/api/ */
     protected $updateapiclient = null;
+    /** @var object JSON source of the component data */
+    protected static $componentsource = null;
 
     /**
      * Direct initiation not allowed, use the factory method {@link self::instance()}
@@ -1673,271 +1675,21 @@ class core_plugin_manager {
      * @return false|array array of standard plugins or false if the type is unknown
      */
     public static function standard_plugins_list($type) {
+        if (null === self::$componentsource) {
+            self::$componentsource = json_decode(file_get_contents(__DIR__ . '/../components.json'));
+        }
 
-        $standard_plugins = array(
-
-            'antivirus' => array(
-                'clamav'
-            ),
-
-            'atto' => array(
-                'accessibilitychecker', 'accessibilityhelper', 'align',
-                'backcolor', 'bold', 'charmap', 'clear', 'collapse', 'emoticon',
-                'equation', 'fontcolor', 'html', 'image', 'indent', 'italic',
-                'link', 'managefiles', 'media', 'noautolink', 'orderedlist',
-                'recordrtc', 'rtl', 'strike', 'subscript', 'superscript', 'table',
-                'title', 'underline', 'undo', 'unorderedlist'
-            ),
-
-            'assignment' => array(
-                'offline', 'online', 'upload', 'uploadsingle'
-            ),
-
-            'assignsubmission' => array(
-                'comments', 'file', 'onlinetext'
-            ),
-
-            'assignfeedback' => array(
-                'comments', 'file', 'offline', 'editpdf'
-            ),
-
-            'auth' => array(
-                'cas', 'db', 'email', 'ldap', 'lti', 'manual', 'mnet',
-                'nologin', 'none', 'oauth2', 'shibboleth', 'webservice'
-            ),
-
-            'availability' => array(
-                'completion', 'date', 'grade', 'group', 'grouping', 'profile'
-            ),
-
-            'block' => array(
-                'activity_modules', 'activity_results', 'admin_bookmarks', 'badges',
-                'blog_menu', 'blog_recent', 'blog_tags', 'calendar_month',
-                'calendar_upcoming', 'comments', 'community',
-                'completionstatus', 'course_list', 'course_summary',
-                'feedback', 'globalsearch', 'glossary_random', 'html',
-                'login', 'lp', 'mentees', 'mnet_hosts', 'myoverview', 'myprofile',
-                'navigation', 'news_items', 'online_users', 'participants',
-                'private_files', 'quiz_results', 'recent_activity', 'recentlyaccesseditems',
-                'recentlyaccessedcourses', 'rss_client', 'search_forums', 'section_links',
-                'selfcompletion', 'settings', 'site_main_menu',
-                'social_activities', 'starredcourses', 'tag_flickr', 'tag_youtube', 'tags', 'timeline'
-            ),
-
-            'booktool' => array(
-                'exportimscp', 'importhtml', 'print'
-            ),
-
-            'cachelock' => array(
-                'file'
-            ),
-
-            'cachestore' => array(
-                'file', 'memcached', 'mongodb', 'session', 'static', 'apcu', 'redis'
-            ),
-
-            'calendartype' => array(
-                'gregorian'
-            ),
-
-            'customfield' => array(
-                'checkbox', 'date', 'select', 'text', 'textarea'
-            ),
-
-            'coursereport' => array(
-                // Deprecated!
-            ),
-
-            'datafield' => array(
-                'checkbox', 'date', 'file', 'latlong', 'menu', 'multimenu',
-                'number', 'picture', 'radiobutton', 'text', 'textarea', 'url'
-            ),
-
-            'dataformat' => array(
-                'html', 'csv', 'json', 'excel', 'ods',
-            ),
-
-            'datapreset' => array(
-                'imagegallery'
-            ),
-
-            'fileconverter' => array(
-                'unoconv', 'googledrive'
-            ),
-
-            'editor' => array(
-                'atto', 'textarea', 'tinymce'
-            ),
-
-            'enrol' => array(
-                'category', 'cohort', 'database', 'flatfile',
-                'guest', 'imsenterprise', 'ldap', 'lti', 'manual', 'meta', 'mnet',
-                'paypal', 'self'
-            ),
-
-            'filter' => array(
-                'activitynames', 'algebra', 'censor', 'emailprotect',
-                'emoticon', 'mathjaxloader', 'mediaplugin', 'multilang', 'tex', 'tidy',
-                'urltolink', 'data', 'glossary'
-            ),
-
-            'format' => array(
-                'singleactivity', 'social', 'topics', 'weeks'
-            ),
-
-            'gradeexport' => array(
-                'ods', 'txt', 'xls', 'xml'
-            ),
-
-            'gradeimport' => array(
-                'csv', 'direct', 'xml'
-            ),
-
-            'gradereport' => array(
-                'grader', 'history', 'outcomes', 'overview', 'user', 'singleview'
-            ),
-
-            'gradingform' => array(
-                'rubric', 'guide'
-            ),
-
-            'local' => array(
-            ),
-
-            'logstore' => array(
-                'database', 'legacy', 'standard',
-            ),
-
-            'ltiservice' => array(
-                'gradebookservices', 'memberships', 'profile', 'toolproxy', 'toolsettings'
-            ),
-
-            'mlbackend' => array(
-                'php', 'python'
-            ),
-
-            'media' => array(
-                'html5audio', 'html5video', 'swf', 'videojs', 'vimeo', 'youtube'
-            ),
-
-            'message' => array(
-                'airnotifier', 'email', 'jabber', 'popup'
-            ),
-
-            'mnetservice' => array(
-                'enrol'
-            ),
-
-            'mod' => array(
-                'assign', 'assignment', 'book', 'chat', 'choice', 'data', 'feedback', 'folder',
-                'forum', 'glossary', 'imscp', 'label', 'lesson', 'lti', 'page',
-                'quiz', 'resource', 'scorm', 'survey', 'url', 'wiki', 'workshop'
-            ),
-
-            'plagiarism' => array(
-            ),
-
-            'portfolio' => array(
-                'boxnet', 'download', 'flickr', 'googledocs', 'mahara', 'picasa'
-            ),
-
-            'profilefield' => array(
-                'checkbox', 'datetime', 'menu', 'text', 'textarea'
-            ),
-
-            'qbehaviour' => array(
-                'adaptive', 'adaptivenopenalty', 'deferredcbm',
-                'deferredfeedback', 'immediatecbm', 'immediatefeedback',
-                'informationitem', 'interactive', 'interactivecountback',
-                'manualgraded', 'missing'
-            ),
-
-            'qformat' => array(
-                'aiken', 'blackboard_six', 'examview', 'gift',
-                'missingword', 'multianswer', 'webct',
-                'xhtml', 'xml'
-            ),
-
-            'qtype' => array(
-                'calculated', 'calculatedmulti', 'calculatedsimple',
-                'ddimageortext', 'ddmarker', 'ddwtos', 'description',
-                'essay', 'gapselect', 'match', 'missingtype', 'multianswer',
-                'multichoice', 'numerical', 'random', 'randomsamatch',
-                'shortanswer', 'truefalse'
-            ),
-
-            'quiz' => array(
-                'grading', 'overview', 'responses', 'statistics'
-            ),
-
-            'quizaccess' => array(
-                'delaybetweenattempts', 'ipaddress', 'numattempts', 'offlineattempts', 'openclosedate',
-                'password', 'safebrowser', 'securewindow', 'timelimit'
-            ),
-
-            'report' => array(
-                'backups', 'competency', 'completion', 'configlog', 'courseoverview', 'eventlist',
-                'insights', 'log', 'loglive', 'outline', 'participation', 'progress', 'questioninstances',
-                'security', 'stats', 'performance', 'usersessions'
-            ),
-
-            'repository' => array(
-                'areafiles', 'boxnet', 'coursefiles', 'dropbox', 'equella', 'filesystem',
-                'flickr', 'flickr_public', 'googledocs', 'local', 'merlot', 'nextcloud',
-                'onedrive', 'picasa', 'recent', 'skydrive', 's3', 'upload', 'url', 'user', 'webdav',
-                'wikimedia', 'youtube'
-            ),
-
-            'search' => array(
-                'simpledb', 'solr'
-            ),
-
-            'scormreport' => array(
-                'basic',
-                'interactions',
-                'graphs',
-                'objectives'
-            ),
-
-            'tinymce' => array(
-                'ctrlhelp', 'managefiles', 'moodleemoticon', 'moodleimage',
-                'moodlemedia', 'moodlenolink', 'pdw', 'spellchecker', 'wrap'
-            ),
-
-            'theme' => array(
-                'boost', 'bootstrapbase', 'clean', 'more'
-            ),
-
-            'tool' => array(
-                'analytics', 'availabilityconditions', 'behat', 'capability', 'cohortroles', 'customlang',
-                'dataprivacy', 'dbtransfer', 'filetypes', 'generator', 'health', 'httpsreplace', 'innodb', 'installaddon',
-                'langimport', 'log', 'lp', 'lpimportcsv', 'lpmigrate', 'messageinbound', 'mobile', 'multilangupgrade',
-                'monitor', 'oauth2', 'phpunit', 'policy', 'profiling', 'recyclebin', 'replace', 'spamcleaner', 'task',
-                'templatelibrary', 'uploadcourse', 'uploaduser', 'unsuproles', 'usertours', 'xmldb'
-            ),
-
-            'webservice' => array(
-                'rest', 'soap', 'xmlrpc'
-            ),
-
-            'workshopallocation' => array(
-                'manual', 'random', 'scheduled'
-            ),
-
-            'workshopeval' => array(
-                'best'
-            ),
-
-            'workshopform' => array(
-                'accumulative', 'comments', 'numerrors', 'rubric'
-            )
-        );
-
-        if (isset($standard_plugins[$type])) {
-            return $standard_plugins[$type];
-        } else {
+        $plugindata = self::$componentsource->plugintypes;
+        if (!isset($plugindata->$type)) {
             return false;
         }
+
+        $plugintypedata = $plugindata->$type;
+        if (!isset($plugintypedata->standardplugins)) {
+            return false;
+        }
+
+        return $plugintypedata->standardplugins;
     }
 
     /**
