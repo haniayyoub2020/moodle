@@ -1,4 +1,6 @@
 {
-    "ltisource": "mod\/lti\/source",
-    "ltiservice": "mod\/lti\/service"
+    "subplugins": {
+        "ltisource": "mod\/lti\/source",
+        "ltiservice": "mod\/lti\/service"
+    }
 }

@@ -1,3 +1,5 @@
 {
-    "tinymce": "lib\/editor\/tinymce\/plugins"
+    "subplugins": {
+        "tinymce": "lib\/editor\/tinymce\/plugins"
+    }
 }

@@ -1,4 +1,6 @@
 {
-    "datafield": "mod\/data\/field",
-    "datapreset": "mod\/data\/preset"
+    "subplugins": {
+        "datafield": "mod\/data\/field",
+        "datapreset": "mod\/data\/preset"
+    }
 }

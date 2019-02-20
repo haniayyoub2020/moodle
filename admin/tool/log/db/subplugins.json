@@ -1,3 +1,5 @@
 {
-    "logstore": "admin\/tool\/log\/store"
+    "subplugins": {
+        "logstore": "admin\/tool\/log\/store"
+    }
 }

@@ -1,3 +1,5 @@
 {
-    "assignment": "mod\/assignment\/type"
+    "subplugins": {
+        "assignment": "mod\/assignment\/type"
+    }
 }

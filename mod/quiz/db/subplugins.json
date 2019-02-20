@@ -1,4 +1,6 @@
 {
-    "quiz": "mod\/quiz\/report",
-    "quizaccess": "mod\/quiz\/accessrule"
+    "subplugins": {
+        "quiz": "mod\/quiz\/report",
+        "quizaccess": "mod\/quiz\/accessrule"
+    }
 }

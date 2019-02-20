@@ -1,3 +1,5 @@
 {
-    "scormreport": "mod\/scorm\/report"
+    "subplugins": {
+        "scormreport": "mod\/scorm\/report"
+    }
 }

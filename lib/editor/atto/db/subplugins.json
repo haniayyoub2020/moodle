@@ -1,3 +1,5 @@
 {
-    "atto": "lib\/editor\/atto\/plugins"
+    "subplugins": {
+        "atto": "lib\/editor\/atto\/plugins"
+    }
 }

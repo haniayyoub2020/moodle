@@ -15,4 +15,4 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 // TODO: Remove this compatibility layer in a follow up issue.
-$subplugins = (array) json_decode(file_get_contents(__DIR__ . "/subplugins.json"));
+$subplugins = (array) (json_decode(file_get_contents(__DIR__ . "/subplugins.json")))->subplugins;

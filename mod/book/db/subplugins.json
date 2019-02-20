@@ -1,3 +1,5 @@
 {
-    "booktool": "mod\/book\/tool"
+    "subplugins": {
+        "booktool": "mod\/book\/tool"
+    }
 }
