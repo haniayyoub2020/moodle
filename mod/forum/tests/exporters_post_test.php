@@ -28,7 +28,6 @@ use \mod_forum\local\entities\discussion as discussion_entity;
 use \mod_forum\local\entities\post as post_entity;
 use \mod_forum\local\exporters\post as post_exporter;
 use \mod_forum\local\managers\capability as capability_manager;
-use stdClass;
 
 global $CFG;
 require_once(__DIR__ . '/generator_trait.php');

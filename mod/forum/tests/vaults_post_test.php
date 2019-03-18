@@ -115,7 +115,7 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $course = $datagenerator->create_course();
         $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
 
-        $this->assertEquals([], $this->vault->get_from_discussion_ids($user, [], false));
+        $this->assertEquals([], $this->vault->get_from_discussion_ids([]));
     }
 
     /**
@@ -208,7 +208,7 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $course = $datagenerator->create_course();
         $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
 
-        $counts = $this->vault->get_reply_count_for_discussion_ids($user, [], false);
+        $counts = $this->vault->get_reply_count_for_discussion_ids([]);
         $this->assertCount(0, $counts);
     }
 
@@ -397,6 +397,6 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $course = $datagenerator->create_course();
         $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
 
-        $this->assertEquals([], $this->vault->get_latest_post_id_for_discussion_ids($user, [], false));
+        $this->assertEquals([], $this->vault->get_latest_post_id_for_discussion_ids([]));
     }
 }
