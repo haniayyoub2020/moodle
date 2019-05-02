@@ -370,13 +370,12 @@ class post extends db_table_vault {
             return [];
         }
 
-        $alias = $this->get_table_alias();
         list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
 
         [
             'where' => $privatewhere,
             'params' => $privateparams,
-        ] = $this->get_private_reply_sql($user, $canseeprivatereplies);
+        ] = $this->get_private_reply_sql($user, $canseeprivatereplies, "mp");
 
         $sql = "
             SELECT p.discussion, MAX(p.id)
@@ -384,10 +383,10 @@ class post extends db_table_vault {
               JOIN (
                 SELECT mp.discussion, MAX(mp.created) AS created
                   FROM {" . self::TABLE . "} mp
-                 WHERE mp.discussion {$insql}
+                 WHERE mp.discussion {$insql} {$privatewhere}
               GROUP BY mp.discussion
               ) lp ON lp.discussion = p.discussion AND lp.created = p.created
-             WHERE 1 = 1 {$privatewhere}
+             WHERE 1 = 1
           GROUP BY p.discussion";
 
         return $this->get_db()->get_records_sql_menu($sql, array_merge($params, $privateparams));
@@ -400,11 +399,11 @@ class post extends db_table_vault {
      * @param   bool        $canseeprivatereplies Whether this user can see all private replies or not
      * @return  array       The SQL WHERE clause, and parameters to use in the SQL.
      */
-    private function get_private_reply_sql(stdClass $user, bool $canseeprivatereplies) {
+    private function get_private_reply_sql(stdClass $user, bool $canseeprivatereplies, $posttablealias = "p") {
         $params = [];
         $privatewhere = '';
         if (!$canseeprivatereplies) {
-            $privatewhere = ' AND (p.privatereplyto = :privatereplyto OR p.userid = :privatereplyfrom OR p.privatereplyto = 0)';
+            $privatewhere = ' AND (' . $posttablealias . '.privatereplyto = :privatereplyto OR ' . $posttablealias . '.userid = :privatereplyfrom OR ' . $posttablealias . '.privatereplyto = 0)';
             $params['privatereplyto'] = $user->id;
             $params['privatereplyfrom'] = $user->id;
         }
