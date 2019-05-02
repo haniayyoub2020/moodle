@@ -26,6 +26,8 @@ namespace mod_forum\local\vaults;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core\dml\table as dml_table;
+
 /**
  * Author vault class.
  *
@@ -114,6 +116,35 @@ class author extends db_table_vault {
         $records = $db->get_records_sql($sql, array_merge([CONTEXT_USER], $params));
         return array_reduce($authorids, function($carry, $id) use ($records) {
             $carry[$id] = isset($records[$id]) ? (int) $records[$id]->id : null;
+            return $carry;
+        }, []);
+    }
+
+    /**
+     * Get the authors associated to the posts provided
+     *
+     * @param int[] $posts A list of post ids
+     * @return object[] Results indexed by author id
+     * @throws coding_exception
+     * @throws dml_exception
+     */
+    public function get_authors_for_posts_by_ids(array $posts) : array {
+        $alias = $this->get_table_alias();
+        $thistable = new dml_table(self::TABLE, $alias, $alias);
+        $posttable = new dml_table('forum_posts', 'fp', 'p_');
+
+        list($inquery, $inparams) = $this->get_db()->get_in_or_equal($posts, SQL_PARAMS_NAMED, 'pid');
+
+        $tables = $thistable->get_from_sql();
+        $tables .= ' JOIN ' . $posttable->get_from_sql() . ' ON fp.userid = ' . $alias . '.id';
+        $tables .= " WHERE (fp.id {$inquery})";
+
+        $selectsql = "SELECT DISTINCT {$alias}.* FROM " . $tables;
+
+        $records = $this->get_db()->get_records_sql($selectsql, $inparams);
+        $authors = $this->transform_db_records_to_entities($records);
+        return array_reduce($authors, function($carry, $item) {
+            $carry[$item->get_id()] = $item;
             return $carry;
         }, []);
     }

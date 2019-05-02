@@ -403,7 +403,8 @@ class post extends db_table_vault {
         $params = [];
         $privatewhere = '';
         if (!$canseeprivatereplies) {
-            $privatewhere = ' AND (' . $posttablealias . '.privatereplyto = :privatereplyto OR ' . $posttablealias . '.userid = :privatereplyfrom OR ' . $posttablealias . '.privatereplyto = 0)';
+            $privatewhere = ' AND (' . $posttablealias . '.privatereplyto = :privatereplyto OR '
+                . $posttablealias . '.userid = :privatereplyfrom OR ' . $posttablealias . '.privatereplyto = 0)';
             $params['privatereplyto'] = $user->id;
             $params['privatereplyfrom'] = $user->id;
         }

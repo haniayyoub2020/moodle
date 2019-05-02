@@ -125,9 +125,12 @@ class exported_discussion_summaries {
 
         $replycounts = $postvault->get_reply_count_for_discussion_ids($user, $discussionids, $canseeanyprivatereply);
         $latestposts = $postvault->get_latest_post_id_for_discussion_ids($user, $discussionids, $canseeanyprivatereply);
-        $postauthorids = array_unique(array_reduce($discussions, function($carry, $summary) {
+        $latestauthors = $this->get_latest_posts_authors($latestposts);
+
+        $postauthorids = array_unique(array_reduce($discussions, function($carry, $summary) use ($latestauthors){
             $firstpostauthorid = $summary->get_first_post_author()->get_id();
-            $lastpostauthorid = $summary->get_latest_post_author()->get_id();
+            $discussion = $summary->get_discussion();
+            $lastpostauthorid = $latestauthors[$discussion->get_id()]->get_id();
             return array_merge($carry, [$firstpostauthorid, $lastpostauthorid]);
         }, []));
         $postauthorcontextids = $this->get_author_context_ids($postauthorids);
@@ -151,7 +154,8 @@ class exported_discussion_summaries {
             $unreadcounts,
             $latestposts,
             $postauthorcontextids,
-            $favourites
+            $favourites,
+            $latestauthors
         );
 
         $exportedposts = (array) $summaryexporter->export($this->renderer);
@@ -199,6 +203,24 @@ class exported_discussion_summaries {
         }
 
         return $ids;
+    }
+
+    /**
+     * Returns a mapped array of discussionid to the authors of the latest post
+     *
+     * @param array $latestposts Mapped array of discussion to latest posts.
+     * @return array Array of authors mapped to the discussion
+     */
+    private function get_latest_posts_authors($latestposts) {
+        $posts = $this->vaultfactory->get_post_vault()->get_from_ids($latestposts);
+        $authors = $this->vaultfactory->get_author_vault()->get_authors_for_posts_by_ids($latestposts);
+
+        $mappedauthors = array_reduce($posts, function($carry, $item) use ($authors) {
+            $carry[$item->get_discussion_id()] = $authors[$item->get_author_id()];
+
+            return $carry;
+        }, []);
+        return $mappedauthors;
     }
 
     /**
