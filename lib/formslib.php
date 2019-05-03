@@ -2283,6 +2283,7 @@ class MoodleQuickForm extends HTML_QuickForm_DHTMLRulesTableless {
         $js = '
 
 require(["core/event", "jquery"], function(Event, $) {
+    Y.use(\'moodle-core-event\', function() {
 
     function qf_errorHandler(element, _qfMsg, escapedName) {
         var event = $.Event(Event.Events.FORM_FIELD_VALIDATION);
@@ -2401,11 +2402,9 @@ require(["core/event", "jquery"], function(Event, $) {
       ret = validate_' . $this->_formName . '_' . $escapedElementName.'(frm.elements[\''.$elementName.'\'], \''.$escapedElementName.'\') && ret;
       if (!ret && !first_focus) {
         first_focus = true;
-        Y.use(\'moodle-core-event\', function() {
-            Y.Global.fire(M.core.globalEvents.FORM_ERROR, {formid: \'' . $this->_attributes['id'] . '\',
-                                                           elementid: \'id_error_' . $escapedElementName . '\'});
-            document.getElementById(\'id_error_' . $escapedElementName . '\').focus();
-        });
+        Y.Global.fire(M.core.globalEvents.FORM_ERROR, {formid: \'' . $this->_attributes['id'] . '\',
+                                                        elementid: \'id_error_' . $escapedElementName . '\'});
+        document.getElementById(\'id_error_' . $escapedElementName . '\').focus();
       }
 ';
 
@@ -2459,6 +2458,7 @@ require(["core/event", "jquery"], function(Event, $) {
         }
     });
 
+});
 });
 ';
 
