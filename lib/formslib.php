@@ -2359,6 +2359,7 @@ require(["core/event", "jquery"], function(Event, $) {
                     return sprintf("_%2x", ord($matches[0]));
                 },
                 $elementName);
+            $elementGroupName = preg_replace('/\[.*$/', '', $elementName);
             $valFunc = 'validate_' . $this->_formName . '_' . $escapedElementName . '(ev.target, \''.$escapedElementName.'\')';
 
             if (!is_array($element)) {
@@ -2402,9 +2403,19 @@ require(["core/event", "jquery"], function(Event, $) {
       ret = validate_' . $this->_formName . '_' . $escapedElementName.'(frm.elements[\''.$elementName.'\'], \''.$escapedElementName.'\') && ret;
       if (!ret && !first_focus) {
         first_focus = true;
-        Y.Global.fire(M.core.globalEvents.FORM_ERROR, {formid: \'' . $this->_attributes['id'] . '\',
-                                                        elementid: \'id_error_' . $escapedElementName . '\'});
-        document.getElementById(\'id_error_' . $escapedElementName . '\').focus();
+        var errorElementId = \'id_error_' . $elementName . '\';
+        var errorElement = document.getElementById(errorElementId);
+        if (!errorElement) {
+            errorElementId = \'id_error_' . $elementGroupName . '\';
+            errorElement = document.getElementById(errorElementId);
+        }
+
+
+        if (errorElement) {
+            Y.Global.fire(M.core.globalEvents.FORM_ERROR, {formid: \'' . $this->_attributes['id'] . '\',
+                                                        elementid: errorElementId});
+            errorElement.focus();
+        }
       }
 ';
 
