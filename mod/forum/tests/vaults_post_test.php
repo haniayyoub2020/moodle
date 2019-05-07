@@ -743,8 +743,9 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $this->resetAfterTest();
 
         $datagenerator = $this->getDataGenerator();
-        $user = $datagenerator->create_user();
         $course = $datagenerator->create_course();
+        [$teacher, $otherteacher] = $this->helper_create_users($course, 2, 'teacher');
+        [$user, $user2] = $this->helper_create_users($course, 2, 'student');
         $forum = $datagenerator->create_module('forum', ['course' => $course->id]);
         [$discussion1, $post1] = $this->helper_post_to_forum($forum, $user);
         $post2 = $this->helper_reply_to_post($post1, $user);
@@ -753,6 +754,9 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         [$discussion2, $post5] = $this->helper_post_to_forum($forum, $user);
         $post6 = $this->helper_reply_to_post($post5, $user);
         [$discussion3, $post7] = $this->helper_post_to_forum($forum, $user);
+        $post8 = $this->helper_post_to_discussion($forum, $discussion3, $teacher, [
+            'privatereplyto' => $user->id,
+        ]);
 
         $ids = $this->vault->get_latest_post_id_for_discussion_ids($user, [$discussion1->id], false);
         $this->assertCount(1, $ids);
@@ -769,6 +773,13 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $this->assertCount(3, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]);
         $this->assertEquals($post6->id, $ids[$discussion2->id]);
+        $this->assertEquals($post8->id, $ids[$discussion3->id]);
+
+        $ids = $this->vault->get_latest_post_id_for_discussion_ids($user2,
+            [$discussion1->id, $discussion2->id, $discussion3->id], false);
+        $this->assertCount(3, $ids);
+        $this->assertEquals($post4->id, $ids[$discussion1->id]);
+        $this->assertEquals($post6->id, $ids[$discussion2->id]);
         $this->assertEquals($post7->id, $ids[$discussion3->id]);
 
         $ids = $this->vault->get_latest_post_id_for_discussion_ids($user, [
@@ -780,7 +791,7 @@ class mod_forum_vaults_post_testcase extends advanced_testcase {
         $this->assertCount(3, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]);
         $this->assertEquals($post6->id, $ids[$discussion2->id]);
-        $this->assertEquals($post7->id, $ids[$discussion3->id]);
+        $this->assertEquals($post8->id, $ids[$discussion3->id]);
     }
 
     /**
