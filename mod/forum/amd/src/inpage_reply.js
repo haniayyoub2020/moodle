@@ -86,6 +86,7 @@ define([
             var postid = form.elements.reply.value;
             var subject = form.elements.subject.value;
             var currentRoot = submitButton.parents(Selectors.post.forumContent);
+            var isprivatereply = form.elements.privatereply != undefined ? form.elements.privatereply.checked : false;
             var mode = parseInt(root.find(Selectors.post.modeSelect).get(0).value);
             // Value comes through as either "0" or "1" so loosely compare it to get the
             // boolean value.
@@ -96,7 +97,7 @@ define([
                 showSubmitButtonLoadingIcon(submitButton);
                 allButtons.prop('disabled', true);
 
-                Repository.addDiscussionPost(postid, subject, message)
+                Repository.addDiscussionPost(postid, subject, message, isprivatereply)
                     .then(function(context) {
                         var message = context.messages.reduce(function(carry, message) {
                             if (message.type == 'success') {
