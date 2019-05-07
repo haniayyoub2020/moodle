@@ -67,16 +67,6 @@ abstract class db_table_vault {
      */
     abstract protected function get_table_alias() : string;
 
-    /**
-     * Build the SQL to be used in get_records_sql.
-     *
-     * @param string|null $wheresql Where conditions for the SQL
-     * @param string|null $sortsql Order by conditions for the SQL
-     * @param object|null $user The user object
-     * @return string
-     */
-    abstract protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null,
-        ?int $userid = null) : string;
 
     /**
      * Convert the DB records into entities. The list of records will have been

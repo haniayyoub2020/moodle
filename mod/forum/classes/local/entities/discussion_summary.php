@@ -43,6 +43,8 @@ class discussion_summary {
     private $firstpostauthor;
     /** @var post_entity $firstpost First post in the discussion */
     private $firstpost;
+    /** @var post_entity $lastpost Last post in the discussion */
+    private $lastpost;
     /** @var author_entity $latestpostauthor Author of the last post in the discussion */
     private $latestpostauthor;
 
@@ -57,12 +59,14 @@ class discussion_summary {
     public function __construct(
         discussion_entity $discussion,
         post_entity $firstpost,
+        post_entity $lastpost,
         author_entity $firstpostauthor,
         author_entity $latestpostauthor
     ) {
         $this->discussion = $discussion;
         $this->firstpostauthor = $firstpostauthor;
         $this->firstpost = $firstpost;
+        $this->lastpost = $lastpost;
         $this->latestpostauthor = $latestpostauthor;
     }
 
@@ -100,5 +104,14 @@ class discussion_summary {
      */
     public function get_first_post() : post_entity {
         return $this->firstpost;
+    }
+
+    /**
+     * Get the post entity for the last post.
+     *
+     * @return post_entity
+     */
+    public function get_last_post() : post_entity {
+        return $this->lastpost;
     }
 }

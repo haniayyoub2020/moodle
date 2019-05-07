@@ -135,6 +135,7 @@ class discussion_summaries extends exporter {
                     $replycount,
                     $unreadcount,
                     $latestpostid,
+                    $discussion->get_last_post()->get_time_created(),
                     $this->postauthorcontextids[$discussion->get_first_post_author()->get_id()],
                     $this->postauthorcontextids[$discussion->get_latest_post_author()->get_id()],
                     $related

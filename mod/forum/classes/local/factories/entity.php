@@ -192,16 +192,19 @@ class entity {
     public function get_discussion_summary_from_stdclass(
         stdClass $discussion,
         stdClass $firstpost,
+        stdClass $lastpost,
         stdClass $firstpostauthor,
-        stdClass $latestpostauthor
+        stdClass $lastpostauthor
     ) : discussion_summary_entity {
 
         $firstpostauthorentity = $this->get_author_from_stdclass($firstpostauthor);
+        $lastpostauthorentity = $this->get_author_from_stdclass($lastpostauthor);
         return new discussion_summary_entity(
             $this->get_discussion_from_stdclass($discussion),
             $this->get_post_from_stdclass($firstpost, $firstpostauthorentity),
+            $this->get_post_from_stdclass($lastpost, $lastpostauthorentity),
             $firstpostauthorentity,
-            $this->get_author_from_stdclass($latestpostauthor)
+            $this->get_author_from_stdclass($lastpostauthor)
         );
     }
 

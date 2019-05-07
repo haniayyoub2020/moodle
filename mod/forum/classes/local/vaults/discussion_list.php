@@ -99,7 +99,7 @@ class discussion_list extends db_table_vault {
      *
      * @return string
      */
-    protected function generate_get_records_sql(string $wheresql = null, ?string $sortsql = null, ?int $userid = null) : string {
+    protected function generate_get_records_sql(string $wheresql = null, string $privatereplywhere = null, ?string $sortsql = null, ?int $userid = null) : string {
         $alias = $this->get_table_alias();
         $db = $this->get_db();
 
@@ -119,14 +119,17 @@ class discussion_list extends db_table_vault {
         // - Author
         // - Most recent editor.
         $thistable = new dml_table(self::TABLE, $alias, $alias);
-        $posttable = new dml_table('forum_posts', 'fp', 'p_');
+        $firstposttable = new dml_table('forum_posts', 'fp', 'fp_');
+        $lastposttable = new dml_table('forum_posts', 'lp', 'lp_');
         $firstauthorfields = \user_picture::fields('fa', null, self::FIRST_AUTHOR_ID_ALIAS, self::FIRST_AUTHOR_ALIAS);
         $latestuserfields = \user_picture::fields('la', null, self::LATEST_AUTHOR_ID_ALIAS, self::LATEST_AUTHOR_ALIAS);
 
         $fields = implode(', ', [
             $thistable->get_field_select(),
-            $posttable->get_field_select(),
+            $firstposttable->get_field_select(),
+            $lastposttable->get_field_select(),
             $firstauthorfields,
+            "dsource.lastpost",
             $latestuserfields,
         ]);
 
@@ -136,10 +139,34 @@ class discussion_list extends db_table_vault {
         ];
         $issortbyreplies = in_array($sortsql, $sortkeys);
 
+        $wheresql = preg_replace("/{$alias}\./", "di.", $wheresql);
+
+        if (!empty($privatereplywhere)) {
+            $privatereplywhere = "WHERE {$privatereplywhere}";
+        }
+
         $tables = $thistable->get_from_sql();
+        $tables .= <<<SQL
+
+                INNER JOIN (
+                    SELECT
+                        di.id, pi.id as lastpost
+                      FROM {forum_discussions} di
+                      JOIN (
+                        SELECT
+                            pnewest.id,
+                            pnewest.discussion, row_number() OVER (PARTITION BY discussion ORDER BY created DESC, id DESC) AS rowno
+                          FROM {forum_posts} pnewest
+                          {$privatereplywhere}
+                      ) pn ON pn.discussion = di.id AND pn.rowno = 1
+                      JOIN {forum_posts} pi ON pi.id = pn.id
+                     WHERE {$wheresql}
+                ) dsource ON dsource.id = {$alias}.id
+SQL;
         $tables .= ' JOIN {user} fa ON fa.id = ' . $alias . '.userid';
-        $tables .= ' JOIN {user} la ON la.id = ' . $alias . '.usermodified';
-        $tables .= ' JOIN ' . $posttable->get_from_sql() . ' ON fp.id = ' . $alias . '.firstpost';
+        $tables .= ' JOIN ' . $firstposttable->get_from_sql() . ' ON fp.id = ' . $alias . '.firstpost';
+        $tables .= ' JOIN ' . $lastposttable->get_from_sql() . ' ON lp.id = dsource.lastpost';
+        $tables .= ' JOIN {user} la ON la.id = lp.userid';
         $tables .= $favsql;
 
         if ($issortbyreplies) {
@@ -154,7 +181,6 @@ class discussion_list extends db_table_vault {
         }
 
         $selectsql = 'SELECT ' . $fields . ' FROM ' . $tables;
-        $selectsql .= $wheresql ? ' WHERE ' . $wheresql : '';
         $selectsql .= $sortsql ? ' ORDER BY ' . $sortsql : '';
 
         return $selectsql;
@@ -187,7 +213,8 @@ class discussion_list extends db_table_vault {
             parent::get_preprocessors(),
             [
                 'discussion' => new extract_record_preprocessor(self::TABLE, $this->get_table_alias()),
-                'firstpost' => new extract_record_preprocessor('forum_posts', 'p_'),
+                'firstpost' => new extract_record_preprocessor('forum_posts', 'fp_'),
+                'lastpost' => new extract_record_preprocessor('forum_posts', 'lp_'),
                 'firstpostauthor' => new extract_user_preprocessor(self::FIRST_AUTHOR_ID_ALIAS, self::FIRST_AUTHOR_ALIAS),
                 'latestpostauthor' => new extract_user_preprocessor(self::LATEST_AUTHOR_ID_ALIAS, self::LATEST_AUTHOR_ALIAS),
             ]
@@ -207,12 +234,14 @@ class discussion_list extends db_table_vault {
             [
                 'discussion' => $discussion,
                 'firstpost' => $firstpost,
+                'lastpost' => $lastpost,
                 'firstpostauthor' => $firstpostauthor,
                 'latestpostauthor' => $latestpostauthor,
             ] = $result;
             return $entityfactory->get_discussion_summary_from_stdclass(
                 $discussion,
                 $firstpost,
+                $lastpost,
                 $firstpostauthor,
                 $latestpostauthor
             );
@@ -308,7 +337,7 @@ class discussion_list extends db_table_vault {
         $params = [];
         if (!$includehiddendiscussions) {
             $now = time();
-            $wheresql = " AND ((d.timestart <= :timestart AND (d.timeend = 0 OR d.timeend > :timeend))";
+            $wheresql = "((d.timestart <= :timestart AND (d.timeend = 0 OR d.timeend > :timeend))";
             $params['timestart'] = $now;
             $params['timeend'] = $now;
             if (null !== $includepostsforuser) {
@@ -345,19 +374,30 @@ class discussion_list extends db_table_vault {
         int $offset
     ) {
         $alias = $this->get_table_alias();
-        $wheresql = "{$alias}.forum = :forumid";
+        $wheresql = ["{$alias}.forum = :forumid"];
         [
             'wheresql' => $hiddensql,
             'params' => $hiddenparams
         ] = $this->get_hidden_post_sql($includehiddendiscussions, $includepostsforuser);
-        $wheresql .= $hiddensql;
+        $wheresql[] = $hiddensql;
 
         $params = array_merge($hiddenparams, [
             'forumid' => $forumid,
         ]);
 
+
+        $userid = $includepostsforuser;
+        $canseeprivatereplies = false;
+        [
+            'where' => $privatewhere,
+            'params' => $privateparams,
+        ] = $this->get_private_reply_sql($userid, $canseeprivatereplies, 'pnewest');
+        $params = array_merge($params, $privateparams);
+
+        $wheresql = implode(' AND ', $wheresql);
+
         $includefavourites = $includepostsforuser ? true : false;
-        $sql = $this->generate_get_records_sql($wheresql, $this->get_sort_order($sortorder, $includefavourites),
+        $sql = $this->generate_get_records_sql($wheresql, $privatewhere, $this->get_sort_order($sortorder, $includefavourites),
             $includepostsforuser);
         $records = $this->get_db()->get_records_sql($sql, $params, $offset, $limit);
 
@@ -444,6 +484,7 @@ class discussion_list extends db_table_vault {
             'forumid' => $forumid,
         ]);
 
+        return 1;
         return $this->get_db()->count_records_sql($this->generate_count_records_sql($wheresql), $params);
     }
 
@@ -503,5 +544,28 @@ class discussion_list extends db_table_vault {
             $this->get_favourite_alias(), "$alias.id");
 
         return [$favsql, $favparams];
+    }
+
+    /**
+     * Get the SQL where and additional parameters to use to restrict posts to private reply posts.
+     *
+     * @param   int         $userid The user to fetch counts for
+     * @param   bool        $canseeprivatereplies Whether this user can see all private replies or not
+     * @return  array       The SQL WHERE clause, and parameters to use in the SQL.
+     */
+    private function get_private_reply_sql(int $userid, bool $canseeprivatereplies, $posttablealias = "pi") {
+        $params = [];
+        $privatewhere = '';
+        if (!$canseeprivatereplies) {
+            $privatewhere = '(' . $posttablealias . '.privatereplyto = :privatereplyto OR '
+                . $posttablealias . '.userid = :privatereplyfrom OR ' . $posttablealias . '.privatereplyto = 0)';
+            $params['privatereplyto'] = $userid;
+            $params['privatereplyfrom'] = $userid;
+        }
+
+        return [
+            'where' => $privatewhere,
+            'params' => $params,
+        ];
     }
 }

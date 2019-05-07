@@ -81,6 +81,7 @@ class discussion_summary extends exporter {
         int $replycount,
         int $unreadcount,
         int $latestpostid,
+        int $latestposttime,
         ?int $firstpostauthorcontextid,
         ?int $latestpostauthorcontextid,
         array $related = []
@@ -91,6 +92,7 @@ class discussion_summary extends exporter {
         $this->replycount = $replycount;
         $this->unreadcount = $unreadcount;
         $this->latestpostid = $latestpostid;
+        $this->latestposttime = $latestposttime;
         $this->firstpostauthorcontextid = $firstpostauthorcontextid;
         $this->latestpostauthorcontextid = $latestpostauthorcontextid;
         return parent::__construct([], $related);
@@ -116,6 +118,7 @@ class discussion_summary extends exporter {
                 'type' => author::read_properties_definition(),
             ],
             'latestpostid' => ['type' => PARAM_INT],
+            'latestposttime' => ['type' => PARAM_INT],
         ];
     }
 
@@ -174,6 +177,7 @@ class discussion_summary extends exporter {
             'firstpostauthor' => $firstpostauthor->export($output),
             'latestpostauthor' => $latestpostauthor->export($output),
             'latestpostid' => $this->latestpostid,
+            'latestposttime' => $this->latestposttime,
         ];
     }
 
