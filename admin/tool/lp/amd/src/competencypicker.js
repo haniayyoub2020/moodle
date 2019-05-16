@@ -31,8 +31,9 @@ define(['jquery',
         'core/templates',
         'tool_lp/dialogue',
         'core/str',
-        'tool_lp/tree'],
-        function($, Notification, Ajax, Templates, Dialogue, Str, Tree) {
+        'tool_lp/tree',
+        'core/pending'
+    ], function($, Notification, Ajax, Templates, Dialogue, Str, Tree, Pending) {
 
     /**
      * Competency picker class.
@@ -87,8 +88,9 @@ define(['jquery',
      * Hook to executed after the view is rendered.
      *
      * @method _afterRender
+     * @param {Promise} pendingPromise  Pending Promise
      */
-    Picker.prototype._afterRender = function() {
+    Picker.prototype._afterRender = function(pendingPromise) {
         var self = this;
 
         // Initialise the tree.
@@ -182,6 +184,7 @@ define(['jquery',
             }
         });
 
+        pendingPromise.resolve();
     };
 
     /**
@@ -203,12 +206,14 @@ define(['jquery',
      */
     Picker.prototype.display = function() {
         var self = this;
+        var pendingPromise = new Pending();
+
         return $.when(Str.get_string('competencypicker', 'tool_lp'), self._render())
         .then(function(title, render) {
             self._popup = new Dialogue(
                 title,
                 render[0],
-                self._afterRender.bind(self)
+                self._afterRender.bind(self, pendingPromise)
             );
             return;
         }).catch(Notification.exception);
@@ -385,9 +390,11 @@ define(['jquery',
      */
     Picker.prototype._refresh = function() {
         var self = this;
+        var pendingPromise = new Pending();
+
         return self._render().then(function(html) {
             self._find('[data-region="competencylinktree"]').replaceWith(html);
-            self._afterRender();
+            self._afterRender(self, pendingPromise);
             return;
         });
     };

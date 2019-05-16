@@ -431,12 +431,14 @@ define(['jquery',
 
                 promises[calls.length - 1].then(function(context) {
                     return templates.render('tool_lp/related_competencies', context);
-                }).then(function(html, js) {
-                    $('[data-region="relatedcompetencies"]').replaceWith(html);
-                    templates.runTemplateJS(js);
-                    updatedRelatedCompetencies();
-                    return;
-                }).catch(notification.exception);
+                })
+                .then(function(html, js) {
+                    return templates.replaceNode($('[data-region="relatedcompetencies"]'), html, js);
+                })
+                .then(function() {
+                    return updatedRelatedCompetencies();
+                })
+                .catch(notification.exception);
             });
         }
 

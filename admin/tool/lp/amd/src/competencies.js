@@ -27,8 +27,9 @@ define(['jquery',
         'core/templates',
         'core/str',
         'tool_lp/competencypicker',
-        'tool_lp/dragdrop-reorder'],
-       function($, notification, ajax, templates, str, Picker, dragdrop) {
+        'tool_lp/dragdrop-reorder',
+        'core/pending'
+    ], function($, notification, ajax, templates, str, Picker, dragdrop, Pending) {
 
     /**
      * Constructor
@@ -181,13 +182,19 @@ define(['jquery',
                     pagerender = 'tool_lp/plan_page';
                     pageregion = 'plan-page';
                 }
-                ajax.call(requests)[requests.length - 1].then(function(context) {
+
+                var pendingPromise = new Pending();
+                ajax.call(requests)[requests.length - 1]
+                .then(function(context) {
                     return templates.render(pagerender, context);
-                }).then(function(html, js) {
-                    $('[data-region="' + pageregion + '"]').replaceWith(html);
-                    templates.runTemplateJS(js);
-                    return;
-                }).catch(notification.exception);
+                })
+                .then(function(html, js) {
+                    return templates.replaceNode($('[data-region="' + pageregion + '"]'), html, js);
+                })
+                .then(function() {
+                    return pendingPromise.resolve();
+                })
+                .catch(notification.exception);
             });
         }
 
