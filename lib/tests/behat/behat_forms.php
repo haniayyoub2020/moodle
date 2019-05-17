@@ -78,9 +78,8 @@ class behat_forms extends behat_base {
      * @param TableNode $data
      */
     public function i_set_the_following_fields_to_these_values(TableNode $data) {
-
         // Expand all fields in case we have.
-        $this->expand_all_fields();
+        $this->execute('behat_forms::i_expand_all_fieldsets');
 
         $datahash = $data->getRowsHash();
 
@@ -88,14 +87,6 @@ class behat_forms extends behat_base {
         foreach ($datahash as $locator => $value) {
             $this->set_field_value($locator, $value);
         }
-    }
-
-    /**
-     * Expands all moodleform's fields, including collapsed fieldsets and advanced fields if they are present.
-     * @Given /^I expand all fieldsets$/
-     */
-    public function i_expand_all_fieldsets() {
-        $this->expand_all_fields();
     }
 
     /**
@@ -108,64 +99,54 @@ class behat_forms extends behat_base {
      * @return void
      */
     protected function expand_all_fields() {
+        debugging('Function expand_all_fields() has been deprecated.');
+        $this->execute('behat_forms::i_expand_all_fieldsets');
+    }
+
+    /**
+     * Expands all moodleform's fields, including collapsed fieldsets and advanced fields if they are present.
+     * @Given /^I expand all fieldsets$/
+     */
+    public function i_expand_all_fieldsets() {
         // Expand only if JS mode, else not needed.
         if (!$this->running_javascript()) {
             return;
         }
 
-        // We already know that we waited for the DOM and the JS to be loaded, even the editor
-        // so, we will use the reduced timeout as it is a common task and we should save time.
+        // Expand all fieldsets link - which will only be there if there is more than one collapsible section.
+        $expandallxpath = "//div[@class='collapsible-actions']" .
+            "//a[contains(concat(' ', @class, ' '), ' collapseexpand ')]" .
+            "[not(contains(concat(' ', @class, ' '), ' collapse-all '))]";
+        // Else, look for the first expand fieldset link.
+        $expandonlysection = "//legend[@class='ftoggler']" .
+                "//a[contains(concat(' ', @class, ' '), ' fheader ') and @aria-expanded = 'false']";
+
         try {
-
-            // Expand all fieldsets link - which will only be there if there is more than one collapsible section.
-            $expandallxpath = "//div[@class='collapsible-actions']" .
-                "//a[contains(concat(' ', @class, ' '), ' collapseexpand ')]" .
-                "[not(contains(concat(' ', @class, ' '), ' collapse-all '))]";
-            // Else, look for the first expand fieldset link.
-            $expandonlysection = "//legend[@class='ftoggler']" .
-                    "//a[contains(concat(' ', @class, ' '), ' fheader ') and @aria-expanded = 'false']";
-
             $collapseexpandlink = $this->find('xpath', $expandallxpath . '|' . $expandonlysection,
                     false, false, behat_base::get_reduced_timeout());
             $collapseexpandlink->click();
-
         } catch (ElementNotFoundException $e) {
             // The behat_base::find() method throws an exception if there are no elements,
             // we should not fail a test because of this. We continue if there are not expandable fields.
         }
 
         // Different try & catch as we can have expanded fieldsets with advanced fields on them.
+        // Expand all fields xpath.
+        $showmorexpath = "//a[normalize-space(.)='" . get_string('showmore', 'form') . "']" .
+            "[contains(concat(' ', normalize-space(@class), ' '), ' moreless-toggler')]";
+
         try {
+            $showmores = $this->getSession()->getPage()->findAll('xpath', $showmorexpath, false, false, 0.1);
 
-            // Expand all fields xpath.
-            $showmorexpath = "//a[normalize-space(.)='" . get_string('showmore', 'form') . "']" .
-                "[contains(concat(' ', normalize-space(@class), ' '), ' moreless-toggler')]";
-
-            // We don't wait here as we already waited when getting the expand fieldsets links.
-            if (!$showmores = $this->getSession()->getPage()->findAll('xpath', $showmorexpath)) {
-                return;
+            // Reverse the list. Where multiple 'Show more...' links exist,
+            // the act of expanding one will change the index.
+            foreach (array_reverse($showmores) as $showmore) {
+                $showmore->click();
             }
-
-            if ($this->getSession()->getDriver() instanceof \DMore\ChromeDriver\ChromeDriver) {
-                // Chrome Driver produces unique xpaths for each element.
-                foreach ($showmores as $showmore) {
-                    $showmore->click();
-                }
-            } else {
-                // Funny thing about this, with findAll() we specify a pattern and each element matching the pattern
-                // is added to the array with of xpaths with a [0], [1]... sufix, but when we click on an element it
-                // does not matches the specified xpath anymore (now is a "Show less..." link) so [1] becomes [0],
-                // that's why we always click on the first XPath match, will be always the next one.
-                $iterations = count($showmores);
-                for ($i = 0; $i < $iterations; $i++) {
-                    $showmores[0]->click();
-                }
-            }
-
         } catch (ElementNotFoundException $e) {
-            // We continue with the test.
+            // The behat_base::find() method throws an exception if there are no elements,
+            // we should not fail a test because of this. We continue if there are not expandable fields.
         }
-
     }
 
     /**
@@ -359,9 +340,8 @@ class behat_forms extends behat_base {
      * @param TableNode $data Pairs of | field | value |
      */
     public function the_following_fields_match_these_values(TableNode $data) {
-
         // Expand all fields in case we have.
-        $this->expand_all_fields();
+        $this->execute('behat_forms::i_expand_all_fieldsets');
 
         $datahash = $data->getRowsHash();
 
@@ -379,9 +359,8 @@ class behat_forms extends behat_base {
      * @param TableNode $data Pairs of | field | value |
      */
     public function the_following_fields_do_not_match_these_values(TableNode $data) {
-
         // Expand all fields in case we have.
-        $this->expand_all_fields();
+        $this->execute('behat_forms::i_expand_all_fieldsets');
 
         $datahash = $data->getRowsHash();
 
