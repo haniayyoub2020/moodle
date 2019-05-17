@@ -784,8 +784,8 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
                 }
             }());'));
 
-        $sleepperiod = 10000;
-        $maxrepeats = (int) (self::get_extended_timeout() / ($sleepperiod / 10000) * 100);
+        $sleepperiod = 5000;
+        $maxrepeats = (int) (self::get_extended_timeout() / ($sleepperiod * 2 / 10000) * 100);
         for ($i = 0; $i < $maxrepeats; $i++) {
             // Sleep before checking.
             // It can be possibe to hit the browser between clicking, and the click handler responding.
@@ -810,6 +810,8 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             if ($pending === '') {
                 return true;
             }
+
+            usleep($sleepperiod);
         }
 
         // Timeout waiting for JS to complete. It will be caught and forwarded to behat_hooks::i_look_for_exceptions().
