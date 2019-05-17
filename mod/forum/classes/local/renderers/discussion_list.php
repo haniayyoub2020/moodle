@@ -160,9 +160,17 @@ class discussion_list {
         // Get all forum discussions posts.
         $discussions = get_discussions($forum, $user, $groupid, $sortorder, $pageno, $pagesize);
 
+        $capabilitymanager = $this->capabilitymanager;
+        $hasanyactions = false;
+        $hasanyactions = $hasanyactions || $capabilitymanager->can_subscribe_to_forum($user);
+        $hasanyactions = $hasanyactions || $capabilitymanager->can_favourite_discussion($user);
+        $hasanyactions = $hasanyactions || $capabilitymanager->can_pin_discussions($user);
+        $hasanyactions = $hasanyactions || $capabilitymanager->can_manage_forum($user);
+
         $forumview = [
             'forum' => (array) $forumexporter->export($this->renderer),
             'newdiscussionhtml' => $this->get_discussion_form($user, $cm, $groupid),
+            'hasanyactions' => $hasanyactions,
             'groupchangemenu' => groups_print_activity_menu(
                 $cm,
                 $this->urlfactory->get_forum_view_url_from_forum($forum),
