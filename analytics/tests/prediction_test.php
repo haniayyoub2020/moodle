@@ -44,6 +44,8 @@ require_once(__DIR__ . '/../../course/lib.php');
  */
 class core_analytics_prediction_testcase extends advanced_testcase {
 
+    use prevent_coverage_trait;
+
     /**
      * test_static_prediction
      *
@@ -444,6 +446,9 @@ class core_analytics_prediction_testcase extends advanced_testcase {
      * @return void
      */
     public function test_ml_evaluation_configuration($modelquality, $ncourses, $expected, $predictionsprocessorclass) {
+        // Pause opcache logging for the duration of this test as opcache logging eats all available memory.
+        $this->prevent_opcache_logging();
+
         $this->resetAfterTest(true);
         $this->setAdminuser();
         set_config('enabled_stores', 'logstore_standard', 'tool_log');
@@ -491,6 +496,9 @@ class core_analytics_prediction_testcase extends advanced_testcase {
      * @return null
      */
     public function test_ml_evaluation_trained_model($predictionsprocessorclass) {
+        // Pause opcache logging for the duration of this test as opcache logging eats all available memory.
+        $this->prevent_opcache_logging();
+
         $this->resetAfterTest(true);
         $this->setAdminuser();
         set_config('enabled_stores', 'logstore_standard', 'tool_log');
