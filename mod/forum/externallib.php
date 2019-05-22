@@ -1323,6 +1323,12 @@ class mod_forum_external extends external_api {
         $post->attachments = $options['attachmentsid'];
         $post->isprivatereply = $options['private'];
         $post->deleted = 0;
+
+        $strre = get_string('re', 'forum');
+        if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
+            $post->subject = "{$strre} {$post->subject}";
+        }
+
         $fakemform = $post->attachments;
         if ($postid = forum_add_new_post($post, $fakemform)) {
 
