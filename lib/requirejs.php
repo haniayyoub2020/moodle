@@ -189,8 +189,7 @@ foreach ($jsfiles as $modulename => $jsfile) {
 }
 
 $content = implode("\n", $result);
-$hash = md5($content);
-$sourcemapurl = new \moodle_url("/lib/jssourcemap.php/{$hash}/{$slashargument}");
+$sourcemapurl = new \moodle_url("/lib/jssourcemap.php{$file}");
 $mapdataurl = '//# sourceMappingURL=' . $sourcemapurl->out();
 $content .= "\n{$mapdataurl}";
 
