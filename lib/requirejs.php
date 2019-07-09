@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$start = microtime(true);
-
 // Disable moodle specific debug messages and any errors in output,
 // comment out when debugging or better look into error log!
 define('NO_DEBUG_DISPLAY', true);
@@ -133,57 +131,62 @@ if ($rev > 0 and $rev < (time() + 60 * 60)) {
     }
 }
 
-if ($lazyload) {
-    $jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
-} else {
-    $jsfiles = core_requirejs::find_all_amd_modules(false);
+$jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
+$jsfile = reset($jsfiles);
+$etag = sha1($etag . sha1_file($jsfile));
+if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) && ($_SERVER['HTTP_IF_NONE_MATCH'] == "\"$etag\"")) {
+    error_log("Sending unmodified for {$jsfile}");
+    // We do not actually need to verify the etag value because our files
+    // never change in cache because we increment the rev parameter.
+    header('HTTP/1.1 304 Not Modified');
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Etag: "'.$etag.'"');
+    die;
 }
 
-// The content of the resulting file.
-$result = [];
-// Sort the files to ensure consistent ordering for source map generation.
-asort($jsfiles);
+$shortfilename = str_replace($CFG->dirroot, '', $jsfile);
+$mapfile = $jsfile . '.map';
 
-foreach ($jsfiles as $modulename => $jsfile) {
-    $shortfilename = str_replace($CFG->dirroot, '', $jsfile);
-    $mapfile = $jsfile . '.map';
-
-    if (file_exists($mapfile)) {
-        // We've got a a source map file so we can return the minified file here and
-        // the source map will be used by the browser to debug.
-        $js = file_get_contents($jsfile);
-        // Remove source map link from the individual file because we add back a single
-        // source map link to the whole file at the end.
-        $js = preg_replace('~//# sourceMappingURL.*$~s', '', $js);
-    } else {
-        // This file doesn't have a map file. We might be dealing with an older source file from
-        // a plugin or previous version of Moodle so we should just return the full original source
-        // like we used to.
-        $originalsource = str_replace('/amd/build/', '/amd/src/', $jsfile);
-        $originalsource = str_replace('.min.js', '.js', $originalsource);
-        $js = file_get_contents($originalsource);
-    }
-
+if (file_exists($mapfile)) {
+    // We've got a a source map file so we can return the minified file here and
+    // the source map will be used by the browser to debug.
+    $js = file_get_contents($jsfile);
+    // Remove source map link from the individual file because we add back a single
+    // source map link to the whole file at the end.
+    $js = preg_replace('~//# sourceMappingURL.*$~s', '', $js);
     $js = rtrim($js);
-
-    if (preg_match('/define\(\s*\[/', $js)) {
-        // If the JavaScript module has been defined without specifying a name then we'll
-        // add the Moodle module name now.
-        $replace = 'define(\'' . $modulename . '\', ';
-
-        // Replace only the first occurrence.
-        $js = implode($replace, explode('define(', $js, 2));
-    } else if (!preg_match('/define\s*\(/', $js)) {
-        debugging('JS file: ' . $shortfilename . ' cannot be loaded, or does not contain a javascript' .
-                  ' module in AMD format. "define()" not found.', DEBUG_DEVELOPER);
-    }
-
-    $result[] = $js;
+    $js .= "\n//# sourceMappingURL={$CFG->wwwroot}/lib/jssourcemap.php{$file}";
+} else {
+    // This file doesn't have a map file. We might be dealing with an older source file from
+    // a plugin or previous version of Moodle so we should just return the full original source
+    // like we used to.
+    $originalsource = str_replace('/amd/build/', '/amd/src/', $jsfile);
+    $originalsource = str_replace('.min.js', '.js', $originalsource);
+    $js = file_get_contents($originalsource);
 }
 
-$content = implode("\n", $result);
-$sourcemapurl = "{$CFG->wwwroot}/lib/jssourcemap.php{$file}";
-$mapdataurl = //# sourceMappingURL={$sourcemapurl}";
-$content .= "\n{$mapdataurl}";
+if (preg_match('/define\(\s*\[/', $js)) {
+    // If the JavaScript module has been defined without specifying a name then we'll
+    // add the Moodle module name now.
+    $replace = 'define(\'' . $modulename . '\', ';
 
-js_send_uncached($content, 'requirejs.php');
+    // Replace only the first occurrence.
+    $js = implode($replace, explode('define(', $js, 2));
+} else if (!preg_match('/define\s*\(/', $js)) {
+    debugging('JS file: ' . $shortfilename . ' cannot be loaded, or does not contain a javascript' .
+                ' module in AMD format. "define()" not found.', DEBUG_DEVELOPER);
+}
+
+
+// 90 days only - based on Moodle point release cadence being every 3 months.
+$lifetime = 0;
+
+header('Etag: "'.$etag.'"');
+header('Content-Disposition: inline; filename="'.$filename.'"');
+header('Accept-Ranges: none');
+header('Content-Type: application/javascript; charset=utf-8');
+if (!min_enable_zlib_compression()) {
+    header('Content-Length: ' . strlen($js));
+}
+
+echo $js;
