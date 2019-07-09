@@ -131,15 +131,6 @@ if ($rev > 0 and $rev < (time() + 60 * 60)) {
     }
 }
 
-// Ok, now we need to start normal moodle because we need access to the autoloader.
-define('ABORT_AFTER_CONFIG_CANCEL', true);
-// Session not used here.
-define('NO_MOODLE_COOKIES', true);
-// Ignore upgrade check.
-define('NO_UPGRADE_CHECK', true);
-
-require("$CFG->dirroot/lib/setup.php");
-
 if ($lazyload) {
     $jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
 } else {
@@ -189,8 +180,6 @@ foreach ($jsfiles as $modulename => $jsfile) {
 }
 
 $content = implode("\n", $result);
-$sourcemapurl = new \moodle_url("/lib/jssourcemap.php{$file}");
-$mapdataurl = '//# sourceMappingURL=' . $sourcemapurl->out();
-$content .= "\n{$mapdataurl}";
+$content .= "\n//# sourceMappingURL={$CFG->wwwroot}/lib/jssourcemap.php{$file}";
 
 js_send_uncached($content, 'requirejs.php');
