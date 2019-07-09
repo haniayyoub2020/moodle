@@ -75,13 +75,37 @@ if ($lasthash !== false && $lasthash === $hash) {
 // Some (huge) modules are better loaded lazily (when they are used). If we are requesting
 // one of these modules, only return the one module, not the combo.
 $lazysuffix = "-lazy.js";
-$lazyload = (strpos($module, $lazysuffix) !== false);
+$lazyload = (strpos($module, $lazysuffix) !== false) || $rev <= 0;
 
 if ($lazyload) {
+    // When running a lazy load, we only deal with one file so we can just return the working sourcemap.
     $jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
-} else {
-    $jsfiles = core_requirejs::find_all_amd_modules(false);
+    $jsfile = reset($jsfiles);
+
+    $shortfilename = str_replace($CFG->dirroot, '', $jsfile);
+    $srcfilename = str_replace('/amd/build/', '/amd/src/', $shortfilename);
+    $srcfilename = str_replace('.min.js', '.js', $srcfilename);
+    $fullsrcfilename = $CFG->wwwroot . $srcfilename;
+    $mapfile = $jsfile . '.map';
+
+    if (file_exists($mapfile)) {
+        $mapdata = file_get_contents($mapfile);
+        $mapdata = json_decode($mapdata, true);
+        $mapdata['sources'][0] = $fullsrcfilename;
+
+        $sourcemap = json_encode($mapdata);
+        // Remember to update the cache with our newly generated source map.
+        $cache->set($hashcachekey, $hash);
+        $cache->set($sourcemapcachekey, $sourcemap);
+        js_send_uncached($sourcemap, 'jssourcemap.php');
+    }
+    // If there is no source map file, then we will not generate one for you, sorry.
+    die;
 }
+
+// Below this line is unsupported but will work in some browsers but we should probably remove it anyway.
+
+$jsfiles = core_requirejs::find_all_amd_modules(false);
 
 // Create the empty source map.
 $map = [

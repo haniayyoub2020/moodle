@@ -60,7 +60,7 @@ if (strpos('/', $module) !== false) {
 // Some (huge) modules are better loaded lazily (when they are used). If we are requesting
 // one of these modules, only return the one module, not the combo.
 $lazysuffix = "-lazy.js";
-$lazyload = (strpos($module, $lazysuffix) !== false);
+$lazyload = (strpos($module, $lazysuffix) !== false) || $rev <= 0;
 
 if ($lazyload) {
     // We are lazy loading a single file - so include the component/filename pair in the etag.
