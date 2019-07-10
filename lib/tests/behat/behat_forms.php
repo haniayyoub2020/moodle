@@ -494,6 +494,7 @@ class behat_forms extends behat_base {
         // We delegate to behat_form_field class, it will
         // guess the type properly as it is a select tag.
         $field = behat_field_manager::get_form_field_from_label($fieldlocator, $this);
+        $fieldfile = md5($fieldlocator);
         $field->set_value($value);
     }
 
