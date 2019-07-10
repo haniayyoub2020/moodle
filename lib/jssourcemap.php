@@ -39,11 +39,10 @@ if (!$slashargument) {
 
 $slashargument = ltrim($slashargument, '/');
 // Split into revision and module name.
-[$file] = explode('/', $slashargument, 1);
+[$hash, $file] = explode('/', $slashargument, 2);
 $file = '/' . min_clean_param($file, 'SAFEPATH');
 
 // Only load js files from the js modules folder from the components.
-$jsfiles = array();
 [$unused, $component, $module] = explode('/', $file, 3);
 
 // No subdirs allowed - only flat module structure please.
@@ -52,15 +51,16 @@ if (strpos('/', $module) !== false) {
 }
 
 // When running a lazy load, we only deal with one file so we can just return the working sourcemap.
-$jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
-$jsfile = reset($jsfiles);
-
+$jsfile = core_requirejs::get_amd_module($component, $module);
 $mapfile = $jsfile . '.map';
 
-if (file_exists($mapfile)) {
+if (file_exists($mapfile) && ($hash == sha1_file($jsfile))) {
     $mapdata = file_get_contents($mapfile);
     $mapdata = json_decode($mapdata, true);
 
+    // At this time we can't just use the URL to the original source because Firefox doesn't yet support it.
+    // In the future we'll just bea bel to readfile the mapfile.
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1556903
     $shortfilename = str_replace($CFG->dirroot, '', $jsfile);
     $srcfilename = str_replace('/amd/build/', '/amd/src/', $shortfilename);
     $srcfilename = str_replace('.min.js', '.js', $srcfilename);

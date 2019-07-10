@@ -33,6 +33,29 @@ defined('MOODLE_INTERNAL') || die();
 class core_requirejs {
 
     /**
+     * Fetch the path of a single AMD module.
+     *
+     * @param string $component The component determines the folder the js file should be in.
+     * @param string $jsfilename The filename for the module (with the js extension).
+     * @return string
+     */
+    public static function get_amd_module(string $component, string $jsfilename): ?string {
+        $jsfileroot = core_component::get_component_directory($component);
+        if (!$jsfileroot) {
+            return null;
+        }
+
+        $module = str_replace('.js', '', $jsfilename);
+        $filename = "{$jsfileroot}/amd/build/{$module}.min.js";
+
+        if (!file_exists($filename)) {
+            return null;
+        }
+
+        return $filename;
+    }
+
+    /**
      * Check a single module exists and return the full path to it.
      *
      * The expected location for amd modules is:
