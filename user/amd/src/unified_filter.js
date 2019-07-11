@@ -21,8 +21,8 @@
  * @copyright  2017 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'],
-        function($, Autocomplete, Str, Notification) {
+define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification', 'core/pending'],
+        function($, Autocomplete, Str, Notification, Pending) {
 
     /**
      * Selectors.
@@ -56,18 +56,21 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'],
         Str.get_strings(stringkeys).done(function(langstrings) {
             var placeholder = langstrings[0];
             var noSelectionString = langstrings[1];
-            Autocomplete.enhance(SELECTORS.UNIFIED_FILTERS, true, 'core_user/unified_filter_datasource', placeholder,
-                false, true, noSelectionString, true)
-            .then(function() {
-                M.util.js_complete('unified_filter_datasource');
 
-                return;
-            })
-            .fail(Notification.exception);
-        }).fail(Notification.exception);
+            return Autocomplete.enhance(SELECTORS.UNIFIED_FILTERS, true, 'core_user/unified_filter_datasource',
+                placeholder, false, true, noSelectionString, true);
+        })
+        .then(function() {
+            M.util.js_complete('unified_filter_datasource');
+
+            return;
+        })
+        .fail(Notification.exception);
 
         var last = $(SELECTORS.UNIFIED_FILTERS).val();
         $(SELECTORS.UNIFIED_FILTERS).on('change', function() {
+            var pendingCheck = new Pending('core/unified_filter:change');
+
             var current = $(this).val();
             var listoffilters = [];
             var textfilters = [];
@@ -79,6 +82,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'],
                     textfilters.push(catoption);
                     return true; // Text search filter.
                 }
+
 
                 var category = catandoption[0];
                 var option = catandoption[1];
@@ -111,6 +115,7 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'],
             if (last.join(',') != current.join(',')) {
                 this.form.submit();
             }
+            pendingCheck.resolve();
         });
     };
 
