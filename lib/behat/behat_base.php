@@ -767,34 +767,42 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     public static function wait_for_pending_js_in_session(Session $session) {
         // We don't use behat_base::spin() here as we don't want to end up with an exception
         // if the page & JSs don't finish loading properly.
-        for ($i = 0; $i < self::get_extended_timeout() * 10; $i++) {
-            $pending = '';
+        $jscode = trim(preg_replace('/\s+/', ' ', '
+            return (function() {
+                if (typeof M === "undefined") {
+                    if (document.readyState === "complete") {
+                        return "";
+                    } else {
+                        return "incomplete";
+                    }
+                } else if (' . self::PAGE_READY_JS . ') {
+                    return "";
+                } else if (typeof M.util !== "undefined") {
+                    return M.util.pending_js.join(":");
+                } else {
+                    return "incomplete"
+                }
+            }());'));
+
+        $sleepperiod = 5000;
+        $maxrepeats = (int) (self::get_extended_timeout() / ($sleepperiod * 2 / 10000) * 100);
+        for ($i = 0; $i < $maxrepeats; $i++) {
+            // Sleep before checking.
+            // It can be possibe to hit the browser between clicking, and the click handler responding.
+            // When this happens there is nothing in the pending queue.
+            usleep($sleepperiod);
+
+            $pending = 'checking';
             try {
-                $jscode = trim(preg_replace('/\s+/', ' ', '
-                    return (function() {
-                        if (typeof M === "undefined") {
-                            if (document.readyState === "complete") {
-                                return "";
-                            } else {
-                                return "incomplete";
-                            }
-                        } else if (' . self::PAGE_READY_JS . ') {
-                            return "";
-                        } else if (typeof M.util !== "undefined") {
-                            return M.util.pending_js.join(":");
-                        } else {
-                            return "incomplete"
-                        }
-                    }());'));
                 $pending = $session->evaluateScript($jscode);
             } catch (NoSuchWindow $nsw) {
                 // We catch an exception here, in case we just closed the window we were interacting with.
                 // No javascript is running if there is no window right?
-                $pending = '';
+                return true;
             } catch (UnknownError $e) {
                 // M is not defined when the window or the frame don't exist anymore.
                 if (strstr($e->getMessage(), 'M is not defined') != false) {
-                    $pending = '';
+                    return true;
                 }
             }
 
@@ -803,8 +811,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
                 return true;
             }
 
-            // 0.1 seconds.
-            usleep(100000);
+            usleep($sleepperiod);
         }
 
         // Timeout waiting for JS to complete. It will be caught and forwarded to behat_hooks::i_look_for_exceptions().
