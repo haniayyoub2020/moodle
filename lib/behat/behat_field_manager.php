@@ -138,6 +138,12 @@ class behat_field_manager {
      */
     public static function guess_field_type(NodeElement $fieldnode, Session $session) {
 
+        if ($type = $fieldnode->getParent()->getAttribute('data-fieldtype')) {
+            if ($type == 'tags' || $type == 'autocomplete') {
+                return 'autocomplete';
+            }
+        }
+
         // Textareas are considered text based elements.
         $tagname = strtolower($fieldnode->getTagName());
         if ($tagname == 'textarea') {
