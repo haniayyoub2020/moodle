@@ -792,13 +792,8 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             }());'));
 
         $sleepperiod = 5000;
-        $maxrepeats = (int) (self::get_extended_timeout() / ($sleepperiod * 2 / 10000) * 100);
+        $maxrepeats = (int) (self::get_extended_timeout() / ($sleepperiod / 10000) * 100);
         for ($i = 0; $i < $maxrepeats; $i++) {
-            // Sleep before checking.
-            // It can be possibe to hit the browser between clicking, and the click handler responding.
-            // When this happens there is nothing in the pending queue.
-            usleep($sleepperiod);
-
             $pending = 'checking';
             try {
                 $pending = $session->evaluateScript($jscode);
