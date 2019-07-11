@@ -765,10 +765,17 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @return  bool Whether any JS is still pending completion.
      */
     public static function wait_for_pending_js_in_session(Session $session) {
+        $pagetoken = uniqid();
+
         // We don't use behat_base::spin() here as we don't want to end up with an exception
         // if the page & JSs don't finish loading properly.
+
+        $session->executeScript("window.pageToken = '{$pagetoken}';");
         $jscode = trim(preg_replace('/\s+/', ' ', '
             return (function() {
+                if (!window.pageToken || window.pageToken !== "' . $pagetoken . '") {
+                    return "restart";
+                }
                 if (typeof M === "undefined") {
                     if (document.readyState === "complete") {
                         return "";
@@ -804,6 +811,10 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
                 if (strstr($e->getMessage(), 'M is not defined') != false) {
                     return true;
                 }
+            }
+
+            if ($pending === 'restart') {
+                return self::wait_for_pending_js_in_session($session);
             }
 
             // If there are no pending JS we stop waiting.
