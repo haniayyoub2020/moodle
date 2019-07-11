@@ -1361,6 +1361,14 @@ class page_requirements_manager {
         } else {
             $output .= html_writer::script('', $this->js_fix_url('/lib/requirejs/require.js'));
         }
+        $requirejspending = <<<EOF
+require = function() {
+    M.util.js_pending('requirejs.wrapper');
+    window.requirejs.apply(this, arguments);
+    M.util.js_complete('requirejs.wrapper');
+};
+EOF;
+        $output .= html_writer::script($requirejspending);
 
         // First include must be to a module with no dependencies, this prevents multiple requests.
         $prefix = "require(['core/first'], function() {\n";
