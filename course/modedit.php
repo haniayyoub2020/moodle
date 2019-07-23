@@ -130,14 +130,20 @@ if (!empty($type)) { //TODO: hopefully will be removed in 2.0
 $PAGE->set_pagetype($pagepath);
 $PAGE->set_pagelayout('admin');
 
-$modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
-if (file_exists($modmoodleform)) {
-    require_once($modmoodleform);
-} else {
-    print_error('noformdesc');
+$mformclassname = "mod_{$module->name}\\form\\edit_settings";
+if (!class_exists($mformclassname)) {
+    $modmoodleform = "$CFG->dirroot/mod/$module->name/mod_form.php";
+    if (file_exists($modmoodleform)) {
+        require_once($modmoodleform);
+        debugging('Deprecated');
+    }
+
+    $mformclassname = 'mod_'.$module->name.'_mod_form';
 }
 
-$mformclassname = 'mod_'.$module->name.'_mod_form';
+if (!class_exists($mformclassname)) {
+    print_error('noformdesc');
+}
 $mform = new $mformclassname($data, $cw->section, $cm, $course);
 $mform->set_data($data);
 
