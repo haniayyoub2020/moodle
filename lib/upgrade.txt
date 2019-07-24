@@ -20,6 +20,17 @@ information provided here is intended especially for developers.
     at least a single checkbox item is selected or not.
 * Final deprecation (removal) of the core/modal_confirm dialogue.
 * Upgrade scssphp to v1.0.2, This involves renaming classes from Leafo => ScssPhp as the repo has changed.
+* It is now possible to use sub-directories when creating mustache templates.
+  The standard rules for Level 2 namespaces also apply to templates.
+  The sub-directory used must be either an valid component, or placed inside a 'local' directory to ensure that it does not conflict with other components.
+
+    The following are all valid template names and locations in your plugin:
+      mod_forum/forum_post: mod/forum/templates/forum_post.mustache
+      mod_forum/local/post/user: mod/forum/templates/local/post/user.mustache
+      mod_forum/form/checkbox_toggle: mod/forum/templates/form/checkbox_toggle.mustache
+
+    The following are _invalid_ template names and locations:
+      mod_forum/post/user: mod/forum/templates/local/post/user.mustache
 
 === 3.7 ===
 
