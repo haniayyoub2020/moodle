@@ -37,5 +37,8 @@
   },
   "engines": {
     "node": ">=8.9 <9"
+  },
+  "dependencies": {
+    "jshint": "^2.10.2"
   }
 }
