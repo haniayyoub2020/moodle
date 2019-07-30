@@ -20,48 +20,63 @@
  * @copyright  2019 Mathew May <mathew.solutions>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/ajax', 'core/notification', 'mod_forum/repository', 'core/templates', 'core_grades/unified_grader'],
-    function($, ajax, notification, Repository, Templates, UnifiedGrader) {
 
-        /**
-         * UnifiedGrading class.
-         *
-         * @function returnPostsForum
-         * @param {int} forumid The id of the forum we will be using
-         * @return {mixed} Partially executed function we will use later
-         */
-        function returnPostsForum(forumid) {
-            return function(userid) {
-                Repository.getDiscussionByUserID(userid, forumid)
-                    .then(function(context) {
-                        return Templates.render('mod_forum/forum_discussion_posts', context);
-                    })
-                    .then(function(html, js) {
-                        // When this whole chain is moved to plugin then we will call the unified grader here passing html & js
-                        UnifiedGrader.UnifiedGrading();
-                        return UnifiedGrader.UnifiedGradingRenderModuleContent(html, js);
-                    })
-                    .catch(Notification.exception);
-            };
-        }
+import Notification from 'core/notification';
+import Templates from 'core/templates';
+import UnifiedGrader from './local/grading/unified_grader/index';
 
-        /**
-         * UnifiedGrading class.
-         *
-         * @class ForumGrader
-         */
-        var ForumGrader = function(id) {
-            const root = $(id);
-            const cmid = root.data('cmid');
+import Repository from './repository';
 
-            UnifiedGrader.init({
-                root: root,
-                cmid: cmid,
-                getContentForUserId: returnPostsForum(cmid),
-                initialUserId: root.data('first-userid'),
-            });
-        };
+const templateNames = {
+    contentRegion: 'mod_forum/forum_discussion_posts',
+};
 
-        return ForumGrader;
-    }
-);
+/**
+ * UnifiedGrading class.
+ *
+ * @function getPostContextFunction
+ * @param {Number} cmid The id of the forum we will be using
+ * @return {Function}
+ */
+const getPostContextFunction = (cmid) => {
+    return (userid) => {
+        Repository.getDiscussionByUserID(userid, cmid)
+            .then(function(context) {
+                return Templates.render('mod_forum/forum_discussion_posts', context);
+            })
+            .then(function(html, js) {
+                // When this whole chain is moved to plugin then we will call the unified grader here passing html & js
+                UnifiedGrader.UnifiedGrading();
+                return UnifiedGrader.UnifiedGradingRenderModuleContent(html, js);
+            })
+            .catch(Notification.exception);
+    };
+};
+
+const getContentForUserIdFunction = (cmid, templateName) => {
+    return Templates
+        .render(templateName, getPostContextFunction(cmid))
+        .catch(Notification.exception);
+};
+
+/**
+ * UnifiedGrading class.
+ *
+ * @param {String} rootElementId The ID of the root node.
+ */
+export const ForumGrader = (rootElementId) => {
+    const rootNode = document.querySelector(`#${rootElementId}`);
+    const cmid = rootNode.dataset.cmid;
+
+    UnifiedGrader.init({
+        root: rootNode,
+        cmid: cmid,
+        initialUserId: rootNode.dataset.firstUserid,
+        getContentForUserId: getContentForUserIdFunction(cmid, templateNames.contentRegion),
+
+        // Example for future.
+        // saveGradeForUser: getGradeFunction(cmid),
+    });
+};
+
+return ForumGrader;

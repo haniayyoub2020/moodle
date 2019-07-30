@@ -20,55 +20,52 @@
  * @copyright  2019 Mathew May <mathew.solutions>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/ajax', 'core/notification', 'core/templates', 'core_grades/selectors'],
-    function($, ajax, notification, Templates, GraderSelectors) {
+import Templates from 'core/templates';
+import Selectors from './selectors';
+import $ from 'core/jquery';
 
-        /**
-         * This will do the lifting for the JS hooks that are standardized.
-         *
-         * @class UnifiedGrading
-         */
-        var UnifiedGrading = function(config) {
+const registerEventListeners = (rootNode) => {
 
-            let content = config.getContentForUserId(config.initialUserId);
+    rootNode.addEventListener('click', (e) => {
+        if (e.target.matches(Selectors.toggles.userNavigation)) {
+            // TODO: Ideally kill jQuery here.
+            $(rootNode).find(Selectors.regions.user).toggle();
+        }
 
-            registerEventListeners(root);
-        };
+        if (e.target.matches(Selectors.toggles.moduleContent)) {
+            // TODO: Ideally kill jQuery here.
+            $(rootNode).find(Selectors.regions.moduleContent).toggle();
+        }
 
-        function registerEventListeners(root) {
-            root.find(Selectors.navigation.toggle).on('click', function() {
-                root.find(Selectors.navigation.user).toggle();
-            });
+        if (e.target.matches(Selectors.toggles.gradePane)) {
+            // TODO: Ideally kill jQuery here.
+            $(rootNode).find(Selectors.regions.gradePane).toggle();
+        }
 
-            $(".module-content-toggle").click(function() {
-                $(".grader-module-content").toggle();
-            });
-
-            $(".grading-panel-toggle").click(function() {
-                $(".grader-grading-panel").toggle();
-            });
-
-            $(".grading-actions-toggle").click(function() {
-                $(".grader-grading-actions").toggle();
-            });
-        };
-
-
-        /**
-         * This takes the content given to it by the module specific JS
-         * it'll then do a replace on the module content area in the grader.
-         *
-         * @class UnifiedGradingRenderModuleContent
-         * @param {String} html - HTML to prepend
-         * @param {String} js - Javascript to run after we prepend the html
-         */
-        var UnifiedGradingRenderModuleContent = function(html, js) {
-            Templates.replaceNode($(".grader-module-content-display"), html, js)
-                .catch(Notification.exception);
-        };
-
-        return {
-            UnifiedGrading: UnifiedGrading,
-            UnifiedGradingRenderModuleContent: UnifiedGradingRenderModuleContent,
-        };
+        if (e.target.matches(Selectors.navigation.gradingActions)) {
+            // TODO: Ideally kill jQuery here.
+            $(rootNode).find(Selectors.regions.gradingActions).toggle();
+        }
     });
+};
+
+const getContentPublisher = (templateName) => {
+    return (context) => {
+        return Templates
+            .render(templateName, context)
+            .then((html, js) => {
+                return Templates.replaceNode(Selectors.region.moduleContent, html, js);
+            })
+            .catch(Notification.exception);
+    };
+};
+
+export const UnifiedGrader = (rootNode, config) => {
+    const displayContentForUser = getContentPublisher(config.templateName);
+    displayContentForUser(config.initialUserId);
+
+    registerEventListeners(rootNode);
+
+    // You might instantiate the user selector here, and pass it the function displayContentForUser as the thing to call
+    // when it has selected a user.
+};
