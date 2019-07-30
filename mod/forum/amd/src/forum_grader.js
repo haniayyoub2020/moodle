@@ -44,18 +44,22 @@ define(['jquery', 'core/ajax', 'core/notification', 'mod_forum/repository', 'cor
                     .catch(Notification.exception);
             };
         }
+
         /**
          * UnifiedGrading class.
          *
          * @class ForumGrader
          */
-        var ForumGrader = function() {
+        var ForumGrader = function(id) {
+            const root = $(id);
+            const cmid = root.data('cmid');
 
-            var userid = $('[data-region="unified-grader"]').data('first-userid');
-
-            var cmid = $('[data-region="unified-grader"]').data('cmid');
-
-            return returnPostsForum(cmid)(userid);
+            UnifiedGrader.init({
+                root: root,
+                cmid: cmid,
+                getContentForUserId: returnPostsForum(cmid),
+                initialUserId: root.data('first-userid'),
+            });
         };
 
         return ForumGrader;

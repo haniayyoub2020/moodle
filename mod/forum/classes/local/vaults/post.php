@@ -26,6 +26,7 @@ namespace mod_forum\local\vaults;
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_forum\local\entities\forum as forum_entity;
 use mod_forum\local\entities\post as post_entity;
 use mod_forum\local\factories\entity as entity_factory;
 use stdClass;
@@ -464,17 +465,18 @@ class post extends db_table_vault {
      * @param string $orderby Order the results
      * @return post_entity[]
      */
-    public function get_from_user_id(
-            int $userid,
-            bool $canseeprivatereplies,
-            string $orderby = 'created ASC'
-    ) : array {
+    public function get_posts_in_forum_for_user_id(
+        forum_entity $forum,
+        int $userid,
+        bool $canseeprivatereplies,
+        string $orderby = 'created ASC'
+    ): array {
         global $DB;
         $user = $DB->get_record('user', ['id' => (int)$userid], '*', IGNORE_MISSING);
         $alias = $this->get_table_alias();
         [
-                'where' => $privatewhere,
-                'params' => $privateparams,
+            'where' => $privatewhere,
+            'params' => $privateparams,
         ] = $this->get_private_reply_sql($user, $canseeprivatereplies);
 
         $wheresql = "{$alias}.userid = :authorid {$privatewhere}";
@@ -482,7 +484,7 @@ class post extends db_table_vault {
 
         $sql = $this->generate_get_records_sql($wheresql, $orderbysql);
         $records = $this->get_db()->get_records_sql($sql, array_merge([
-                'authorid' => $userid,
+            'authorid' => $userid,
         ], $privateparams));
 
         return $this->transform_db_records_to_entities($records);

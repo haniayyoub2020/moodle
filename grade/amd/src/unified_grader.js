@@ -20,18 +20,24 @@
  * @copyright  2019 Mathew May <mathew.solutions>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/ajax', 'core/notification', 'core/templates'],
-    function($, ajax, notification, Templates) {
+define(['jquery', 'core/ajax', 'core/notification', 'core/templates', 'core_grades/selectors'],
+    function($, ajax, notification, Templates, GraderSelectors) {
 
         /**
          * This will do the lifting for the JS hooks that are standardized.
          *
          * @class UnifiedGrading
          */
-        var UnifiedGrading = function() {
+        var UnifiedGrading = function(config) {
 
-            $(".user-nav-toggle").click(function() {
-                $(".grader-user-navigation").toggle();
+            let content = config.getContentForUserId(config.initialUserId);
+
+            registerEventListeners(root);
+        };
+
+        function registerEventListeners(root) {
+            root.find(Selectors.navigation.toggle).on('click', function() {
+                root.find(Selectors.navigation.user).toggle();
             });
 
             $(".module-content-toggle").click(function() {
@@ -46,6 +52,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/templates'],
                 $(".grader-grading-actions").toggle();
             });
         };
+
 
         /**
          * This takes the content given to it by the module specific JS

@@ -2093,10 +2093,11 @@ class mod_forum_external extends external_api {
 
         $postvault = $vaultfactory->get_post_vault();
 
-        $posts = $postvault->get_from_user_id(
-                $params['userid'],
-                $capabilitymanager->can_view_any_private_reply($USER),
-                "{$sortby} {$sortdirection}"
+        $posts = $postvault->get_posts_in_forum_for_user_id(
+            $forum,
+            $params['userid'],
+            $capabilitymanager->can_view_any_private_reply($USER),
+            "{$sortby} {$sortdirection}"
         );
 
         $builderfactory = mod_forum\local\container::get_builder_factory();
