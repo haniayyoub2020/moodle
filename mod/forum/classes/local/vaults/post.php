@@ -460,7 +460,7 @@ class post extends db_table_vault {
     /**
      * Get the posts for the given user.
      *
-     * @param   int[]         $discussionids The list of discussions to fetch counts for
+     * @param int[] $discussionids The list of discussions to fetch posts for
      * @param int $userid
      * @param bool $canseeprivatereplies Whether this user can see all private replies or not
      * @param string $orderby Order the results

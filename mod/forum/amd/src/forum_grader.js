@@ -64,12 +64,11 @@ const getContentForUserIdFunction = (cmid, templateName) => {
  *
  * @param {String} rootElementId The ID of the root node.
  */
-export const ForumGrader = (rootElementId) => {
+export const init = (rootElementId) => {
     const rootNode = document.querySelector(`#${rootElementId}`);
     const cmid = rootNode.dataset.cmid;
 
     return UnifiedGrader.init(
-        rootElementId,
         {
         root: rootNode,
         cmid: cmid,

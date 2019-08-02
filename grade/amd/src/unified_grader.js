@@ -61,11 +61,11 @@ const getContentPublisher = (templateName) => {
     };
 };
 
-export const UnifiedGrader = (rootNode, config) => {
+export const init = (config) => {
     const displayContentForUser = getContentPublisher(config.templateName);
     displayContentForUser(config.initialUserId);
 
-    registerEventListeners(rootNode);
+    registerEventListeners(config.root);
 
     // You might instantiate the user selector here, and pass it the function displayContentForUser as the thing to call
     // when it has selected a user.
