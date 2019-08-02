@@ -460,19 +460,21 @@ class post extends db_table_vault {
     /**
      * Get the posts for the given user.
      *
+     * @param   int[]         $discussionids The list of discussions to fetch counts for
      * @param int $userid
      * @param bool $canseeprivatereplies Whether this user can see all private replies or not
      * @param string $orderby Order the results
      * @return post_entity[]
      */
     public function get_posts_in_forum_for_user_id(
-        forum_entity $forum,
+        array $discussionids,
         int $userid,
         bool $canseeprivatereplies,
         string $orderby = 'created ASC'
     ): array {
-        global $DB;
-        $user = $DB->get_record('user', ['id' => (int)$userid], '*', IGNORE_MISSING);
+        $user = $this->get_db()->get_record('user', ['id' => (int)$userid], '*', IGNORE_MISSING);
+        list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
+
         $alias = $this->get_table_alias();
         [
             'where' => $privatewhere,

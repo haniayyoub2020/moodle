@@ -23,7 +23,7 @@
 
 import Notification from 'core/notification';
 import Templates from 'core/templates';
-import UnifiedGrader from './local/grading/unified_grader/index';
+import UnifiedGrader from 'core_grades/unified_grader';
 
 import Repository from './repository';
 
@@ -68,7 +68,9 @@ export const ForumGrader = (rootElementId) => {
     const rootNode = document.querySelector(`#${rootElementId}`);
     const cmid = rootNode.dataset.cmid;
 
-    UnifiedGrader.init({
+    return UnifiedGrader.init(
+        rootElementId,
+        {
         root: rootNode,
         cmid: cmid,
         initialUserId: rootNode.dataset.firstUserid,
@@ -78,5 +80,3 @@ export const ForumGrader = (rootElementId) => {
         // saveGradeForUser: getGradeFunction(cmid),
     });
 };
-
-return ForumGrader;

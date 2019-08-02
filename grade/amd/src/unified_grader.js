@@ -14,6 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * This module will tie together all of the different calls the gradable module will make.
  *
  * @module     core_grades/unified_grader
  * @package    core_grades
@@ -21,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import Templates from 'core/templates';
-import Selectors from './selectors';
-import $ from 'core/jquery';
+import Selectors from 'core_grades/selectors';
+import $ from 'jquery';
 
 const registerEventListeners = (rootNode) => {
 
@@ -42,7 +43,7 @@ const registerEventListeners = (rootNode) => {
             $(rootNode).find(Selectors.regions.gradePane).toggle();
         }
 
-        if (e.target.matches(Selectors.navigation.gradingActions)) {
+        if (e.target.matches(Selectors.toggles.gradingActions)) {
             // TODO: Ideally kill jQuery here.
             $(rootNode).find(Selectors.regions.gradingActions).toggle();
         }
