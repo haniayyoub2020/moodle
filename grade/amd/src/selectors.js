@@ -22,20 +22,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-export const selectors = () => {
-    const regions = [
-        ["user", ".grader-user-navigation"],
-        ["moduleContent", ".grader-module-content"],
-        ["gradePane", ".grader-grading-panel"],
-        ["gradingActions", ".grader-grading-actions"]
-    ];
-    const mapping = [
-        ["userNavigation", ".user-nav-toggle"],
-        ["moduleContent", ".module-content-toggle"],
-        ["gradePane", ".grading-panel-toggle"],
-        ["gradingActions", ".grading-actions-toggle"],
-        [regions, regions]
-
-    ];
-    return mapping;
+export default {
+    regions: {
+        user: ".grader-user-navigation",
+        moduleContent: ".grader-module-content",
+        gradePane: ".grader-grading-panel",
+        gradingActions: ".grader-grading-actions",
+    },
+    toggles: {
+        userNavigation: ".user-nav-toggle",
+        moduleContentNavigation: ".module-content-toggle",
+        gradePaneNavigation: ".grading-panel-toggle",
+        gradingActionsNavigation: ".grading-actions-toggle",
+    }
 };
+

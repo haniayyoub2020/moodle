@@ -33,17 +33,17 @@ const registerEventListeners = (rootNode) => {
             $(rootNode).find(Selectors.regions.user).toggle();
         }
 
-        if (e.target.matches(Selectors.toggles.moduleContent)) {
+        if (e.target.matches(Selectors.toggles.moduleContentNavigation)) {
             // TODO: Ideally kill jQuery here.
             $(rootNode).find(Selectors.regions.moduleContent).toggle();
         }
 
-        if (e.target.matches(Selectors.toggles.gradePane)) {
+        if (e.target.matches(Selectors.toggles.gradePaneNavigation)) {
             // TODO: Ideally kill jQuery here.
             $(rootNode).find(Selectors.regions.gradePane).toggle();
         }
 
-        if (e.target.matches(Selectors.toggles.gradingActions)) {
+        if (e.target.matches(Selectors.toggles.gradingActionsNavigation)) {
             // TODO: Ideally kill jQuery here.
             $(rootNode).find(Selectors.regions.gradingActions).toggle();
         }
