@@ -23,7 +23,7 @@
 
 import Notification from 'core/notification';
 import Templates from 'core/templates';
-import UnifiedGrader from 'core_grades/unified_grader';
+import * as UnifiedGrader from 'core_grades/unified_grader';
 
 import Repository from './repository';
 
@@ -40,36 +40,26 @@ const templateNames = {
  */
 const getPostContextFunction = (cmid) => {
     return (userid) => {
-        Repository.getDiscussionByUserID(userid, cmid)
-            .then(function(context) {
-                return Templates.render('mod_forum/forum_discussion_posts', context);
-            })
-            .then(function(html, js) {
-                // When this whole chain is moved to plugin then we will call the unified grader here passing html & js
-                UnifiedGrader.UnifiedGrading();
-                return UnifiedGrader.UnifiedGradingRenderModuleContent(html, js);
+        return Repository.getDiscussionByUserID(userid, cmid);
+    };
+};
+
+const getContentForUserIdFunction = (cmid, templateName) => {
+    const postContextFunction = getPostContextFunction(cmid);
+    return (userid) => {
+        return postContextFunction(userid)
+            .then((context) => {
+                return Templates.render(templateName, context);
             })
             .catch(Notification.exception);
     };
 };
 
-const getContentForUserIdFunction = (cmid, templateName) => {
-    return Templates
-        .render(templateName, getPostContextFunction(cmid))
-        .catch(Notification.exception);
-};
-
-/**
- * UnifiedGrading class.
- *
- * @param {String} rootElementId The ID of the root node.
- */
 export const init = (rootElementId) => {
-    const rootNode = document.querySelector(`#${rootElementId}`);
+    const rootNode = document.querySelector(`#${rootElementId}`).querySelector('[data-region="unified-grader"]');
     const cmid = rootNode.dataset.cmid;
 
-    return UnifiedGrader.init(
-        {
+    return UnifiedGrader.init({
         root: rootNode,
         cmid: cmid,
         initialUserId: rootNode.dataset.firstUserid,

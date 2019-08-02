@@ -23,49 +23,41 @@
  */
 import Templates from 'core/templates';
 import Selectors from 'core_grades/selectors';
-import $ from 'jquery';
 
-const registerEventListeners = (rootNode) => {
+const getHelpers = (config) => {
+    const displayContent = (html, js) => {
+        return Templates.replaceNode(Selectors.regions.moduleContent, html, js);
+    };
 
-    rootNode.addEventListener('click', (e) => {
-        if (e.target.matches(Selectors.toggles.userNavigation)) {
-            // TODO: Ideally kill jQuery here.
-            $(rootNode).find(Selectors.regions.user).toggle();
-        }
-
-        if (e.target.matches(Selectors.toggles.moduleContentNavigation)) {
-            // TODO: Ideally kill jQuery here.
-            $(rootNode).find(Selectors.regions.moduleContent).toggle();
-        }
-
-        if (e.target.matches(Selectors.toggles.gradePaneNavigation)) {
-            // TODO: Ideally kill jQuery here.
-            $(rootNode).find(Selectors.regions.gradePane).toggle();
-        }
-
-        if (e.target.matches(Selectors.toggles.gradingActionsNavigation)) {
-            // TODO: Ideally kill jQuery here.
-            $(rootNode).find(Selectors.regions.gradingActions).toggle();
-        }
-    });
-};
-
-const getContentPublisher = (templateName) => {
-    return (context) => {
-        return Templates
-            .render(templateName, context)
-            .then((html, js) => {
-                return Templates.replaceNode(Selectors.region.moduleContent, html, js);
-            })
+    const showUser = (userid) => {
+        config
+            .getContentForUserId(userid)
+            .then(displayContent)
             .catch(Notification.exception);
+    };
+
+
+    const registerEventListeners = () => {
+        // We have no event listeners to register yet.
+    };
+
+    return {
+        registerEventListeners,
+        showUser,
     };
 };
 
 export const init = (config) => {
-    const displayContentForUser = getContentPublisher(config.templateName);
-    displayContentForUser(config.initialUserId);
+    const {
+        showUser,
+        registerEventListeners,
+    } = getHelpers(config);
 
-    registerEventListeners(config.root);
+    if (config.initialUserId) {
+        showUser(config.initialUserId);
+    }
+
+    registerEventListeners();
 
     // You might instantiate the user selector here, and pass it the function displayContentForUser as the thing to call
     // when it has selected a user.
