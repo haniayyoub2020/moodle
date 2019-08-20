@@ -672,6 +672,15 @@ $string['yourreply'] = 'Your reply';
 $string['forumsubjectdeleted'] = 'This forum post has been removed';
 $string['forumbodydeleted'] = 'The content of this forum post has been removed and can no longer be accessed.';
 
+$string['grade_forum_header'] = 'Whole forum grading';
+$string['grade_forum_title'] = 'Grade';
+$string['gradeforrating'] = 'Grade for rating: {$a->str_long_grade}';
+$string['gradeforratinghidden'] = 'Grade for rating hidden';
+$string['gradeforwholeforum'] = 'Grade for forum: {$a->str_long_grade}';
+$string['gradeforwholeforumhidden'] = 'Grade for forum hidden';
+$string['gradeitemnameforwholeforum'] = 'Whole forum grade for {$a->name}';
+$string['gradeitemnameforrating'] = 'Rating grade for {$a->name}';
+
 // Deprecated since Moodle 3.8.
 $string['inpagereplysubject'] = 'Re: {$a}';
 $string['overviewnumpostssince'] = '{$a} posts since last login';
