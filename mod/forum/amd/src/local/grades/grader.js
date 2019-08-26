@@ -24,7 +24,7 @@
 import Templates from 'core/templates';
 import Selectors from './local/grader/selectors';
 import {createLayout as createFullScreenWindow} from 'mod_forum/local/layout/fullscreen';
-import {createUserPicker as createUserPicker} from './local/grader/userpicker';
+import createUserPicker from './local/grader/userpicker';
 
 const templateNames = {
     grader: {
@@ -34,17 +34,18 @@ const templateNames = {
 
 const getFetchAndShowUserCallback = (container, getContentForUser) => {
     return async(userObject) => {
+    debugger; // eslint-disable-line
         const contentForUser = await getContentForUser(userObject);
-        container.querySelector(Selectors.region.userPicker).innerHTML = contentForUser;
+        container.querySelector(Selectors.regions.content).innerHTML = contentForUser;
     };
 };
 
-const displayUserPicker = (container, content) => {
-    container.querySelector(Selectors.region.userPicker).innerHTML = content;
+const displayUserPicker = (container, content) => { // eslint-disable-line
+    container.querySelector(Selectors.regions.userPicker).innerHTML = content;
 };
 
-const displayGrader = (container, content, js) => {
-    Templates.replaceNodeContents(container, content, js);
+const displayGrader = (container, content) => {
+    Templates.replaceNodeContents(container, content, '');
 };
 
 const registerEventListeners = (graderLayout, container) => {
@@ -88,27 +89,27 @@ export const launch = async(
     if (initialUserId) {
         currentUser = userList[initialUserId];
     } else {
-        currentUser = Object.entries(userList)[0][1];
+        currentUser = userList[0];
     }
 
     // Create the set user callback
     const showUser = getFetchAndShowUserCallback(graderContainer, getContentForUser);
 
     // Add the grader to the main layout.
-    displayGrader(graderContainer, graderHTMLLayout[0], graderHTMLLayout[1]);
+    displayGrader(graderContainer, graderHTMLLayout);
 
     // Add event listeners
     registerEventListeners(graderLayout, graderContainer);
+    debugger; // eslint-disable-line
 
     // Create the user picker and get the content forthe first user.
-    const [
-        userPicker
-    ] = await Promise.all([
+    const [userPicker] = await Promise.all([
         createUserPicker(userList, currentUser, showUser),
-        showUser(currentUser),
+        showUser(currentUser), // eslint-disable-line
     ]);
+    window.console.log(userPicker);
+    debugger; // eslint-disable-line
 
     // Display the picker
     displayUserPicker(graderContainer, userPicker);
-
 };

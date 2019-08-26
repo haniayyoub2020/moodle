@@ -1,7 +1,7 @@
 import Templates from 'core/templates';
 import Selectors from './userpicker/selectors';
 
-const init = (items, index) => {
+const init = (items, index) => { // eslint-disable-line
     // TODO generate the full name from PHP function.
 
     return {
@@ -13,14 +13,14 @@ const init = (items, index) => {
 };
 
 const renderNavigator = (context) => {
-    return Templates.render('mod_forum/local/grades/unified_grader/user_navigator', context);
+    return Templates.render('mod_forum/local/grades/local/grader/userpicker', context);
 };
 
 const renderUserChange = (context) => {
-    return Templates.render('mod_forum/local/grades/unified_grader/user_navigator_user', context);
+    return Templates.render('mod_forum/local/grades/local/grader/userpicker/detail', context);
 };
 
-const _cacheDom = (html) => {
+const _cacheDom = (html) => { // eslint-disable-line
     let widget = document.createElement('div');
     widget.innerHTML = html;
     let paginator = widget.querySelector('[data-grader="paginator"]');
@@ -52,7 +52,7 @@ const previousUser = async(items, index) => {
     // PubSub
 };
 
-const bindEvents = (nextButton, previousButton, items, index) => {
+const bindEvents = (nextButton, previousButton, items, index) => { //eslint-disable-line
     nextButton.addEventListener('click', function() {
         nextUser(items, index);
     });
@@ -61,15 +61,16 @@ const bindEvents = (nextButton, previousButton, items, index) => {
     });
 };
 
-export const buildPicker = async(items, index) => {
-    // TODO
-    let context = init(items, index);
+export default async(userList, currentUser, showUserCallback) => { // eslint-disable-line
+    const [{html, js}] = await Promise.all([
+        renderNavigator(currentUser).then((html, js) => {
+            return {html, js};
+        })]
+    );
 
-    let [html, js] = await Promise.all([renderNavigator(context)]);
+    // TODO let [nextButton, previousButton] = _cacheDom(html);
 
-    let [nextButton, previousButton] = _cacheDom(html);
+    // TODO bindEvents(nextButton, previousButton, items, index);
 
-    bindEvents(nextButton, previousButton, items, index);
-
-    return [html, js];
+    return {html, js};
 };

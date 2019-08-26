@@ -51,10 +51,11 @@ const getWholeForumFunctions = (cmid) => {
     };
 
     const getUsersForCmidFunction = () => {
-        return (cmid) => {
+        // TODO Take group.
+        return () => {
             return CourseRepository.getUsersFromCourseModuleID(cmid)
-                .then((context) => {
-                    return context;
+                .then((result) => {
+                    return result.users;
                 })
                 .catch(Notification.exception);
         };
@@ -89,7 +90,7 @@ export const registerLaunchListeners = () => {
                     getUserList,
                     getContentForUser,
                     {
-                        initialUserId: rootNode.dataset.initialuserid,
+                        // TODO initialUserId: rootNode.dataset.initialuserid, .
                         groupid: rootNode.dataset.groupid,
                     }
                 );

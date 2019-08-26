@@ -32,9 +32,9 @@ export default {
         closeGrader: getDataSelector('action', 'closegrader'),
     },
     regions: {
-        moduleReplace: '[data-replace="grader-module-content"]',
+        content: '[data-replace="grader-module-content"]',
         gradingReplace: '[data-graderreplace="grading-panel-display"]',
-        paginatorReplace: '[data-replace="paginator-user"]',
+        userPicker: '[data-replace="paginator-user"]',
     },
 };
 
