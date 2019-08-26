@@ -1,5 +1,5 @@
 import Templates from 'core/templates';
-import Selectors from './selectors';
+import Selectors from './userpicker/selectors';
 //import PubSub from 'core/pubsub';
 
 const _init = (items, index) => {
