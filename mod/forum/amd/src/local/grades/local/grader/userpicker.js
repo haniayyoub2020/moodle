@@ -1,8 +1,7 @@
 import Templates from 'core/templates';
 import Selectors from './userpicker/selectors';
-//import PubSub from 'core/pubsub';
 
-const _init = (items, index) => {
+const init = (items, index) => {
     // TODO generate the full name from PHP function.
 
     return {
@@ -13,15 +12,15 @@ const _init = (items, index) => {
     };
 };
 
-const _renderNavigator = (context) => {
+const renderNavigator = (context) => {
     return Templates.render('mod_forum/local/grades/unified_grader/user_navigator', context);
 };
 
-const _renderUserChange = (context) => {
+const renderUserChange = (context) => {
     return Templates.render('mod_forum/local/grades/unified_grader/user_navigator_user', context);
 };
 
-const  _cacheDom = (html) => {
+const _cacheDom = (html) => {
     let widget = document.createElement('div');
     widget.innerHTML = html;
     let paginator = widget.querySelector('[data-grader="paginator"]');
@@ -31,45 +30,46 @@ const  _cacheDom = (html) => {
 };
 
 // Use the next index or the given index here.
-const _nextUser = async (items, index) => {
+const nextUser = async(items, index) => {
     index++;
 
     items[index].displayIndex = index++;
 
-    let [html, js] = await Promise.all([_renderUserChange(items[index])]);
-    Templates.replaceNodeContents(Selectors.regions.paginatorReplace, html, js);
+    let [html, js] = await Promise.all([renderUserChange(items[index])]);
+    Templates.replaceNodeContents(Selectors.regions.userDetail, html, js);
 
     // PubSub
 };
 
-const _previousUser = async (items, index) => {
+const previousUser = async(items, index) => {
     index--;
 
     items[index].displayIndex = index++;
 
-    let [html, js] = await Promise.all([_renderUserChange(items[index])]);
-    Templates.replaceNodeContents(Selectors.regions.paginatorReplace, html, js);
+    let [html, js] = await Promise.all([renderUserChange(items[index])]);
+    Templates.replaceNodeContents(Selectors.regions.userDetail, html, js);
 
     // PubSub
 };
 
-const _bindEvents = (nextButton, previousButton, items, index) => {
+const bindEvents = (nextButton, previousButton, items, index) => {
     nextButton.addEventListener('click', function() {
-        _nextUser(items, index);
+        nextUser(items, index);
     });
     previousButton.addEventListener('click', function() {
-        _previousUser(items, index);
+        previousUser(items, index);
     });
 };
 
-export const buildPicker = async (items, index) => {
-    let context = _init(items, index);
+export const buildPicker = async(items, index) => {
+    // TODO
+    let context = init(items, index);
 
-    let [html, js] = await Promise.all([_renderNavigator(context)]);
+    let [html, js] = await Promise.all([renderNavigator(context)]);
 
     let [nextButton, previousButton] = _cacheDom(html);
 
-    _bindEvents(nextButton, previousButton, items, index);
+    bindEvents(nextButton, previousButton, items, index);
 
     return [html, js];
 };

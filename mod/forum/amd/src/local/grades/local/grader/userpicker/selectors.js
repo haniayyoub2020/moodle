@@ -28,13 +28,11 @@ const getDataSelector = (name, value) => {
 
 export default {
     buttons: {
-        toggleFullscreen: getDataSelector('action', 'togglefullscreen'),
-        closeGrader: getDataSelector('action', 'closegrader'),
+        nextOrPreviousUser: getDataSelector('userpicker-action', 'previousOrNextUser'),
     },
     regions: {
-        moduleReplace: '[data-replace="grader-module-content"]',
-        gradingReplace: '[data-graderreplace="grading-panel-display"]',
-        paginatorReplace: '[data-replace="paginator-user"]',
+        // TODO Rename this.
+        userDetail: '[data-replace="paginator-user"]',
     },
 };
 

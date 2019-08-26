@@ -61,9 +61,8 @@ const getWholeForumFunctions = (cmid) => {
     };
 
     return {
-        getPostContext: getPostContextFunction(),
-        getContentForUserId: getContentForUserIdFunction(),
-        getUsersForCmidFunction: getUsersForCmidFunction()
+        getContentForUser: getContentForUserIdFunction(),
+        getUserList: getUsersForCmidFunction()
     };
 };
 
@@ -81,15 +80,19 @@ export const registerLaunchListeners = () => {
             }
 
             if (rootNode.matches(Selectors.gradableItems.wholeForum)) {
-                const wholeForumFunctions = getWholeForumFunctions(rootNode.dataset.cmid);
+                const {
+                    getUserList,
+                    getContentForUser,
+                } = getWholeForumFunctions(rootNode.dataset.cmid);
 
-                Grader.launch({
-                    cmid: rootNode.dataset.cmid,
-                    groupid: rootNode.dataset.groupid,
-                    initialUserId: rootNode.dataset.initialuserid,
-                    getContentForUserId: wholeForumFunctions.getContentForUserId,
-                    getUsersForCmidFunction: wholeForumFunctions.getUsersForCmidFunction,
-                });
+                Grader.launch(
+                    getUserList,
+                    getContentForUser,
+                    {
+                        initialUserId: rootNode.dataset.initialuserid,
+                        groupid: rootNode.dataset.groupid,
+                    }
+                );
 
                 e.preventDefault();
             } else {
