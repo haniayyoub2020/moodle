@@ -187,7 +187,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @param Element $container An optional container to search within
      * @return array
      */
-    public function normalise_selector(string $selector, $locator, ?Element $container = null): array {
+    public function normalise_selector(string $selector, $locator, $container = null): array {
         // Check for specific transformations for this selector type.
         $transformfunction = "transform_find_for_{$selector}";
         if (method_exists($this, $transformfunction)) {
@@ -275,6 +275,28 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         }
 
         throw new coding_exception("The '{$name}' method does not exist");
+    }
+
+    /**
+     * Transform the selector for a field.
+     *
+     * @param string $label
+     * @param Element $container
+     */
+    private function transform_find_for_field(string $label, $container = null) {
+        $hasfieldset = strpos($label, '>');
+        $container = null;
+        if (false !== $hasfieldset) {
+            list($containerlabel, $label) = explode(">", $label, 2);
+            $container = $this->find_fieldset(trim($containerlabel), $container);
+            $label = trim($label);
+        }
+
+        return [
+            'selector' => 'named_partial',
+            'locator' => self::normalise_named_partial_selector('field', $label),
+            'container' => $container,
+        ];
     }
 
     /**
