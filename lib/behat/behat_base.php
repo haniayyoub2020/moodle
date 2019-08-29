@@ -292,6 +292,28 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     }
 
     /**
+     * Transform the selector for a field.
+     *
+     * @param string $label
+     * @param Element $container
+     */
+    private function transform_find_for_field(string $label, ?Element $container = null) {
+        $hasfieldset = strpos($label, '>');
+        $container = null;
+        if (false !== $hasfieldset) {
+            [$containerlabel, $label] = explode(">", $label, 2);
+            $container = $this->find_fieldset(trim($containerlabel), $container);
+            $label = trim($label);
+        }
+
+        return [
+            'selector' => 'named_partial',
+            'locator' => self::normalise_named_partial_selector('field', $label),
+            'container' => $container,
+        ];
+    }
+
+    /**
      * Escapes the double quote character.
      *
      * Double quote is the argument delimiter, it can be escaped
@@ -463,7 +485,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         [
             'selector' => $selector,
             'locator' => $locator,
-        ] =  $this->normalise_selector($selectortype, $element);
+        ] = $this->normalise_selector($selectortype, $element);
 
         return [$selector, $locator];
     }
