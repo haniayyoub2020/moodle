@@ -188,6 +188,17 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @return array
      */
     public function normalise_selector(string $selector, $locator, ?Element $container = null): array {
+        // Check for specific transformations for this selector type.
+        $transformfunction = "transform_find_for_{$selector}";
+        if (method_exists($this, $transformfunction)) {
+            // A selector-specific transformation exists.
+            // Perform initial transformation of the selector within the current container.
+            $normalised = $this->{$transformfunction}($locator, $container ?: null);
+            $selector = $normalised['selector'];
+            $locator = $normalised['locator'];
+            $container = $normalised['container'];
+        }
+
         // Normalise the css and xpath selector types.
         if ('css_element' === $selector) {
             $selector = 'css';
