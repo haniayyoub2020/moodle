@@ -425,7 +425,6 @@ class behat_hooks extends behat_base {
                         new ExpectationException($message, $session)
                     );
 
-                self::$initprocessesfinished = true;
             }
             $this->scenariorunning = true;
         }
@@ -700,6 +699,78 @@ class behat_hooks extends behat_base {
     protected static function is_first_scenario() {
         return !(self::$initprocessesfinished);
     }
+
+    /**
+     * Register component selectors.
+     *
+     * @param   BeforeStepScope $scope
+     * @BeforeStep
+     */
+    public function register_component_selectors(BeforeStepScope $scope) {
+        if (!self::is_first_scenario()) {
+            return;
+        }
+
+        foreach (\core_component::get_component_names() as $component) {
+            $this->register_component_selectors_for_component($component);
+        }
+    }
+
+    /**
+     * Register a set of component selectors.
+     *
+     * @param string $component
+     */
+    public function register_component_selectors_for_component(string $component): void {
+        $componentclassname = "behat_{$component}";
+
+        if (!behat_context_helper::has_context($componentclassname)) {
+            if ("core_" === substr($component, 0, 5)) {
+                $componentclassname = "behat_" . substr($component, 5);
+                if (!behat_context_helper::has_context($componentclassname)) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
+        $namedpartial = $this->getSession()->getSelectorsHandler()->getSelector('named_partial');
+        $namedexact = $this->getSession()->getSelectorsHandler()->getSelector('named_exact');
+
+        $context = behat_context_helper::get($componentclassname);
+        if (is_subclass_of($context, 'behat_component_partial_selector_definition')) {
+            array_map(function($selector) use ($component, $namedpartial) {
+                $namedpartial->register_component_selector($component, $selector);
+            }, call_user_func([$context, 'get_partial_named_selectors']));
+        }
+
+        if (is_subclass_of($context, 'behat_component_exact_selector_definition')) {
+            array_map(function($selector) use ($component, $namedexact) {
+                $namedexact->register_component_selector($component, $selector);
+            }, call_user_func([$context, 'get_exact_named_selectors']));
+        }
+
+        if (is_subclass_of($context, 'behat_component_replacement_definition')) {
+            array_map(function($replacement) use ($component, $namedpartial, $namedexact) {
+                $namedpartial->register_replacement($component, $replacement);
+                $namedexact->register_replacement($component, $replacement);
+            }, call_user_func([$context, 'get_named_replacements']));
+        }
+    }
+
+    /**
+     * Mark the first step as having been completed.
+     *
+     * This must be the last BeforeStep hook in the setup.
+     *
+     * @param   BeforeStepScope $scope
+     * @BeforeStep
+     */
+    public function first_step_setup_complete(BeforeStepScope $scope) {
+        self::$initprocessesfinished = true;
+    }
+
 }
 
 /**
