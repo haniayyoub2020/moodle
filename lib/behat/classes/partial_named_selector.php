@@ -276,6 +276,11 @@ XPATH
 
     /** @var List of deprecated selectors */
     protected static $deprecatedselectors = [
+        'group_message' => 'core_message > Group message',
+        'group_message_member' => 'core_message > Group message > Member',
+        'group_message_tab' => 'core_message > Group message > Tab',
+        'group_message_list_area' => 'core_message > Group message > List area',
+        'group_message_message_content' => 'core_message > Group message > Message > Content',
     ];
 
     /**

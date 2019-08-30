@@ -35,7 +35,53 @@ require_once(__DIR__ . '/../../../lib/behat/behat_base.php');
  * @copyright  2013 David Monllaó
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_message extends behat_base {
+class behat_message extends behat_base implements behat_component_partial_selector_definition {
+
+    /**
+     * Return the list of partial named selectors.
+     *
+     * @return array
+     */
+    public static function get_partial_named_selectors(): array {
+        return [
+            new behat_component_named_selector('Group message', [".//*[@data-conversation-id]//img[contains(@alt, %locator%)]/.."]),
+            new behat_component_named_selector('Group message > Conversation', [
+                <<<XPATH
+    .//*[@data-region='message-drawer' and contains(., %locator%)]//div[@data-region='content-message-container']
+XPATH
+            ], false),
+            new behat_component_named_selector('Group message > Header', [
+                <<<XPATH
+    .//*[@data-region='message-drawer']//div[@data-region='header-content' and contains(., %locator%)]
+XPATH
+            ]),
+            new behat_component_named_selector('Group message > Member', [
+                <<<XPATH
+    .//*[@data-region='message-drawer']//div[@data-region='group-info-content-container']
+    //div[@class='list-group' and not(contains(@class, 'hidden'))]//*[text()[contains(., %locator%)]]
+XPATH
+                , <<<XPATH
+    .//*[@data-region='message-drawer']//div[@data-region='group-info-content-container']
+    //div[@data-region='empty-message-container' and not(contains(@class, 'hidden')) and contains(., %locator%)]
+XPATH
+            ], false),
+            new behat_component_named_selector('Group message > Tab', [
+                <<<XPATH
+    .//*[@data-region='message-drawer']//button[@data-toggle='collapse' and contains(string(), %locator%)]
+XPATH
+            ], false),
+            new behat_component_named_selector('Group message > List area', [
+                <<<XPATH
+    .//*[@data-region='message-drawer']//*[contains(@data-region, concat('view-overview-', %locator%))]
+XPATH
+            ], false),
+            new behat_component_named_selector('Group message > Message > Content', [
+                <<<XPATH
+    .//*[@data-region='message-drawer']//*[@data-region='message' and @data-message-id and contains(., %locator%)]
+XPATH
+            ], false),
+        ];
+    }
 
     /**
      * Open the messaging UI.
@@ -57,7 +103,7 @@ class behat_message extends behat_base {
     public function i_open_the_conversations_list(string $tab) {
         $this->execute('behat_general::i_click_on', [
             $this->escape($tab),
-            'group_message_tab'
+            'core_message > Group message > Tab'
         ]);
     }
 
@@ -213,7 +259,7 @@ class behat_message extends behat_base {
         $this->execute('behat_general::i_click_on',
             array(
                 $this->escape($conversationname),
-                'group_message',
+                'core_message > Group message',
             )
         );
     }
