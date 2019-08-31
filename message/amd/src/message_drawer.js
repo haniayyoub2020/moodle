@@ -34,7 +34,8 @@ define(
     'core_message/message_drawer_view_settings',
     'core_message/message_drawer_router',
     'core_message/message_drawer_routes',
-    'core_message/message_drawer_events'
+    'core_message/message_drawer_events',
+    'core/pending',
 ],
 function(
     $,
@@ -49,7 +50,8 @@ function(
     ViewSettings,
     Router,
     Routes,
-    Events
+    Events,
+    Pending
 ) {
 
     var SELECTORS = {
@@ -197,6 +199,37 @@ function(
             Router.back();
 
             data.originalEvent.preventDefault();
+        });
+
+        // These are theme-specific to help us fix random behat fails.
+        // The show/shown and hide/hidden events target BS v2.3.2.
+        root.on('hide', '.collapse', function(e) {
+            var pendingPromise = new Pending();
+            $(e.target).one('hidden', function() {
+                pendingPromise.resolve();
+            });
+        });
+
+        root.on('show', '.collapse', function(e) {
+            var pendingPromise = new Pending();
+            $(e.target).one('shown', function() {
+                pendingPromise.resolve();
+            });
+        });
+
+        // These events target those events defined in BS3 and BS4 onwards.
+        root.on('hide.bs.collapse', '.collapse', function(e) {
+            var pendingPromise = new Pending();
+            $(e.target).one('hidden.bs.collapse', function() {
+                pendingPromise.resolve();
+            });
+        });
+
+        root.on('show.bs.collapse', '.collapse', function(e) {
+            var pendingPromise = new Pending();
+            $(e.target).one('shown.bs.collapse', function() {
+                pendingPromise.resolve();
+            });
         });
 
         PubSub.subscribe(Events.SHOW, function() {
