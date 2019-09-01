@@ -62,11 +62,76 @@ Feature: Create conversations for course's groups
     Given I log in as "teacher1"
     Then I open messaging
     And I open the "Group" conversations list
-    And I select "Group 1" conversation in messaging
-    And I should see "5 participants" in the "Group 1" "core_message > Group message > Header"
-    And I go back in "view-conversation" message drawer
-    And I select "Group 2" conversation in messaging
-    And I should see "1 participants" in the "Group 2" "core_message > Group message > Header"
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Group" conversations list
+    And I click on "Toggle messaging drawer" "link"
+    Then I open messaging
+    And I open the "Starred" conversations list
+    And I click on "Toggle messaging drawer" "link"
 
   Scenario: View group conversation's participants list
     Given I log in as "teacher1"
