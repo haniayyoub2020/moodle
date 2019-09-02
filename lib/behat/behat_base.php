@@ -774,10 +774,12 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         // It is unlikely that Javascript code of a page or an AJAX request needs more than get_extended_timeout() seconds
         // to be loaded, although when pages contains Javascript errors M.util.js_complete() can not be executed, so the
         // number of JS pending code and JS completed code will not match and we will reach this point.
-        throw new \Exception('Javascript code and/or AJAX requests are not ready after ' .
-                self::get_extended_timeout() .
-                ' seconds. There is a Javascript error or the code is extremely slow. ' .
-                'If you are using a slow machine, consider setting $CFG->behat_increasetimeout.');
+        throw new \Exception(
+            'Javascript code and/or AJAX requests are not ready after ' .  self::get_extended_timeout() .  ' seconds. ' .
+            'There may be a Javascript error, or the code may be extremely slow. ' .
+            'If you are using a slow machine, consider setting $CFG->behat_increasetimeout. ' .
+            "The pending_js value at time of failure was '{$pending}'."
+        );
     }
 
     /**

@@ -204,14 +204,14 @@ function(
         // These are theme-specific to help us fix random behat fails.
         // The show/shown and hide/hidden events target BS v2.3.2.
         root.on('hide', '.collapse', function(e) {
-            var pendingPromise = new Pending();
+            var pendingPromise = new Pending("collapse:hide");
             $(e.target).one('hidden', function() {
                 pendingPromise.resolve();
             });
         });
 
         root.on('show', '.collapse', function(e) {
-            var pendingPromise = new Pending();
+            var pendingPromise = new Pending("collapse:show");
             $(e.target).one('shown', function() {
                 pendingPromise.resolve();
             });
@@ -219,14 +219,14 @@ function(
 
         // These events target those events defined in BS3 and BS4 onwards.
         root.on('hide.bs.collapse', '.collapse', function(e) {
-            var pendingPromise = new Pending();
+            var pendingPromise = new Pending("hide.bs.collapse");
             $(e.target).one('hidden.bs.collapse', function() {
                 pendingPromise.resolve();
             });
         });
 
         root.on('show.bs.collapse', '.collapse', function(e) {
-            var pendingPromise = new Pending();
+            var pendingPromise = new Pending("show.bs.collapse");
             $(e.target).one('shown.bs.collapse', function() {
                 pendingPromise.resolve();
             });
