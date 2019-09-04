@@ -17,7 +17,7 @@
 /**
  * Moodleform.
  *
- * @package   course
+ * @package   core_course
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,8 +30,11 @@ require_once($CFG->libdir.'/plagiarismlib.php');
 use core_grades\local\item\helper as grade_item_helper;
 
 /**
- * This class adds extra methods to form wrapper specific to be used for module
- * add / update forms mod/{modname}/mod_form.php replaced deprecated mod/{modname}/mod.html
+ * This class adds extra methods to form wrapper specific to be used for module add / update forms
+ * mod/{modname}/mod_form.php replaced deprecated mod/{modname}/mod.html Moodleform.
+ *
+ * @package   core_course
+ * @copyright Andrew Nicols <andrew@nicols.co.uk>
  */
 abstract class moodleform_mod extends moodleform {
     /** Current data */
@@ -93,7 +96,7 @@ abstract class moodleform_mod extends moodleform {
     /** @var object The course format of the current course. */
     protected $courseformat;
 
-    /** @var string Graded or rated? */
+    /** @var string Whether this is graded or rated. */
     private $gradedorrated = null;
 
     public function __construct($current, $section, $cm, $course) {
@@ -270,7 +273,11 @@ abstract class moodleform_mod extends moodleform {
                     }
 
                     foreach ($items as $item) {
-                        $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradecat');
+                        $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber(
+                            $component,
+                            $item->itemnumber,
+                            'gradecat'
+                        );
 
                         if (!isset($gradecategories[$gradecatfieldname])) {
                             $gradecategories[$gradecatfieldname] = $item->categoryid;
@@ -280,20 +287,9 @@ abstract class moodleform_mod extends moodleform {
                     }
                 }
 
-                if (!$hasgradeitems && $mform->elementExists('gradepass')) {
-                    // Remove form element 'Grade to pass' since there are no grade items (when rating not selected).
-                    //$mform->removeElement('gradepass');
-                }
-
                 foreach ($removecategories as $toremove) {
                     if ($mform->elementExists($toremove)) {
                         $mform->removeElement($toremove);
-
-                        // TODO
-                        if ($this->_features->rating  && !$mform->elementExists('gradepass')) {
-                            //if supports ratings then the max grade dropdown wasnt added so the grade box can be removed entirely
-                            $mform->removeElement('modstandardgrade');
-                        }
                     }
                 }
             }
@@ -301,13 +297,14 @@ abstract class moodleform_mod extends moodleform {
 
         if ($COURSE->groupmodeforce) {
             if ($mform->elementExists('groupmode')) {
-                $mform->hardFreeze('groupmode'); // groupmode can not be changed if forced from course settings
+                // The groupmode can not be changed if forced from course settings.
+                //
+                $mform->hardFreeze('groupmode');
             }
         }
 
-        // Don't disable/remove groupingid if it is currently set to something,
-        // otherwise you cannot turn it off at same time as turning off other
-        // option (MDL-30764)
+        // Don't disable/remove groupingid if it is currently set to something, otherwise you cannot turn it off at same
+        // time as turning off other option (MDL-30764).
         if (empty($this->_cm) || !$this->_cm->groupingid) {
             if ($mform->elementExists('groupmode') && empty($COURSE->groupmodeforce)) {
                 $mform->hideIf('groupingid', 'groupmode', 'eq', NOGROUPS);
@@ -521,7 +518,7 @@ abstract class moodleform_mod extends moodleform {
     /**
      * Adds all the standard elements to a form to edit the settings for an activity module.
      */
-    function standard_coursemodule_elements() {
+    protected function standard_coursemodule_elements() {
         global $COURSE, $CFG, $DB;
         $mform =& $this->_form;
 
@@ -716,17 +713,16 @@ abstract class moodleform_mod extends moodleform {
     /**
      * Add rating settings.
      *
-     * TODO Add upgrade.txt to note that you should only call add_rating_settings __or__ the
-     * standard_grading_coursemodule_elements. It's not possible to have both.
+     * @param moodleform_mod $mform
+     * @param int $itemnumber
      */
     protected function add_rating_settings($mform, int $itemnumber) {
         global $CFG, $COURSE;
 
         if ($this->gradedorrated && $this->gradedorrated !== 'rated') {
-            debugging('You cannot combine use of standard_grading_coursemodule_elements and add_rating_settings.', DEBUG_DEVELOPER);
             return;
         }
-        $this->graded = 'rated';
+        $this->gradedorrated = 'rated';
 
         require_once("{$CFG->dirroot}/rating/lib.php");
         $rm = new rating_manager();
@@ -748,10 +744,10 @@ abstract class moodleform_mod extends moodleform {
             $rolenames = get_role_names_with_caps_in_context($context, $capabilities);
             $rolenamestring = implode(', ', $rolenames);
         } else {
-            $rolenamestring = get_string('capabilitychecknotavailable','rating');
+            $rolenamestring = get_string('capabilitychecknotavailable', 'rating');
         }
 
-        $mform->addElement('static', 'rolewarning', get_string('rolewarning','rating'), $rolenamestring);
+        $mform->addElement('static', 'rolewarning', get_string('rolewarning', 'rating'), $rolenamestring);
         $mform->addHelpButton('rolewarning', 'rolewarning', 'rating');
 
         $mform->addElement('select', $assessedfieldname, get_string('aggregatetype', 'rating') , $rm->get_aggregate_types());
@@ -894,10 +890,12 @@ abstract class moodleform_mod extends moodleform {
         global $COURSE, $CFG;
 
         if ($this->gradedorrated && $this->gradedorrated !== 'graded') {
-            debugging('You cannot combine use of standard_grading_coursemodule_elements and add_rating_settings.', DEBUG_DEVELOPER);
             return;
         }
-        $this->graded = 'graded';
+        if ($this->_features->rating) {
+            return;
+        }
+        $this->gradedorrated = 'graded';
 
         $itemnumber = 0;
         $component = "mod_{$this->_modname}";

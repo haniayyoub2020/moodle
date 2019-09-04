@@ -309,25 +309,25 @@ function edit_module_post_actions($moduleinfo, $course) {
 
                 $max_itemnumber++;
 
-                $outcome_item = new grade_item();
-                $outcome_item->courseid     = $course->id;
-                $outcome_item->itemtype     = 'mod';
-                $outcome_item->itemmodule   = $moduleinfo->modulename;
-                $outcome_item->iteminstance = $moduleinfo->instance;
-                $outcome_item->itemnumber   = $max_itemnumber;
-                $outcome_item->itemname     = $outcome->fullname;
-                $outcome_item->outcomeid    = $outcome->id;
-                $outcome_item->gradetype    = GRADE_TYPE_SCALE;
-                $outcome_item->scaleid      = $outcome->scaleid;
-                $outcome_item->insert();
+                $outcomeitem = new grade_item();
+                $outcomeitem->courseid     = $course->id;
+                $outcomeitem->itemtype     = 'mod';
+                $outcomeitem->itemmodule   = $moduleinfo->modulename;
+                $outcomeitem->iteminstance = $moduleinfo->instance;
+                $outcomeitem->itemnumber   = $max_itemnumber;
+                $outcomeitem->itemname     = $outcome->fullname;
+                $outcomeitem->outcomeid    = $outcome->id;
+                $outcomeitem->gradetype    = GRADE_TYPE_SCALE;
+                $outcomeitem->scaleid      = $outcome->scaleid;
+                $outcomeitem->insert();
 
                 if ($items) {
                     // Move the new outcome into the same category and immediately after the first grade item.
                     $item = reset($items);
-                    $outcome_item->set_parent($item->categoryid);
-                    $outcome_item->move_after_sortorder($item->sortorder);
+                    $outcomeitem->set_parent($item->categoryid);
+                    $outcomeitem->move_after_sortorder($item->sortorder);
                 } else if (isset($moduleinfo->gradecat)) {
-                    $outcome_item->set_parent($moduleinfo->gradecat);
+                    $outcomeitem->set_parent($moduleinfo->gradecat);
                 }
             }
         }
@@ -742,14 +742,14 @@ function get_moduleinfo_data($cm, $course) {
                 $gradecat[$item->itemnumber] = $item->categoryid;
             }
             if ($gradecat[$item->itemnumber] != $item->categoryid) {
-                // Mixed categories
+                // Mixed categories.
                 $gradecat[$item->itemnumber] = false;
             }
         }
         foreach ($gradecat as $itemnumber => $cat) {
             if ($cat !== false) {
                 $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
-                // do not set if mixed categories present
+                // Do not set if mixed categories present.
                 $data->{$gradecatfieldname} = $cat;
             }
         }
