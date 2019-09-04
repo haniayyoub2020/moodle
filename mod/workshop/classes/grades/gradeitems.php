@@ -26,7 +26,7 @@ declare(strict_types = 1);
 
 namespace mod_workshop\grades;
 
-use \core_grades\local\item\itemnumber_mapping;
+use \core_grades\local\gradeitem\itemnumber_mapping;
 
 /**
  * Grade item mappings for the activity.
@@ -37,11 +37,11 @@ use \core_grades\local\item\itemnumber_mapping;
  */
 class gradeitems implements itemnumber_mapping {
     /**
-     * Return the lislt of grade item mappings for the forum.
+     * Return the list of grade item mappings for the workshop.
      *
      * @return array
      */
-    public static function get_mappings(): array {
+    public static function get_itemname_mapping_for_component(): array {
         return [
             0 => 'submission',
             1 => 'grading',
