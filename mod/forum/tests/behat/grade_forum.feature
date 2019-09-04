@@ -73,7 +73,6 @@ Feature: I can grade a students interaction across a forum
     Then the field "Grade to pass" matches value "4"
     And I should see "Tutor" in the "Parent category" "fieldset"
 
-
   @javascript
   Scenario: Ensure that Ratings settings do not leak to Forum grading
     Given I add a "Forum" to section "1"

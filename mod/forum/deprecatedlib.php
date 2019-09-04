@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -1662,9 +1661,9 @@ function forum_scale_used() {
 }
 
 /**
- * @deprecated since Moodle 3.8
  * Return grade for given user or all users.
  *
+ * @deprecated since Moodle 3.8
  * @param object $forum
  * @param int $userid optional user id, 0 means all users
  * @return array array of grades, false if none

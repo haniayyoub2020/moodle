@@ -371,7 +371,6 @@ function forum_supports($feature) {
     }
 }
 
-
 /**
  * Obtains the automatic completion state for this forum based on any conditions
  * in forum settings.
@@ -834,8 +833,8 @@ function forum_grade_item_delete($forum) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 0, NULL, ['deleted' => 1]);
-    grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 1, NULL, ['deleted' => 1]);
+    grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 0, null, ['deleted' => 1]);
+    grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 1, null, ['deleted' => 1]);
 }
 
 /**
@@ -6743,12 +6742,5 @@ function mod_forum_user_preferences() {
 function forum_grading_areas_list() {
     return [
         'forum' => get_string('grade_forum_header', 'forum'),
-    ];
-}
-
-function forum_grade_itemnumber_mapping(): array {
-    return [
-        0 => 'rating',
-        1 => 'forum',
     ];
 }

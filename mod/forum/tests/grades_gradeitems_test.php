@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -17,11 +17,13 @@
 /**
  * Unit tests for core_grades\local\item\helper.
  *
- * @package   core_grades
+ * @package   mod_forum
  * @category  test
  * @copyright 2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+
+declare(strict_types = 1);
 
 namespace tests\mod_forum\grades;
 

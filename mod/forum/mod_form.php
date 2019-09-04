@@ -238,7 +238,6 @@ class mod_forum_mod_form extends moodleform_mod {
 
         // The advancedgradingmethod is different in that it is suffixed with an area name... which is not the
         // itemnumber.
-        // TODO Can we improve this. Is it going to cause any issue?
         $methodfieldname = "advancedgradingmethod_{$itemname}";
 
         $headername = "{$gradefieldname}_header";
@@ -356,10 +355,9 @@ class mod_forum_mod_form extends moodleform_mod {
 
         $component = "mod_forum";
         $itemname = 'forum';
-        $itemnumber = 1;
-
-        $gradefieldname = "grade_{$itemname}";
-        $gradepassfieldname = "{$itemname}_gradepass";
+        $itemnumber = grade_item_helper::get_itemnumber_from_itemname($component, $itemname);
+        $gradefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
 
         $gradeitem = grade_item::fetch([
             'itemtype' => 'mod',
@@ -472,7 +470,8 @@ class mod_forum_mod_form extends moodleform_mod {
         $data = parent::get_data();
         if ($data) {
             $itemname = 'forum';
-            $gradepassfieldname = "{$itemname}_gradepass";
+            $component = 'mod_forum';
+            $gradepassfieldname = grade_item_helper::get_field_name_for_itemname($component, $itemname, 'gradepass');
 
             // Convert the grade pass value - we may be using a language which uses commas,
             // rather than decimal points, in numbers. These need to be converted so that
