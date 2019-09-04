@@ -27,7 +27,7 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-use \core_grades\local\item\helper as grade_item_helper;
+use \core_grades\component_gradeitems;
 
 require_once($CFG->dirroot.'/course/lib.php');
 
@@ -236,7 +236,7 @@ function edit_module_post_actions($moduleinfo, $course) {
             }
 
             // Determine the grade category.
-            $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradecat');
+            $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradecat');
             if (property_exists($moduleinfo, $gradecatfieldname)) {
                 $gradecat = $moduleinfo->$gradecatfieldname;
                 if ($gradecat == -1) {
@@ -261,7 +261,7 @@ function edit_module_post_actions($moduleinfo, $course) {
             }
 
             // Determine the gradepass.
-            $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradepass');
+            $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradepass');
             if (isset($moduleinfo->{$gradepassfieldname})) {
                 $gradepass = $moduleinfo->{$gradepassfieldname};
                 if (null !== $gradepass && $gradepass != $item->gradepass) {
@@ -729,7 +729,7 @@ function get_moduleinfo_data($cm, $course) {
             if (!empty($item->outcomeid)) {
                 $data->{'outcome_' . $item->outcomeid} = 1;
             } else if (isset($item->gradepass)) {
-                $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradepass');
+                $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $item->itemnumber, 'gradepass');
                 $data->{$gradepassfieldname} = format_float($item->gradepass, $item->get_decimals());
             }
 
@@ -748,7 +748,7 @@ function get_moduleinfo_data($cm, $course) {
         }
         foreach ($gradecat as $itemnumber => $cat) {
             if ($cat !== false) {
-                $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
+                $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
                 // Do not set if mixed categories present.
                 $data->{$gradecatfieldname} = $cat;
             }

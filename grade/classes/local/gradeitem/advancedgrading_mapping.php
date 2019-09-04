@@ -24,7 +24,7 @@
 
 declare(strict_types = 1);
 
-namespace core_grades\local\item;
+namespace core_grades\local\gradeitem;
 
 /**
  * Grade item, itemnumber mapping.
@@ -32,12 +32,12 @@ namespace core_grades\local\item;
  * @package   core_grades
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
  */
-interface itemnumber_mapping {
+interface advancedgrading_mapping {
 
     /**
-     * Get the grade item mapping of item number to item name.
+     * Get the list of advanced grading item names for this component.
      *
      * @return array
      */
-    public static function get_mappings(): array;
+    public static function get_advancedgrading_itemnames(): array;
 }

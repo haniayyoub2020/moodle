@@ -22,12 +22,12 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once ($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->libdir.'/completionlib.php');
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 
-use core_grades\local\item\helper as grade_item_helper;
+use core_grades\component_gradeitems;
 
 /**
  * This class adds extra methods to form wrapper specific to be used for module add / update forms
@@ -273,7 +273,7 @@ abstract class moodleform_mod extends moodleform {
                     }
 
                     foreach ($items as $item) {
-                        $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber(
+                        $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber(
                             $component,
                             $item->itemnumber,
                             'gradecat'
@@ -411,12 +411,12 @@ abstract class moodleform_mod extends moodleform {
         }
 
         $component = "mod_{$this->_modname}";
-        $itemnames = grade_item_helper::get_mappings_for_component($component);
+        $itemnames = component_gradeitems::get_itemname_mapping_for_component($component);
         foreach ($itemnames as $itemnumber => $itemname) {
-            $gradefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
-            $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
-            $assessedfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'assessed');
-            $scalefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'scale');
+            $gradefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+            $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
+            $assessedfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'assessed');
+            $scalefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'scale');
 
             // Ratings: Don't let them select an aggregate type without selecting a scale.
             // If the user has selected to use ratings but has not chosen a scale or set max points then the form is
@@ -728,10 +728,10 @@ abstract class moodleform_mod extends moodleform {
         $rm = new rating_manager();
 
         $component = "mod_{$this->_modname}";
-        $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
-        $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
-        $assessedfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'assessed');
-        $scalefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'scale');
+        $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
+        $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
+        $assessedfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'assessed');
+        $scalefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'scale');
 
         $mform->addElement('header', 'modstandardratings', get_string('ratings', 'rating'));
 
@@ -899,9 +899,9 @@ abstract class moodleform_mod extends moodleform {
 
         $itemnumber = 0;
         $component = "mod_{$this->_modname}";
-        $gradefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
-        $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
-        $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
+        $gradefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
+        $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
 
         $mform =& $this->_form;
         $isupdate = !empty($this->_cm);

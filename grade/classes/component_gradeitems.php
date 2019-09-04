@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grade item, itemnumber mapping.
+ * Helper class to fetch information about component grade items.
  *
  * @package   core_grades
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
@@ -24,18 +24,26 @@
 
 declare(strict_types = 1);
 
-namespace core_grades\local\item;
+namespace core_grades;
 
-use code_grades\local\item\itemnumber_mapping;
+use code_grades\local\gradeitem\itemnumber_mapping;
+use code_grades\local\gradeitem\advancedgrading_mapping;
 
 /**
- * Grade item helpers.
+ * Helper class to fetch information about component grade items.
  *
  * @package   core_grades
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class helper {
+class component_gradeitems {
+
+    /**
+     * Get the gradeitems classname fo rhte specific component.
+     */
+    protected static function get_component_classname(string $component): string {
+        return "{$component}\\grades\gradeitems";
+    }
 
     /**
      * Get the grade itemnumber mapping for a component.
@@ -43,7 +51,7 @@ class helper {
      * @param string $component The component that the grade item belongs to
      * @return array
      */
-    public static function get_mappings_for_component(string $component): array {
+    public static function get_itemname_mapping_for_component(string $component): array {
         $classname = "{$component}\\grades\gradeitems";
 
         if (!class_exists($classname)) {
@@ -52,11 +60,48 @@ class helper {
             ];
         }
 
-        if (!is_subclass_of($classname, 'core_grades\local\item\itemnumber_mapping')) {
+        if (!is_subclass_of($classname, 'core_grades\local\gradeitem\itemnumber_mapping')) {
             throw new \coding_exception("The {$classname} class does not implement " . itemnumber_mapping::class);
         }
 
-        return $classname::get_mappings();
+        return $classname::get_itemname_mapping_for_component();
+    }
+
+    /**
+     * Check whether the component class defines the advanced grading items.
+     *
+     * @return bool
+     */
+    public static function defines_advancedgrading_itemnames_for_component(string $component): bool {
+        return is_subclass_of(self::get_component_classname($component), 'core_grades\local\gradeitem\advancedgrading_mapping');
+    }
+
+    /**
+     * Get the list of advanced grading item names for the named component.
+     *
+     * @param string $component
+     * @return array
+     */
+    public static function get_advancedgrading_itemnames_for_component(string $component): array {
+        $classname = self::get_component_classname($component);
+        if (!self::defines_advancedgrading_itemnames_for_component($component)) {
+            throw new \coding_exception("The {$classname} class does not implement " . advancedgrading_mapping::class);
+        }
+
+        return $classname::get_advancedgrading_itemnames();
+    }
+
+    /**
+     * Whether the named grading item name supports advanced grading.o
+     *
+     * @param string $component
+     * @param string $itemname
+     * @return bool
+     */
+    public static function is_advancedgrading_itemname(string $component, string $itemname): bool {
+        $gradingareas = self::get_advancedgrading_itemnames_for_component($component);
+
+        return array_search($itemname, $gradingareas) !== false;
     }
 
     /**
@@ -117,7 +162,7 @@ class helper {
             return '';
         }
 
-        $mappings = self::get_mappings_for_component($component);
+        $mappings = self::get_itemname_mapping_for_component($component);
 
         if (isset($mappings[$itemnumber])) {
             return $mappings[$itemnumber];
@@ -145,7 +190,7 @@ class helper {
             return 0;
         }
 
-        $mappings = self::get_mappings_for_component($component);
+        $mappings = self::get_itemname_mapping_for_component($component);
 
         $flipped = array_flip($mappings);
         if (isset($flipped[$itemname])) {

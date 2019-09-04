@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_grades\component_gradeitems;
+
 /**
  * Factory method returning an instance of the grading manager
  *
@@ -288,14 +290,23 @@ class grading_manager {
     public static function available_areas($component) {
         global $CFG;
 
+        if (component_gradeitems::defines_advancedgrading_itemnames_for_component($component)) {
+            $result = [];
+            foreach (component_gradeitems::get_advancedgrading_itemnames_for_component($component) as $itemnumber => $itemname) {
+                $result[$itemname] = get_string("gradeitem:{$itemname}", $component);
+            }
+
+            return $result;
+        }
+
         list($plugintype, $pluginname) = core_component::normalize_component($component);
 
         if ($component === 'core_grading') {
             return array();
 
         } else if ($plugintype === 'mod') {
+            // TODO Deprecate.
             return plugin_callback('mod', $pluginname, 'grading', 'areas_list', null, array());
-
         } else {
             throw new coding_exception('Unsupported area location');
         }
