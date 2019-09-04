@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for core_grades\local\item\helper.
+ * Unit tests for mod_forum\grades\gradeitems.
  *
  * @package   mod_forum
  * @category  test
@@ -28,11 +28,11 @@ declare(strict_types = 1);
 namespace tests\mod_forum\grades;
 
 use advanced_testcase;
-use core_grades\local\item\helper;
+use core_grades\component_gradeitems;
 use coding_exception;
 
 /**
- * Unit tests for mod_forum\grades\item\gradeitems.
+ * Unit tests for mod_forum\grades\gradeitems.
  *
  * @package   mod_forum
  * @category  test
@@ -45,7 +45,7 @@ class gradeitems_test extends advanced_testcase {
      * Ensure that a component which does not implement the mapping class excepts.
      */
     public function test_get_mappings() {
-        $mappings = helper::get_mappings_for_component('mod_forum');
+        $mappings = component_gradeitems::get_mappings_for_component('mod_forum');
         $this->assertIsArray($mappings);
         $this->assertCount(2, $mappings);
         $this->assertArraySubset([0 => 'rating'], $mappings);

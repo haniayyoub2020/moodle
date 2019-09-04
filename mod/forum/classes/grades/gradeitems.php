@@ -26,7 +26,8 @@ declare(strict_types = 1);
 
 namespace mod_forum\grades;
 
-use \core_grades\local\item\itemnumber_mapping;
+use \core_grades\local\gradeitem\itemnumber_mapping;
+use \core_grades\local\gradeitem\advancedgrading_mapping as advanced_mapping;
 
 /**
  * Grade item mappings for the activity.
@@ -35,16 +36,28 @@ use \core_grades\local\item\itemnumber_mapping;
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradeitems implements itemnumber_mapping {
+class gradeitems implements itemnumber_mapping, advanced_mapping {
+
     /**
-     * Return the lislt of grade item mappings for the forum.
+     * Return the list of grade item mappings for the forum.
      *
      * @return array
      */
-    public static function get_mappings(): array {
+    public static function get_itemname_mapping_for_component(): array {
         return [
             0 => 'rating',
             1 => 'forum',
+        ];
+    }
+
+    /**
+     * Get the list of advanced grading item names for this component.
+     *
+     * @return array
+     */
+    public static function get_advancedgrading_itemnames(): array {
+        return [
+            'forum',
         ];
     }
 }

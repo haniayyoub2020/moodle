@@ -305,6 +305,7 @@ $string['forum:viewrating'] = 'View the total rating you received';
 $string['forum:viewsubscribers'] = 'View subscribers';
 $string['generalforum'] = 'Standard forum for general use';
 $string['generalforums'] = 'General forums';
+$string['gradeitem:forum'] = 'Forum';
 $string['hiddenforumpost'] = 'Hidden forum post';
 $string['indicator:cognitivedepth'] = 'Forum cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a Forum activity.';

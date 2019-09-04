@@ -27,7 +27,7 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once ($CFG->dirroot.'/course/moodleform_mod.php');
 
-use core_grades\local\item\helper as grade_item_helper;
+use core_grades\component_gradeitems;
 
 class mod_forum_mod_form extends moodleform_mod {
 
@@ -231,10 +231,10 @@ class mod_forum_mod_form extends moodleform_mod {
         $component = "mod_{$this->_modname}";
         $defaultgradingvalue = 0;
 
-        $itemnumber = grade_item_helper::get_itemnumber_from_itemname($component, $itemname);
-        $gradefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
-        $gradecatfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
-        $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
+        $itemnumber = component_gradeitems::get_itemnumber_from_itemname($component, $itemname);
+        $gradefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
+        $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
 
         // The advancedgradingmethod is different in that it is suffixed with an area name... which is not the
         // itemnumber.
@@ -355,9 +355,9 @@ class mod_forum_mod_form extends moodleform_mod {
 
         $component = "mod_forum";
         $itemname = 'forum';
-        $itemnumber = grade_item_helper::get_itemnumber_from_itemname($component, $itemname);
-        $gradefieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
-        $gradepassfieldname = grade_item_helper::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $itemnumber = component_gradeitems::get_itemnumber_from_itemname($component, $itemname);
+        $gradefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
 
         $gradeitem = grade_item::fetch([
             'itemtype' => 'mod',
@@ -471,7 +471,7 @@ class mod_forum_mod_form extends moodleform_mod {
         if ($data) {
             $itemname = 'forum';
             $component = 'mod_forum';
-            $gradepassfieldname = grade_item_helper::get_field_name_for_itemname($component, $itemname, 'gradepass');
+            $gradepassfieldname = component_gradeitems::get_field_name_for_itemname($component, $itemname, 'gradepass');
 
             // Convert the grade pass value - we may be using a language which uses commas,
             // rather than decimal points, in numbers. These need to be converted so that
