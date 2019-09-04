@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+declare(strict_types = 1);
+
 namespace core_grades\local\item;
 
 /**
@@ -29,9 +31,9 @@ namespace core_grades\local\item;
  *
  * @package   core_grades
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 interface itemnumber_mapping {
+
     /**
      * Get the grade item mapping of item number to item name.
      *

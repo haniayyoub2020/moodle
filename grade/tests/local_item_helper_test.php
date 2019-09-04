@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
+declare(strict_types = 1);
+
 namespace tests\core_grades\local\item\item {
     use advanced_testcase;
     use core_grades\local\item\helper;
@@ -44,7 +46,8 @@ namespace tests\core_grades\local\item\item {
         public function test_get_mappings_for_component_does_not_exist() {
             $mappings = helper::get_mappings_for_component('invalid_component');
             $this->assertIsArray($mappings);
-            $this->assertEmpty($mappings);
+            $this->assertCount(1, $mappings);
+            $this->assertArrayHasKey(0, $mappings);
         }
 
         /**
@@ -101,6 +104,9 @@ namespace tests\core_grades\local\item\item {
          * Ensure that valid field names are correctly mapped for a valid component.
          *
          * @dataProvider get_field_name_for_itemnumber_provider
+         * @param string $itemnumber The item itemnumber to test
+         * @param string $fieldname The field name being translated
+         * @param string $expected The expected value
          */
         public function test_get_field_name_for_itemnumber(int $itemnumber, string $fieldname, string $expected): void {
             $component = 'tests\core_grades\local\item\item\valid';
@@ -190,10 +196,13 @@ namespace tests\core_grades\local\item\item {
          * Ensure that valid field names are correctly mapped for a valid component.
          *
          * @dataProvider get_field_name_for_itemname_provider
+         * @param string $itemname The item itemname to test
+         * @param string $fieldname The field name being translated
+         * @param string $expected The expected value
          */
         public function test_get_field_name_for_itemname(string $itemname, string $fieldname, string $expected): void {
             $component = 'tests\core_grades\local\item\item\valid';
-            $this->assertEquals($expected, helper::get_field_name_for_itemname($component, $fieldname, $itemname));
+            $this->assertEquals($expected, helper::get_field_name_for_itemname($component, $itemname, $fieldname));
         }
 
         /**
@@ -203,7 +212,7 @@ namespace tests\core_grades\local\item\item {
             $component = 'tests\core_grades\local\item\item\valid';
 
             $this->expectException(coding_exception::class);
-            helper::get_field_name_for_itemname($component, 'gradecat', 'typo');
+            helper::get_field_name_for_itemname($component, 'typo', 'gradecat');
         }
 
         /**
@@ -213,7 +222,7 @@ namespace tests\core_grades\local\item\item {
         public function test_get_field_name_for_itemname_not_defining_mapping_empty_name(): void {
             $component = 'tests\core_grades\local\item\item\othervalid';
 
-            $this->assertEquals('gradecat', helper::get_field_name_for_itemname($component, 'gradecat', ''));
+            $this->assertEquals('gradecat', helper::get_field_name_for_itemname($component, '', 'gradecat'));
         }
 
         /**
@@ -223,7 +232,7 @@ namespace tests\core_grades\local\item\item {
             $component = 'tests\core_grades\local\item\item\othervalid';
 
             $this->expectException(coding_exception::class);
-            helper::get_field_name_for_itemname($component, 'gradecat', 'example');
+            helper::get_field_name_for_itemname($component, 'example', 'gradecat');
         }
 
         /**
@@ -232,7 +241,7 @@ namespace tests\core_grades\local\item\item {
         public function test_get_field_name_for_itemname_invalid_mapping_empty_name(): void {
             $component = 'tests\core_grades\local\item\item\invalid';
 
-            $this->assertEquals('gradecat', helper::get_field_name_for_itemname($component, 'gradecat', ''));
+            $this->assertEquals('gradecat', helper::get_field_name_for_itemname($component, '', 'gradecat'));
         }
 
         /**
@@ -242,7 +251,7 @@ namespace tests\core_grades\local\item\item {
             $component = 'tests\core_grades\local\item\item\invalid';
 
             $this->expectException(coding_exception::class);
-            helper::get_field_name_for_itemname($component, 'gradecat', 'example');
+            helper::get_field_name_for_itemname($component, 'example', 'gradecat');
         }
 
         /**
@@ -267,10 +276,21 @@ namespace tests\core_grades\local\item\item {
          * Ensure that item names are correctly mapped for a valid component.
          *
          * @dataProvider get_itemname_from_itemnumber_provider
+         * @param int $itemnumber The item itemnumber to test
+         * @param string $expected The expected value
          */
         public function test_get_itemname_from_itemnumber(int $itemnumber, string $expected): void {
             $component = 'tests\core_grades\local\item\item\valid';
             $this->assertEquals($expected, helper::get_itemname_from_itemnumber($component, $itemnumber));
+        }
+
+        /**
+         * Ensure that an itemnumber over 1000 is treated as itemnumber 0 for the purpose of outcomes.
+         */
+        public function test_get_itemname_from_itemnumber_outcome_itemnumber(): void {
+            $component = 'tests\core_grades\local\item\item\valid';
+
+            $this->assertEquals('', helper::get_itemname_from_itemnumber($component, 1000));
         }
 
         /**
@@ -338,6 +358,8 @@ namespace tests\core_grades\local\item\item {
          * Ensure that valid item names are correctly mapped for a valid component.
          *
          * @dataProvider get_itemnumber_from_itemname_provider
+         * @param string $itemname The item itemname to test
+         * @param int $expected The expected value
          */
         public function test_get_itemnumber_from_itemname(string $itemname, int $expected): void {
             $component = 'tests\core_grades\local\item\item\valid';
@@ -407,6 +429,11 @@ namespace tests\core_grades\local\item\item\valid\grades {
      * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
      */
     class gradeitems implements itemnumber_mapping {
+        /**
+         * Get the grade item mapping of item number to item name.
+         *
+         * @return array
+         */
         public static function get_mappings(): array {
             return [
                 0 => 'rating',
@@ -428,6 +455,11 @@ namespace tests\core_grades\local\item\item\invalid\grades {
      * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
      */
     class gradeitems {
+        /**
+         * Get the grade item mapping of item number to item name.
+         *
+         * @return array
+         */
         public static function get_mappings(): array {
             return [
                 0 => 'rating',

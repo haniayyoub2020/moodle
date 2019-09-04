@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+declare(strict_types = 1);
+
 namespace core_grades\local\item;
 
 use code_grades\local\item\itemnumber_mapping;
@@ -38,14 +40,16 @@ class helper {
     /**
      * Get the grade itemnumber mapping for a component.
      *
-     * @param string $component
+     * @param string $component The component that the grade item belongs to
      * @return array
      */
     public static function get_mappings_for_component(string $component): array {
         $classname = "{$component}\\grades\gradeitems";
 
         if (!class_exists($classname)) {
-            return [];
+            return [
+                0 => '',
+            ];
         }
 
         if (!is_subclass_of($classname, 'core_grades\local\item\itemnumber_mapping')) {
@@ -60,10 +64,10 @@ class helper {
      *
      * For legacy reasons, the first itemnumber has no suffix on field names.
      *
-     * @param string $component
-     * @param string $fieldname
-     * @param int $itemnumber
-     * @return string
+     * @param string $component The component that the grade item belongs to
+     * @param int $itemnumber The grade itemnumber
+     * @param string $fieldname The name of the field to be rewritten
+     * @return string The translated field name
      */
     public static function get_field_name_for_itemnumber(string $component, int $itemnumber, string $fieldname): string {
         $itemname = static::get_itemname_from_itemnumber($component, $itemnumber);
@@ -80,12 +84,12 @@ class helper {
      *
      * For legacy reasons, the first itemnumber has no suffix on field names.
      *
-     * @param string $component
-     * @param string $fieldname
-     * @param int $itemnumber
-     * @return string
+     * @param string $component The component that the grade item belongs to
+     * @param int $itemname The grade itemname
+     * @param string $fieldname The name of the field to be rewritten
+     * @return string The translated field name
      */
-    public static function get_field_name_for_itemname(string $component, string $fieldname, string $itemname): string {
+    public static function get_field_name_for_itemname(string $component, string $itemname, string $fieldname): string {
         if (empty($itemname)) {
             return $fieldname;
         }
@@ -104,9 +108,9 @@ class helper {
      *
      * For legacy compatability when the itemnumber is 0, the itemname will always be empty.
      *
-     * @param string $component
-     * @param string $itemname
-     * @return int
+     * @param string $component The component that the grade item belongs to
+     * @param int $itemnumber The grade itemnumber
+     * @return int The grade itemnumber of the itemname
      */
     public static function get_itemname_from_itemnumber(string $component, int $itemnumber): string {
         if ($itemnumber === 0) {
@@ -119,6 +123,11 @@ class helper {
             return $mappings[$itemnumber];
         }
 
+        if ($itemnumber >= 1000) {
+            // An itemnumber >= 1000 belongs to an outcome.
+            return '';
+        }
+
         throw new \coding_exception("Unknown itemnumber mapping for {$itemnumber} in {$component}");
     }
 
@@ -127,9 +136,9 @@ class helper {
      *
      * For legacy compatability when the itemname is empty, the itemnumber will always be 0.
      *
-     * @param string $component
-     * @param string $itemname
-     * @return int
+     * @param string $component The component that the grade item belongs to
+     * @param string $itemname The grade itemname
+     * @return int The grade itemname of the itemnumber
      */
     public static function get_itemnumber_from_itemname(string $component, string $itemname): int {
         if (empty($itemname)) {
@@ -145,5 +154,4 @@ class helper {
 
         throw new \coding_exception("Unknown itemnumber mapping for {$itemname} in {$component}");
     }
-
 }
