@@ -47,11 +47,8 @@ class summary_table extends table_sql {
     /** @var int The number of rows to be displayed per page. */
     protected $perpage = 25;
 
-    /** @var int The course ID being reported on. */
-    protected $courseid;
-
-    /** @var int The forum ID being reported on. */
-    protected $forumid;
+    /** @var \stdClass The course module object of the forum being reported on. */
+    protected $cm;
 
     /**
      * @var int The user ID if only one user's summary will be generated.
@@ -70,15 +67,13 @@ class summary_table extends table_sql {
 
         parent::__construct("summaryreport_{$courseid}_{$forumid}");
 
-        $cm = get_coursemodule_from_instance('forum', $forumid, $courseid);
-        $context = \context_module::instance($cm->id);
+        $this->cm = get_coursemodule_from_instance('forum', $forumid, $courseid);
+        $context = \context_module::instance($this->cm->id);
 
         // Only show their own summary unless they have permission to view all.
         if (!has_capability('forumreport/summary:viewall', $context)) {
             $this->userid = $USER->id;
         }
-
-        $this->courseid = intval($courseid);
 
         $columnheaders = [
             'fullname' => get_string('fullnameuser'),
@@ -123,7 +118,7 @@ class summary_table extends table_sql {
      * @return string User's full name.
      */
     public function col_fullname($data): string {
-        $fullname = $data->firstname . ' ' . $data->lastname;
+        $fullname = fullname($data);
 
         return $fullname;
     }
@@ -280,18 +275,22 @@ class summary_table extends table_sql {
     protected function define_base_sql(): void {
         $this->sql = new \stdClass();
 
+        $context = \context_module::instance($this->cm->id);
+
+        $userfields = get_extra_user_fields($context);
+        $userfieldssql = \user_picture::fields('u', $userfields);
+
         // Define base SQL query format.
         // Ignores private replies as they are not visible to all participants.
         $this->sql->basefields = ' ue.userid AS userid,
-                                    e.courseid AS courseid,
-                                    f.id as forumid,
-                                    SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS postcount,
-                                    SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replycount,
-                                    u.firstname,
-                                    u.lastname,
-                                    SUM(CASE WHEN att.attcount IS NULL THEN 0 ELSE att.attcount END) AS attachmentcount,
-                                    MIN(p.created) AS earliestpost,
-                                    MAX(p.created) AS latestpost';
+                                   e.courseid AS courseid,
+                                   f.id as forumid,
+                                   SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS postcount,
+                                   SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replycount,
+                                   ' . $userfieldssql . '
+                                   SUM(CASE WHEN att.attcount IS NULL THEN 0 ELSE att.attcount END) AS attachmentcount,
+                                   MIN(p.created) AS earliestpost,
+                                   MAX(p.created) AS latestpost';
 
         $this->sql->basefromjoins = '    {enrol} e
                                     JOIN {user_enrolments} ue ON ue.enrolid = e.id
@@ -312,11 +311,11 @@ class summary_table extends table_sql {
 
         $this->sql->basewhere = 'e.courseid = :courseid';
 
-        $this->sql->basegroupby = 'ue.userid, e.courseid, f.id, u.firstname, u.lastname';
+        $this->sql->basegroupby = 'ue.userid, e.courseid, f.id, u.id';
 
         $this->sql->params = [
             'component' => 'mod_forum',
-            'courseid' => $this->courseid,
+            'courseid' => $this->cm->course,
         ];
 
         // Handle if a user is limited to viewing their own summary.
