@@ -63,7 +63,7 @@ class summary_table extends table_sql {
      * @param int $forumid The ID of the forum being summarised.
      */
     public function __construct(int $courseid, int $forumid) {
-        global $USER;
+        global $USER, $OUTPUT;
 
         parent::__construct("summaryreport_{$courseid}_{$forumid}");
 
@@ -75,7 +75,17 @@ class summary_table extends table_sql {
             $this->userid = $USER->id;
         }
 
+        $mastercheckbox = new \core\output\checkbox_toggleall('summaryreport-table', true, [
+            'id' => 'select-all-users',
+            'name' => 'select-all-users',
+            'label' => get_string('selectall'),
+            'labelclasses' => 'sr-only',
+            'classes' => 'm-1',
+            'checked' => false
+        ]);
+
         $columnheaders = [
+            'select' => $OUTPUT->render($mastercheckbox),
             'fullname' => get_string('fullnameuser'),
             'postcount' => get_string('postcount', 'forumreport_summary'),
             'replycount' => get_string('replycount', 'forumreport_summary'),
@@ -109,6 +119,27 @@ class summary_table extends table_sql {
         ];
 
         return $filternames[$filtertype];
+    }
+
+    /**
+     * Generate the select column.
+     *
+     * @param \stdClass $data
+     * @return string
+     */
+    public function col_select($data) {
+        global $OUTPUT;
+
+        $checkbox = new \core\output\checkbox_toggleall('summaryreport-table', false, [
+            'classes' => 'usercheckbox m-1',
+            'id' => 'user' . $data->userid,
+            'name' => 'user' . $data->userid,
+            'checked' => false,
+            'label' => $data->firstname . ' ' . $data->lastname,
+            'labelclasses' => 'accesshide',
+        ]);
+
+        return $OUTPUT->render($checkbox);
     }
 
     /**
