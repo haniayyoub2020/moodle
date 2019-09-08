@@ -61,8 +61,9 @@ class summary_table extends table_sql {
      *
      * @param int $courseid The ID of the course the forum(s) exist within.
      * @param int $forumid The ID of the forum being summarised.
+     * @param bool $bulkoperations Is the user allowed to perform bulk operations?
      */
-    public function __construct(int $courseid, int $forumid) {
+    public function __construct(int $courseid, int $forumid, bool $bulkoperations) {
         global $USER, $OUTPUT;
 
         parent::__construct("summaryreport_{$courseid}_{$forumid}");
@@ -75,17 +76,21 @@ class summary_table extends table_sql {
             $this->userid = $USER->id;
         }
 
-        $mastercheckbox = new \core\output\checkbox_toggleall('summaryreport-table', true, [
-            'id' => 'select-all-users',
-            'name' => 'select-all-users',
-            'label' => get_string('selectall'),
-            'labelclasses' => 'sr-only',
-            'classes' => 'm-1',
-            'checked' => false
-        ]);
+        $columnheaders = [];
 
-        $columnheaders = [
-            'select' => $OUTPUT->render($mastercheckbox),
+        if ($bulkoperations) {
+            $mastercheckbox = new \core\output\checkbox_toggleall('summaryreport-table', true, [
+                'id' => 'select-all-users',
+                'name' => 'select-all-users',
+                'label' => get_string('selectall'),
+                'labelclasses' => 'sr-only',
+                'classes' => 'm-1',
+                'checked' => false
+            ]);
+            $columnheaders['select'] = $OUTPUT->render($mastercheckbox);
+        }
+
+        $columnheaders += [
             'fullname' => get_string('fullnameuser'),
             'postcount' => get_string('postcount', 'forumreport_summary'),
             'replycount' => get_string('replycount', 'forumreport_summary'),
