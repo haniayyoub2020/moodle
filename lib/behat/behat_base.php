@@ -280,12 +280,12 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     /**
      * Transform the selector for a field.
      *
-     * @param string $label
-     * @param Element $container
+     * @param string $label The label to find
+     * @param Element $container The container to look within
+     * @return array The selector, locator, and container to search within
      */
-    private function transform_find_for_field(string $label, $container = null) {
+    private function transform_find_for_field(string $label, Element $container): array {
         $hasfieldset = strpos($label, '>');
-        $container = null;
         if (false !== $hasfieldset) {
             list($containerlabel, $label) = explode(">", $label, 2);
             $container = $this->find_fieldset(trim($containerlabel), $container);
@@ -294,7 +294,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
 
         return [
             'selector' => 'named_partial',
-            'locator' => self::normalise_named_partial_selector('field', $label),
+            'locator' => self::normalise_named_selector('field', $label),
             'container' => $container,
         ];
     }
