@@ -48,7 +48,7 @@ class behat_selectors {
      */
     public static function get_behat_selector($selectortype, $element, Behat\Mink\Session $session) {
         // Note: This function is not deprecated, but not the recommended way of doing things.
-        $normalised = $session->normalise_selector($selectortype, $element);
+        $normalised = $session->normalise_selector($selectortype, $element, $session->getPage());
         $selector = $normalised['selector'];
         $locator = $normalised['locator'];
 
