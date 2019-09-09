@@ -162,7 +162,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         }
 
         // Normalise the values in order to perform the search.
-        $normalised = $this->normalise_selector($selector, $locator, $container ?: null);
+        $normalised = $this->normalise_selector($selector, $locator, $container ?: $this->getSession()->getPage());
         $selector = $normalised['selector'];
         $locator = $normalised['locator'];
         $container = $normalised['container'];
@@ -173,7 +173,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
 
         // Waits for the node to appear if it exists, otherwise will timeout and throw the provided exception.
         return $this->spin(
-            function($context, $args) use ($selector, $locator, $container) {
+            function() use ($selector, $locator, $container) {
                 return $container->findAll($selector, $locator);
             }, [], $timeout, $exception, $microsleep
         );
@@ -185,9 +185,9 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @param string $selector The type of thing to search
      * @param mixed $locator The locator value. Can be an array, but is more likely a string.
      * @param Element $container An optional container to search within
-     * @return array
+     * @return array The selector, locator, and container to search within
      */
-    public function normalise_selector(string $selector, $locator, $container = null): array {
+    public function normalise_selector(string $selector, $locator, Element $container): array {
         // Check for specific transformations for this selector type.
         $transformfunction = "transform_find_for_{$selector}";
         if (method_exists($this, $transformfunction)) {
@@ -213,10 +213,10 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             $allowedpartialselectors = behat_partial_named_selector::get_allowed_selectors();
             $allowedexactselectors = behat_exact_named_selector::get_allowed_selectors();
             if (isset($allowedpartialselectors[$selector])) {
-                $locator = self::normalise_named_partial_selector($allowedpartialselectors[$selector], $locator);
+                $locator = self::normalise_named_selector($allowedpartialselectors[$selector], $locator);
                 $selector = 'named_partial';
             } else if (isset($allowedexactselectors[$selector])) {
-                $locator = self::normalise_named_partial_selector($allowedexactselectors[$selector], $locator);
+                $locator = self::normalise_named_selector($allowedexactselectors[$selector], $locator);
                 $selector = 'named_exact';
             } else {
                 throw new ExpectationException("The '{$selector}' selector type is not registered.", $this);
@@ -237,7 +237,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @param string $locator The value to normalise
      * @return array
      */
-    protected static function normalise_named_partial_selector(string $selector, string $locator): array {
+    protected static function normalise_named_selector(string $selector, string $locator): array {
         return [
             $selector,
             behat_context_helper::escape($locator),
@@ -468,7 +468,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             throw new ExpectationException('The "' . $selectortype . '" selector type does not exist', $this->getSession());
         }
 
-        $normalised = $this->normalise_selector($selectortype, $element);
+        $normalised = $this->normalise_selector($selectortype, $element, $this->getSession()->getPage());
         return [$normalised['selector'], $normalised['locator']];
     }
 
