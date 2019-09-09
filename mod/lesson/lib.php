@@ -412,7 +412,7 @@ function lesson_user_outline($course, $user, $mod, $lesson) {
                 $return->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
             }
 
-            $result->time = grade_get_date_for_user_grade($grade, $user);
+            $return->time = grade_get_date_for_user_grade($grade, $user);
         }
     }
     return $return;
