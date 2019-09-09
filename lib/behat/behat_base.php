@@ -515,17 +515,21 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         $msg = "The '{$locator}' element does not exist and should";
         $exception = new ExpectationException($msg, $this->getSession());
 
+        // Normalise the values in order to perform the search.
+        $normalised = $this->normalise_selector($selectortype, $locator, $this->getSession()->getPage());
+        $selector = $normalised['selector'];
+        $locator = $normalised['locator'];
+        $container = $normalised['container'];
+
         // It will stop spinning once the find() method returns true.
         $this->spin(
-            function($context, $args) {
-                if ($args['container']->find($args['selector'], $args['locator'])) {
+            function() use ($selector, $locator, $container) {
+                if ($container->find($selector, $locator)) {
                     return true;
                 }
                 return false;
             },
-            // Note: We cannot use $this because the find will then be $this->find(), which leads us to a nested spin().
-            // We cannot nest spins because the outer spin times out before the inner spin completes.
-            $this->normalise_selector($selectortype, $locator, $this->getSession()->getPage()),
+            [],
             self::get_extended_timeout(),
             $exception,
             true
@@ -545,17 +549,23 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         $msg = "The '{$locator}' element exists and should not exist";
         $exception = new ExpectationException($msg, $this->getSession());
 
+        // Normalise the values in order to perform the search.
+        $normalised = $this->normalise_selector($selectortype, $locator, $this->getSession()->getPage());
+        $selector = $normalised['selector'];
+        $locator = $normalised['locator'];
+        $container = $normalised['container'];
+
         // It will stop spinning once the find() method returns false.
         $this->spin(
-            function($context, $args) {
-                if ($args['container']->find($args['selector'], $args['locator'])) {
+            function() use ($selector, $locator, $container) {
+                if ($container->find($selector, $locator)) {
                     return false;
                 }
                 return true;
             },
             // Note: We cannot use $this because the find will then be $this->find(), which leads us to a nested spin().
             // We cannot nest spins because the outer spin times out before the inner spin completes.
-            $this->normalise_selector($selectortype, $locator, $this->getSession()->getPage()),
+            [],
             self::get_extended_timeout(),
             $exception,
             true
