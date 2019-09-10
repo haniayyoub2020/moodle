@@ -193,7 +193,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         if (method_exists($this, $transformfunction)) {
             // A selector-specific transformation exists.
             // Perform initial transformation of the selector within the current container.
-            $normalised = $this->{$transformfunction}($locator, $container ?: null);
+            $normalised = $this->{$transformfunction}($locator, $container);
             $selector = $normalised['selector'];
             $locator = $normalised['locator'];
             $container = $normalised['container'];
