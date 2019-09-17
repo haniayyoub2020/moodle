@@ -1386,6 +1386,7 @@ class page_requirements_manager {
         } else {
             $output .= html_writer::script('', $this->js_fix_url('/lib/requirejs/require.js'));
         }
+        $output .= html_writer::script('', $this->js_fix_url('/lib/requirejs/require-pending.js'));
 
         // First include must be to a module with no dependencies, this prevents multiple requests.
         $prefix = 'M.util.js_pending("core/first");';
