@@ -140,7 +140,7 @@ class summary_table extends table_sql {
             'id' => 'user' . $data->userid,
             'name' => 'user' . $data->userid,
             'checked' => false,
-            'label' => $data->firstname . ' ' . $data->lastname,
+            'label' => get_string('selectitem', 'moodle', fullname($data)),
             'labelclasses' => 'accesshide',
         ]);
 
@@ -323,7 +323,7 @@ class summary_table extends table_sql {
                                    f.id as forumid,
                                    SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS postcount,
                                    SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replycount,
-                                   ' . $userfieldssql . '
+                                   ' . $userfieldssql . ',
                                    SUM(CASE WHEN att.attcount IS NULL THEN 0 ELSE att.attcount END) AS attachmentcount,
                                    MIN(p.created) AS earliestpost,
                                    MAX(p.created) AS latestpost';
