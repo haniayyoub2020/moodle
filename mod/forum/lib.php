@@ -758,8 +758,37 @@ function forum_update_grades($forum, $userid = 0): void {
 
     $forumgrades = null;
     if ($forum->grade_forum) {
-        // TODO MDL-66080.
-        // Need to create a new table for forum_grades with userid, forumid, rawgrade, etc.
+        // TODO Move this to a new function.
+        $sql = <<<EOF
+SELECT
+    g.userid,
+    0 as datesubmitted,
+    g.grade as rawgrade,
+    g.timemodified as dategraded,
+    g.graderid as usermodified
+  FROM {forum} f
+  JOIN {forum_grades} g ON g.forum = f.id
+ WHERE f.id = :forumid
+EOF;
+
+        $params = [
+            'forumid' => $forum->id,
+        ];
+
+        if ($userid) {
+            $sql .= "WHERE g.userid = :userid";
+            $params['userid'] = $userid;
+        }
+
+        $forumgrades = [];
+        if ($grades = $DB->get_recordset_sql($sql, $params)) {
+            foreach ($grades as $userid => $grade) {
+                if ($grade->rawgrade == -1) {
+                    $forumgrades[$userid] = $grade;
+                }
+            }
+            $grades->close();
+        }
     }
 
     forum_grade_item_update($forum, $ratings, $forumgrades);
