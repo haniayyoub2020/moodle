@@ -175,4 +175,12 @@ $functions = array(
         'ajax' => true,
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
+    'mod_forum_save_grade' => [
+        'classname' => 'mod_forum\\grades\\external',
+        'methodname' => 'save_grade',
+        'description' => 'Save a grade within the forum',
+        'type' => 'write',
+        'ajax' => true,
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+    ],
 );
