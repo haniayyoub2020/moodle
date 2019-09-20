@@ -27,6 +27,7 @@ declare(strict_types = 1);
 namespace core_grades\local\item;
 
 use code_grades\local\item\itemnumber_mapping;
+use code_grades\local\item\advanced_grading_items;
 
 /**
  * Grade item helpers.
@@ -153,5 +154,27 @@ class helper {
         }
 
         throw new \coding_exception("Unknown itemnumber mapping for {$itemname} in {$component}");
+    }
+
+    /**
+     * Get the list of advanced grdaing areas for the named component.
+     *
+     * @param string $component
+     * @return array
+     */
+    public static function get_advanced_grading_areas_for_component(string $component): array {
+        $classname = "{$component}\\grades\gradeitems";
+
+        if (!class_exists($classname)) {
+            return [
+                0 => '',
+            ];
+        }
+
+        if (!is_subclass_of($classname, 'core_grades\local\item\advanced_grading_items')) {
+            throw new \coding_exception("The {$classname} class does not implement " . advanced_grading_items::class);
+        }
+
+        return $classname::get_advanced_grading_areas();
     }
 }

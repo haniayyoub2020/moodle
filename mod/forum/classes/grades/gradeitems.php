@@ -47,4 +47,15 @@ class gradeitems implements itemnumber_mapping {
             1 => 'forum',
         ];
     }
+
+    /**
+     * Return the list of gradeitem names which are valid advanced grading areas.
+     *
+     * @return array
+     */
+    public static function get_advanced_grading_areas(): array {
+        return [
+            'forum'
+        ];
+    }
 }
