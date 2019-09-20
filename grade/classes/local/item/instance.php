@@ -181,10 +181,10 @@ abstract class instance {
      * Create an empty row in the grade for the specified user and grader.
      *
      * @param int $userid
-     * @param int $grader
+     * @param int $graderid
      * @return int The id of the newly created grade record
      */
-    abstract public function create_empty_grade(int $userid, int $grader): int;
+    abstract public function create_empty_grade(int $userid, int $graderid): int;
 
     /**
      * Get the grade record for the specified grade id.
@@ -207,7 +207,7 @@ abstract class instance {
      * @param int $userid The user to fetch
      * @return stdClass The grade value
      */
-    abstract public function get_grade_for_user(int $userid, int $grader = null): ?stdClass;
+    abstract public function get_grade_for_user(int $userid, int $graderid = null): ?stdClass;
 
     /**
      * Get grades for all users for the specified gradeitem.
@@ -229,12 +229,16 @@ abstract class instance {
      * Create or update the grade.
      *
      * @param int $userid The user being graded
-     * @param int $grader The user who is grading
+     * @param int $graderid The user who is grading
      * @param array $formdata The data submitted
      * @return bool Success
      */
-    public function store_grade_from_formdata(int $userid, int $grader, array $formdata): bool {
-        $grade = $this->get_grade_for_user($userid, $grader);
+    public function store_grade_from_formdata(int $userid, int $graderid, array $formdata): bool {
+        $grade = $this->get_grade_for_user($userid, $graderid);
+
+        if (empty($grade)) {
+            $grade = $gradeitem->create_empty_grade($userid, $graderid);
+        }
 
         if ($gradinginstance = $this->get_advanced_grading_instance($grade)) {
             $grade->grade = $gradinginstance->submit_and_get_grade($formdata->advancedgrading, $grade->id);
@@ -267,9 +271,9 @@ abstract class instance {
             return null;
         }
 
-        // Fetch the instance for the specified grader/itemid.
+        // Fetch the instance for the specified graderid/itemid.
         $gradinginstance = $controller->fetch_instance(
-            $grade->grader,
+            $grade->graderid,
             $grade->id
         );
 

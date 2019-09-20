@@ -37,7 +37,7 @@ use \core_grades\local\item\itemnumber_mapping;
  */
 class gradeitems implements itemnumber_mapping {
     /**
-     * Return the lislt of grade item mappings for the forum.
+     * Return the list of grade item mappings for the forum.
      *
      * @return array
      */
