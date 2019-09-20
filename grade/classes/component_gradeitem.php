@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grade item storage for core_grades.
+ * Compontent definition of a gradeitem.
  *
  * @package   core_grades
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
@@ -24,7 +24,7 @@
 
 declare(strict_types = 1);
 
-namespace core_grades\local\item;
+namespace core_grades;
 
 use stdClass;
 use core_grades\local\item\helper as grade_item_helper;
@@ -33,13 +33,14 @@ use gradingform_instance;
 use context;
 
 /**
- * Grade item storage for core_grades.
+ * Compontent definition of a gradeitem.
  *
  * @package   core_grades
  * @copyright Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class instance {
+abstract class component_gradeitem {
+
     /** @var array The scale data for the current grade item */
     protected $scale;
 
@@ -129,7 +130,7 @@ abstract class instance {
      * @return gradingform_controller
      */
     protected function get_advanced_grading_controller(): ?gradingform_controller {
-        require_once(__DIR__ . '/../../../grading/lib.php');
+        require_once(__DIR__ . '/../grading/lib.php');
         $gradingmanager = get_grading_manager($this->context, $this->component, $this->itemname);
 
         $gradinginstance = null;
