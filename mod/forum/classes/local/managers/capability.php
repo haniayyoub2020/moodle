@@ -633,4 +633,21 @@ class capability {
 
         return $canstart;
     }
+
+    /**
+     * Check whether the supplied grader can grade the gradee.
+     *
+     * @param stdClass $grader The user grading
+     * @param stdClass $gradee The user being graded
+     * @return bool
+     */
+    public function can_grade(stdClass $grader, stdClass $gradee): bool {
+        if (!has_capability('mod/forum:grade', $this->get_context(), $grader)) {
+            return false;
+        }
+
+        // TODO add group checks.
+
+        return true;
+    }
 }

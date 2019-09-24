@@ -412,17 +412,15 @@ $capabilities = array(
             'user' => CAP_ALLOW
         )
     ),
-    'mod/forum:gradeposts' => array(
 
-        'riskbitmask' => RISK_SPAM,
-
+    'mod/forum:grade' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 );
 
