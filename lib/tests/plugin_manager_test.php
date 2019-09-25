@@ -458,6 +458,19 @@ class core_plugin_manager_testcase extends advanced_testcase {
             'testable_plugininfo_base', $pluginman);
         $pluginfo->versiondisk = null;
         $this->assertEmpty($pluginman->resolve_requirements($pluginfo, 2015110900, 30));
+
+        // Test plugin fails for incompatible version.
+        $pluginfo = testable_plugininfo_base::fake_plugin_instance('fake', '/dev/null', 'two', '/dev/null/fake',
+            'testable_plugininfo_base', $pluginman);
+        $pluginfo->versiondisk = 2015060600;
+        $pluginfo->pluginincompatible = 30;
+        $reqs = $pluginman->resolve_requirements($pluginfo, 2015110900, 30);
+        $this->assertEquals($pluginman::REQUIREMENT_STATUS_OUTDATED, $reqs['core']->status);
+
+        // Test no failure for no incompatible version.
+        $pluginfo->pluginincompatible = 30;
+        $reqs = $pluginman->resolve_requirements($pluginfo, 2015110900, 31);
+        $this->assertEquals($pluginman::REQUIREMENT_STATUS_OK, $reqs['core']->status);
     }
 
     public function test_missing_dependencies() {
@@ -485,5 +498,25 @@ class core_plugin_manager_testcase extends advanced_testcase {
         $misdeps = $pluginman->missing_dependencies();
         $this->assertInstanceOf('\core\update\remote_info', $misdeps['foo_bar']);
         $this->assertEquals(2015100500, $misdeps['foo_bar']->version->version);
+    }
+
+    public function test_explicitly_supported() {
+        $pluginman = testable_core_plugin_manager::instance();
+
+        // Prepare a fake pluginfo instance.
+        $pluginfo = testable_plugininfo_base::fake_plugin_instance('fake', '/dev/null', 'one', '/dev/null/fake',
+            'testable_plugininfo_base', $pluginman);
+        $pluginfo->versiondisk = 2015060600;
+
+        // Set supported to valid range.
+        $pluginfo->pluginsupported = array(29, 31);
+        $this->assertEquals($pluginman::VERSION_SUPPORTED, $pluginman->check_explicitly_supported($pluginfo, 30));
+
+        // Set supported to no explicit support.
+        $this->assertEquals($pluginman::VERSION_NOT_SUPPORTED, $pluginman->check_explicitly_supported($pluginfo, 32));
+
+        // Check status for no supports provided.
+        $pluginfo->pluginsupported = null;
+        $this->assertEquals($pluginman::VERSION_NO_SUPPORTS, $pluginman->check_explicitly_supported($pluginfo, 30));
     }
 }

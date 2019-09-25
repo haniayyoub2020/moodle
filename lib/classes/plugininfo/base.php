@@ -218,6 +218,8 @@ abstract class base {
 
         $this->versiondisk = null;
         $this->versionrequires = null;
+        $this->pluginsupported = null;
+        $this->pluginincompatible = null;
         $this->dependencies = array();
 
         if (!isset($versions[$this->name])) {
@@ -238,6 +240,28 @@ abstract class base {
         if (isset($plugin->dependencies)) {
             $this->dependencies = $plugin->dependencies;
         }
+
+        // Check that supports and incompatible are wellformed, exception otherwise.
+        if (isset($plugin->supported)) {
+            if (is_array($plugin->supported)
+            && is_int($plugin->supported[0]) && is_int($plugin->supported[1])
+            && $plugin->supported[0] <= $plugin->supported[1]
+            && count($plugin->supported) == 2) {
+
+                $this->pluginsupported = $plugin->supported;
+            } else {
+                throw new coding_exception('Incorrect syntax in $plugin->supported in '."$this->name");
+            }
+        }
+
+        if (isset($plugin->incompatible)) {
+            if (intval($plugin->incompatible) > 0) {
+                $this->pluginincompatible = intval($plugin->incompatible);
+            } else {
+                throw new coding_exception('Incorrect syntax in $plugin->incompatible in '."$this->name");
+            }
+        }
+
     }
 
     /**
@@ -338,6 +362,20 @@ abstract class base {
 
         } else {
             return (double)$this->versionrequires <= (double)$moodleversion;
+        }
+    }
+
+    /**
+     * Returns true if the the given moodle branch is not stated incompatible with the plugin
+     *
+     * @param string|int $branch the moodle branch number
+     * @return bool true if not incompatible with moodle branch
+     */
+    public function is_core_compatible_satisfied($branch) {
+        if (!empty($this->pluginincompatible) && ($branch <= $this->pluginincompatible)) {
+            return false;
+        } else {
+            return true;
         }
     }
 
