@@ -76,6 +76,16 @@ const getWholeForumFunctions = (cmid) => {
     };
 };
 
+const getGradePanelFunctions = async(context, gradingComponent, itemName) => {
+    const component = 'mod_forum';
+    const GradingMethod = await import(`${gradingComponent}/local/grader/gradingpanel`);
+
+    return {
+        getter: userId => GradingMethod.fetchCurrentGrade(component, context, itemName, userId),
+        setter: (userId, formData) => GradingMethod.storeCurrentGrade(component, context, itemName, userId, formData),
+    };
+};
+
 const findGradableNode = (node) => {
     return node.closest(Selectors.gradableItem);
 };
@@ -114,7 +124,7 @@ const discussionPostMapper = (initialDiscussion) => {
 };
 
 export const registerLaunchListeners = () => {
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async(e) => {
         if (e.target.matches(Selectors.launch)) {
             const rootNode = findGradableNode(e.target);
 
@@ -123,14 +133,26 @@ export const registerLaunchListeners = () => {
             }
 
             if (rootNode.matches(Selectors.gradableItems.wholeForum)) {
-                const wholeForumFunctions = getWholeForumFunctions(rootNode.dataset.cmid);
-
-                Grader.launch(wholeForumFunctions.getUsers, wholeForumFunctions.getContentForUserId, {
-                    groupid: rootNode.dataset.groupid,
-                    initialUserId: rootNode.dataset.initialuserid,
-                });
-
                 e.preventDefault();
+
+                const data = rootNode.dataset;
+                const wholeForumFunctions = getWholeForumFunctions(rootNode.dataset.cmid);
+                const gradePanelFunctions = await getGradePanelFunctions(
+                    data.contextid,
+                    data.gradingComponent,
+                    data.gradableItemtype
+                );
+
+                Grader.launch(
+                    wholeForumFunctions.getUsers,
+                    wholeForumFunctions.getContentForUserId,
+                    gradePanelFunctions.getter,
+                    gradePanelFunctions.setter,
+                    {
+                        groupid: rootNode.dataset.groupid,
+                        initialUserId: rootNode.dataset.initialuserid,
+                    }
+                );
             } else {
                 throw Error('Unable to find a valid gradable item');
             }
