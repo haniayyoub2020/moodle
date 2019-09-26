@@ -20,8 +20,7 @@
  * @copyright  2019 Shamim Rezaie <shamim@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import $ from 'jquery';
-import * as Str from 'core/str';
+import {get_string} from 'core/str';
 import ModalFactory from 'core/modal_factory';
 import Templates from 'core/templates';
 import ModalEvents from 'core/modal_events';
@@ -37,26 +36,26 @@ import Notification from 'core/notification';
  * @returns {Promise}
  */
 export const showModal = (users, callback = null) => {
-    if (users.length == 0) {
+    if (!users.length) {
         // Nothing to do.
-        return $.Deferred().resolve().promise();
-    }
-    let titlePromise = null;
-    if (users.length == 1) {
-        titlePromise = Str.get_string('sendbulkmessagesingle', 'core_message');
-    } else {
-        titlePromise = Str.get_string('sendbulkmessage', 'core_message', users.length);
+        return Promise.resolve();
     }
 
-    return $.when(
-        ModalFactory.create({
-            type: ModalFactory.types.SAVE_CANCEL,
-            body: Templates.render('core_user/send_bulk_message', {})
-        }),
-        titlePromise
-    ).then(function(modal, title) {
-        modal.setTitle(title);
-        modal.setSaveButtonText(title);
+    let titlePromise = null;
+    if (users.length == 1) {
+        titlePromise = get_string('sendbulkmessagesingle', 'core_message');
+    } else {
+        titlePromise = get_string('sendbulkmessage', 'core_message', users.length);
+    }
+
+
+    return ModalFactory.create({
+        type: ModalFactory.types.SAVE_CANCEL,
+        body: Templates.render('core_user/send_bulk_message', {})
+        title: titlePromise,
+    })
+    .then(function(modal) {
+        modal.setSaveButtonText(titlePromise);
 
         // We want to focus on the action select when the dialog is closed.
         modal.getRoot().on(ModalEvents.hidden, function() {
@@ -82,31 +81,37 @@ export const showModal = (users, callback = null) => {
  *
  * @method sendMessage
  * @param {String} messageText
- * @param {int[]} users
- * @returns {*}
+ * @param {Number[]} users
+ * @returns {Promise}
  */
-export const sendMessage = (messageText, users) => {
-    let messages = [],
-        i = 0;
+export const sendMessage = async(messageText, users) => {
+    let messages = [];
 
-    for (i = 0; i < users.length; i++) {
-        messages.push({touserid: users[i], text: messageText});
-    }
+    users.forEach(user => {
+        messages.push({
+            touserid: user,
+            text: messageText
+        });
+    });
 
     return Ajax.call([{
         methodname: 'core_message_send_instant_messages',
-        args: {messages: messages}
-    }])[0].then(function(messageIds) {
+        args: {messages}
+    }])[0]
+    .then(function(messageIds) {
         if (messageIds.length == 1) {
-            return Str.get_string('sendbulkmessagesentsingle', 'core_message');
+            return get_string('sendbulkmessagesentsingle', 'core_message');
         } else {
-            return Str.get_string('sendbulkmessagesent', 'core_message', messageIds.length);
+            return get_string('sendbulkmessagesent', 'core_message', messageIds.length);
         }
-    }).then(function(msg) {
+    })
+    .then(function(msg) {
         Notification.addNotification({
             message: msg,
             type: "success"
         });
-        return true;
-    }).catch(Notification.exception);
+
+        return;
+    })
+    .catch(Notification.exception);
 };
