@@ -66,7 +66,6 @@
                     </div>
                 </div>
             {{/starter}}
-
             <hr>
         {{/posts}}
     {{/discussions}}
@@ -76,6 +75,6 @@
 </div>
 {{#js}}
     require(['mod_forum/grades/expandconversation'], function(Conversation) {
-    Conversation.registerEventListeners();
+        Conversation.registerEventListeners();
     });
 {{/js}}
