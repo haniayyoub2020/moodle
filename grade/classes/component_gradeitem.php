@@ -138,6 +138,8 @@ abstract class component_gradeitem {
      * @return stdClass
      */
     protected function get_scale(): ?stdClass {
+        global $DB;
+
         $gradetype = $this->get_gradeitem_value();
         if ($gradetype > 0) {
             return null;
@@ -156,7 +158,7 @@ abstract class component_gradeitem {
      *
      * @return bool
      */
-    protected function is_using_scale(): bool {
+    public function is_using_scale(): bool {
         $gradetype = $this->get_gradeitem_value();
 
         return $gradetype < 0;
@@ -289,11 +291,11 @@ abstract class component_gradeitem {
     }
 
     /**
-     * Get the advanced grading menu items.
+     * Get the list of available grade items.
      *
      * @return array
      */
-    protected function get_advanced_grading_grade_menu(): array {
+    public function get_grade_menu(): array {
         return make_grades_menu($this->get_gradeitem_value());
     }
 
@@ -302,31 +304,37 @@ abstract class component_gradeitem {
      *
      * @param float $grade The value being checked
      * @throws moodle_exception
-     * @throws rating_exception
      * @return bool
      */
     public function check_grade_validity(?float $grade): bool {
-        if ($this->is_using_scale()) {
-            // Fetch all options for this scale.
-            $scaleoptions = make_menu_from_list($this->get_scale());
-            if (!array_key_exists($grade, $scaleoptions)) {
-                // The selected option did not exist.
-                throw new rating_exception('ratinginvalid', 'rating');
-            }
-        } else if ($grade) {
-            $maxgrade = $this->get_gradeitem_value();
-            if ($grade > $maxgrade) {
-                // The grade is greater than the maximum possible value.
-                throw new moodle_exception('error:notinrange', 'core_grading', '', (object) [
-                    'maxgrade' => $maxgrade,
-                    'grade' => $grade,
-                ]);
-            } else if ($grade < 0) {
-                // Negative grades are not supported.
-                throw new moodle_exception('error:notinrange', 'core_grading', '', (object) [
-                    'maxgrade' => $maxgrade,
-                    'grade' => $grade,
-                ]);
+        $grade = grade_floatval(unformat_float($grade));
+        if ($grade && $grade != -1) {
+            if ($this->is_using_scale()) {
+                // Fetch all options for this scale.
+                $scaleoptions = make_menu_from_list($this->get_scale()->scale);
+
+                if (!array_key_exists((int) $grade, $scaleoptions)) {
+                    // The selected option did not exist.
+                    throw new moodle_exception('error:notinrange', 'core_grading', '', (object) [
+                        'maxgrade' => count($scaleoptions),
+                        'grade' => $grade,
+                    ]);
+                }
+            } else if ($grade) {
+                $maxgrade = $this->get_gradeitem_value();
+                if ($grade > $maxgrade) {
+                    // The grade is greater than the maximum possible value.
+                    throw new moodle_exception('error:notinrange', 'core_grading', '', (object) [
+                        'maxgrade' => $maxgrade,
+                        'grade' => $grade,
+                    ]);
+                } else if ($grade < 0) {
+                    // Negative grades are not supported.
+                    throw new moodle_exception('error:notinrange', 'core_grading', '', (object) [
+                        'maxgrade' => $maxgrade,
+                        'grade' => $grade,
+                    ]);
+                }
             }
         }
 
@@ -438,7 +446,7 @@ abstract class component_gradeitem {
 
         // Set the allowed grade range.
         $gradinginstance->get_controller()->set_grade_range(
-            $this->get_advanced_grading_grade_menu(),
+            $this->get_grade_menu(),
             $this->allow_decimals()
         );
 
