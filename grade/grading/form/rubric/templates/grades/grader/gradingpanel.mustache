@@ -33,43 +33,50 @@
 <form>
     <input type="hidden" name="instanceid" value="{{instanceid}}">
     <div class="gradingform_rubric-description">{{{teacherdescription}}}</div>
-    <div id="rubric-advancedgrading-{{uniqid}}" class="clearfix gradingform_rubric {{rubricmode}}" data-rubricmode="{{rubricmode}}">
-        <table class="criteria table table-striped" id="advancedgrading-criteria" aria-label="{{#str}}rubric, gradingform_rubric{{/str}}">
-            {{#criteria}}
-                <tr class="criterion" id="advancedgrading-criteria-{{id}}">
-                    <td class="description" id="advancedgrading-criteria-{{id}}-description-cell" tabindex="0" aria-label="Criterion">
-                        {{{description}}}
+    <div id="rubric-advancedgrading-{{uniqid}}" class"criterion">
+        {{#criteria}}
+        <div class="criterion container">
+            <div id="gradingform_rubric-{{uniqid}}-criteria-{{id}}-description">
+                <div class="border p-3 mb-3 bg-white rounded">
+                    {{{description}}}
+                </div>
+            </div>
+            <table role="radiogroup">
+              <tr>
+                {{#levels}}
+                    <td
+                        role="radio"
+                        id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}"
+                        class="level"
+                        {{#checked}}
+                        aria-checked="true" tabindex="0"
+                        {{/checked}}
+                        {{^checked}}
+                        aria-checked="false" tabindex="-1"
+                        {{/checked}}
+                    >
+                        <div class="d-flex flex-column">
+                            <input type="radio" class="d-none" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition" name="advancedgrading[criteria][{{criterionid}}][levelid]" value="{{id}}" />
+                            <div class="flex-fill" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition-container">{{{definition}}}</div>
+                            <div class="">
+                                <span id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-score" class="scorevalue">{{score}}</span>{{#str}}points, grades{{/str}}
+                            </div>
+                        </div>
                     </td>
-                    <td class="levels">
-                        <table id="advancedgrading-criteria-{{id}}-levels-table" aria-label="Levels group">
-                            <tr id="advancedgrading-criteria-{{id}}-levels" class="criterion-levels" role="radiogroup">
-                                {{#levels}}
-                                    <td id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}" class="level {{#checked}}checked{{/checked}} {{#currentchecked}}currentchecked{{/currentchecked}}" tabindex="0" aria-label="Level " role="radio" aria-checked="{{checked}}">
-                                        <div class="level-wrapper">
-                                            <div class="radio d-none">
-                                                <input type="radio" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition" name="advancedgrading[criteria][{{criterionid}}][levelid]" value="{{id}}" />
-                                            </div>
-                                            <div class="definition" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition-container">{{{definition}}}</div>
-                                            <div class="score {{scoreerror}}">
-                                                <span id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-score" class="scorevalue">{{score}}</span>{{#str}}points, grades{{/str}}
-                                            </div>
-                                        </div>
-                                    </td>
-                                {{/levels}}
-                            </tr>
-                        </table>
-                    </td>
-                    <td class="remark">
-                        <textarea name="advancedgrading[criteria][{{id}}][remark]" id="advancedgrading-criteria-{{id}}-remark" cols="10" rows="5">{{remark}}</textarea>
-                    </td>
+                {{/levels}}
                 </tr>
-            {{/criteria}}
-        </table>
+            </table>
+            <div class="form-group">
+                <label for="advancedgrading-criteria-{{id}}-remark">Additional feedback</label>
+                <textarea class="form-control" name="advancedgrading[criteria][{{id}}][remark]" id="advancedgrading-criteria-{{id}}-remark" cols="10" rows="5">{{{remark}}}</textarea>
+            </div>
+        </div>
+        {{/criteria}}
     </div>
 </form>
 
 {{#js}}
-    require(['gradingform_rubric/rubric'], function(Rubric) {
+require(['gradingform_rubric/rubric'], function(Rubric) {
     Rubric.init("rubric-advancedgrading-{{uniqid}}");
-    });
+});
 {{/js}}

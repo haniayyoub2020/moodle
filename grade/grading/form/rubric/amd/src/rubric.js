@@ -25,13 +25,13 @@
 export const init = (root) => {
     const domElement = document.getElementById(root);
     registerActionListeners(domElement);
-    displayChangesBasedOnData(domElement);
+    setInitialFocus(domElement);
 };
-const displayChangesBasedOnData = (domElement) => {
-    const levelElements = domElement.querySelectorAll('.level');
-    levelElements.forEach((element) => {
-        if (element.querySelector('input[type=radio]').checked) {
-            element.classList.add("checked");
+
+const setInitialFocus = domElement => {
+    domElement.querySelectorAll('.criterion').forEach(criterion => {
+        if (!criterion.querySelector('[tabindex="0"]')) {
+            criterion.querySelector('.level').setAttribute('tabindex', 0);
         }
     });
 };
@@ -43,20 +43,52 @@ const registerActionListeners = (domElement) => {
             levelClick(button);
         }
     });
+
+    domElement.addEventListener('keydown', e => {
+        const target = e.target;
+        if (!target.matches('.level')) {
+            return;
+        }
+
+        const targetLevel = target.closest('.level');
+        const allLevels = target.closest('.criterion').querySelectorAll('.level');
+        const currentIndex = Array.from(allLevels).indexOf(targetLevel);
+        const maxIndex = allLevels.length - 1;
+        let newIndex = currentIndex;
+        if (e.keyCode === 38) {
+            // Go to previous.
+            newIndex--;
+            e.preventDefault();
+        } else if (e.keyCode === 40) {
+            // Go to next.
+            newIndex++;
+            e.preventDefault();
+        }
+
+        if (newIndex < 0) {
+            newIndex = maxIndex;
+        } else if (newIndex > maxIndex) {
+            newIndex = 0;
+        }
+
+        levelClick(allLevels[newIndex]);
+    });
 };
 
-const levelClick = (element) => {
-    const parent = element.closest('.criterion-levels');
-    const children = parent.querySelectorAll('.level');
-    children.forEach((child) => {
-        const radio = child.querySelector('input[type=radio]');
-        if (child.isEqualNode(element)) {
-            child.classList.add('checked');
-            child.setAttribute('aria-checked', 'true');
+const levelClick = (target) => {
+    const clickedLevel = target.closest('.level');
+    target.closest('.criterion').querySelectorAll('.level').forEach(level => {
+        const radio = level.querySelector('input[type=radio]');
+        if (level.isEqualNode(clickedLevel)) {
+            level.classList.add('checked');
+            level.setAttribute('aria-checked', 'true');
+            level.setAttribute('tabindex', 0);
             radio.setAttribute('checked', 'true');
+            level.focus();
         } else {
-            child.classList.remove('checked');
-            child.setAttribute('aria-checked', 'false');
+            level.classList.remove('checked');
+            level.setAttribute('aria-checked', 'false');
+            level.setAttribute('tabindex', -1);
             radio.removeAttribute("checked");
         }
     });
