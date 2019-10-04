@@ -24,7 +24,7 @@
 
 declare(strict_types = 1);
 
-namespace core_grades\local\grader\gradingpanel\point\external;
+namespace core_grades\grades\grader\gradingpanel\point\external;
 
 use coding_exception;
 use context;

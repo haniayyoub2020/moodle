@@ -796,7 +796,7 @@ $functions = array(
         'type' => 'write',
     ),
     'core_grades_grader_gradingpanel_point_fetch' => [
-        'classname' => 'core_grades\\local\\grader\\gradingpanel\\point\\external\\fetch',
+        'classname' => 'core_grades\\grades\\grader\\gradingpanel\\point\\external\\fetch',
         'methodname' => 'execute',
         'description' => 'Fetch the data required to display the grader grading panel for simple grading, ' .
             'creating the grade item if required',
@@ -805,7 +805,7 @@ $functions = array(
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
     'core_grades_grader_gradingpanel_point_store' => [
-        'classname' => 'core_grades\\local\\grader\\gradingpanel\\point\\external\\store',
+        'classname' => 'core_grades\\grades\\grader\\gradingpanel\\point\\external\\store',
         'methodname' => 'execute',
         'description' => 'Store the data required to display the grader grading panel for simple grading',
         'type' => 'write',

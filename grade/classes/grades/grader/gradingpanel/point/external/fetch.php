@@ -24,7 +24,7 @@
 
 declare(strict_types = 1);
 
-namespace core_grades\local\grader\gradingpanel\point\external;
+namespace core_grades\grades\grader\gradingpanel\point\external;
 
 use coding_exception;
 use context;
@@ -37,6 +37,7 @@ use external_multiple_structure;
 use external_single_structure;
 use external_value;
 use external_warnings;
+use moodle_exception;
 use required_capability_exception;
 use stdClass;
 
@@ -136,7 +137,7 @@ class fetch extends external_api {
      */
     public static function get_fetch_data(stdClass $grade): array {
         return [
-            'templatename' => 'core_grades/local/grader/gradingpanel',
+            'templatename' => 'core_grades/grades/grader/gradingpanel/point',
             'grade' => [
                 'grade' => $grade->grade,
                 'timecreated' => $grade->timecreated,
