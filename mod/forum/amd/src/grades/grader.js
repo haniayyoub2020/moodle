@@ -129,7 +129,7 @@ export const registerLaunchListeners = () => {
                     {
                         groupid: data.groupid,
                         initialUserId: data.initialuserid,
-                        moduleName: rootNode.dataset.name
+                        moduleName: data.name
                     }
                 );
             } else {
