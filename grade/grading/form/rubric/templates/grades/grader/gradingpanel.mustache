@@ -30,7 +30,7 @@
     {
     }
 }}
-<form>
+<form class="gradingpanel-gradingform_rubric">
     <input type="hidden" name="instanceid" value="{{instanceid}}">
     <div class="gradingform_rubric-description">{{{teacherdescription}}}</div>
     <div id="rubric-advancedgrading-{{uniqid}}" class"criterion">
@@ -41,13 +41,12 @@
                     {{{description}}}
                 </div>
             </div>
-            <table role="radiogroup">
-              <tr>
+            <div role="radiogroup" class="container">
                 {{#levels}}
-                    <td
+                    <div
                         role="radio"
                         id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}"
-                        class="level"
+                        class="level row btn d-flex rounded"
                         {{#checked}}
                         aria-checked="true" tabindex="0"
                         {{/checked}}
@@ -55,17 +54,14 @@
                         aria-checked="false" tabindex="-1"
                         {{/checked}}
                     >
-                        <div class="d-flex flex-column">
-                            <input type="radio" class="d-none" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition" name="advancedgrading[criteria][{{criterionid}}][levelid]" value="{{id}}" />
-                            <div class="flex-fill" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition-container">{{{definition}}}</div>
-                            <div class="">
-                                <span id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-score" class="scorevalue">{{score}}</span>{{#str}}points, grades{{/str}}
-                            </div>
+                        <input type="radio" class="d-none" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition" name="advancedgrading[criteria][{{criterionid}}][levelid]" value="{{id}}" />
+                        <div class="col-sm-9" id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-definition-container">{{{definition}}}</div>
+                        <div id="advancedgrading-criteria-{{criterionid}}-levels-{{id}}-score" class="col-sm-3">
+                          {{#str}}pointsvalue, gradingform_rubric, {{score}}{{/str}}
                         </div>
-                    </td>
+                    </div>
                 {{/levels}}
-                </tr>
-            </table>
+            </div>
             <div class="form-group">
                 <label for="advancedgrading-criteria-{{id}}-remark">Additional feedback</label>
                 <textarea class="form-control" name="advancedgrading[criteria][{{id}}][remark]" id="advancedgrading-criteria-{{id}}-remark" cols="10" rows="5">{{{remark}}}</textarea>
