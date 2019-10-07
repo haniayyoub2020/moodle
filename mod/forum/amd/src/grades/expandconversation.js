@@ -23,45 +23,80 @@
  */
 import * as ForumSelectors from './grader/selectors';
 import Repository from 'mod_forum/repository';
-import Notification from "../../../../../lib/amd/src/notification";
+import {exception as showException} from "core/notification";
 import Templates from 'core/templates';
 import * as Modal from 'core/modal_factory';
 import * as ModalEvents from 'core/modal_events';
 
-export const registerEventListeners = () => {
-    const contentRegion = document.querySelector(ForumSelectors.posts);
-    contentRegion.addEventListener('click', (e) => {
-        const rootNode = findGradableNode(e.target);
-        e.preventDefault();
-        const postId = rootNode.dataset.postid;
-        const discussionId = rootNode.dataset.discussionid;
-        const discussionName = rootNode.dataset.name;
-        Repository.getDiscussionPosts(parseInt(discussionId))
-            .then((context) => {
-                return Modal.create({
-                    title: discussionName,
-                    body: Templates.render('mod_forum/grades/grader/discussion/post_modal', context),
-                    type: Modal.types.CANCEL
-                });
-            })
-            .then((modal) => {
-                // Handle hidden event.
-                modal.getRoot().on(ModalEvents.hidden, function() {
-                    // Destroy when hidden.
-                    modal.destroy();
-                });
-                modal.setLarge();
-                modal.show();
+/**
+ * Find the Node containing the gradable details from the provided node by searching up the tree.
+ *
+ * @param {HTMLElement} node
+ * @returns {HTMLElement}
+ */
+const findGradableNode = node => node.closest(ForumSelectors.expandConversation);
 
-                const root = document.querySelector(ForumSelectors.postModal);
-                const element = root.querySelector(`#p${postId}`);
+/**
+ * Show the post in context in a modal.
+ *
+ * @param {HTMLElement} rootNode The button thas clicked
+ */
+const showPostInContext = async rootNode => {
+    const postId = rootNode.dataset.postid;
+    const discussionId = rootNode.dataset.discussionid;
+    const discussionName = rootNode.dataset.name;
 
-                element.scrollIntoView({behavior: "smooth"});
-            })
-            .catch(Notification.exception);
+    const [
+        allPosts,
+        modal,
+    ] = await Promise.all([
+        Repository.getDiscussionPosts(parseInt(discussionId)),
+        Modal.create({
+            title: discussionName,
+            large: true,
+            type: Modal.types.CANCEL
+        }),
+    ]);
+
+    // Handle hidden event.
+    modal.getRoot().on(ModalEvents.hidden, function() {
+        // Destroy when hidden.
+        modal.destroy();
+    });
+
+    modal.show();
+
+    // Note: We do not use await here because it messes with the Modal transitions.
+    const templatePromise = Templates.render('mod_forum/grades/grader/discussion/post_modal', allPosts);
+    modal.setBody(templatePromise);
+    // eslint-disable-next-line promise/catch-or-return
+    templatePromise.then(() => {
+        const relevantPost = modal.getRoot()[0].querySelector(`#p${postId}`);
+        if (relevantPost) {
+            relevantPost.scrollIntoView({behavior: "smooth"});
+        }
+
+        return;
     });
 };
 
-const findGradableNode = (node) => {
-    return node.closest(ForumSelectors.expandConversation);
+/**
+ * Register event listeners for the expand conversations button.
+ *
+ * @param {HTMLElement} rootNode The root to listen to.
+ */
+export const registerEventListeners = rootNode => {
+    rootNode.addEventListener('click', e => {
+        const rootNode = findGradableNode(e.target);
+
+        if (rootNode) {
+            e.preventDefault();
+
+            try {
+                showPostInContext(rootNode);
+            } catch (err) {
+                showException(err);
+            }
+        }
+    });
 };

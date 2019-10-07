@@ -29,5 +29,4 @@ export default {
     },
     expandConversation: '[data-action="view-context"]',
     posts: '[data-region="posts"]',
-    postModal: '[data-region="posts-modal"]',
 };
