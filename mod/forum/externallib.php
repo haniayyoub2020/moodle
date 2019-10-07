@@ -2097,7 +2097,7 @@ class mod_forum_external extends external_api {
         $capabilitymanager = $managerfactory->get_capability_manager($forum);
 
         $discussionvault = $vaultfactory->get_discussion_vault();
-        $discussions = $discussionvault->get_all_discussions_in_forum($forum);
+        $discussions = $discussionvault->get_all_discussions_in_forum($forum, 'timemodified ASC, id ASC');
 
         $postvault = $vaultfactory->get_post_vault();
 

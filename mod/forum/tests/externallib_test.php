@@ -2515,19 +2515,21 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
             'urls' => [
                 'profile' => $urlfactory->get_author_profile_url($user1entity),
                 'profileimage' => $urlfactory->get_author_profile_image_url($user1entity),
-            ]
+            ],
+            'isdeleted' => false,
         ];
         // Create a bunch of other users to post.
         $user2 = self::getDataGenerator()->create_user();
         $user2entity = $entityfactory->get_author_from_stdclass($user2);
         $exporteduser2 = [
-                'id' => (int) $user2->id,
-                'fullname' => fullname($user2),
-                'groups' => [],
-                'urls' => [
-                        'profile' => $urlfactory->get_author_profile_url($user2entity),
-                        'profileimage' => $urlfactory->get_author_profile_image_url($user2entity),
-                ]
+            'id' => (int) $user2->id,
+            'fullname' => fullname($user2),
+            'groups' => [],
+            'urls' => [
+                'profile' => $urlfactory->get_author_profile_url($user2entity),
+                'profileimage' => $urlfactory->get_author_profile_image_url($user2entity),
+            ],
+            'isdeleted' => false,
         ];
         $user2->fullname = $exporteduser2['fullname'];
 
