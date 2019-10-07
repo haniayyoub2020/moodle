@@ -23,13 +23,13 @@
  */
 
 import {call as fetchMany} from 'core/ajax';
-import {normaliseResult} from './normalise';
+import {normaliseResult} from 'core_grades/grades/grader/gradingpanel/normalise';
 
 // Note: We use jQuery.serializer here until we can rewrite Ajax to use XHR.send()
 import jQuery from 'jquery';
 
-export const fetchCurrentGrade = async(component, contextid, itemname, gradeduserid) => {
-    return normaliseResult(await fetchMany([{
+export const fetchCurrentGrade = (component, contextid, itemname, gradeduserid) => {
+    return fetchMany([{
         methodname: `gradingform_guide_grader_gradingpanel_fetch`,
         args: {
             component,
@@ -37,14 +37,14 @@ export const fetchCurrentGrade = async(component, contextid, itemname, gradeduse
             itemname,
             gradeduserid,
         },
-    }])[0]);
+    }])[0];
 };
 
 
-export const storeCurrentGrade = (component, contextid, itemname, gradeduserid, rootNode) => {
+export const storeCurrentGrade = async(component, contextid, itemname, gradeduserid, rootNode) => {
     const form = rootNode.querySelector('form');
 
-    return fetchMany([{
+    return normaliseResult(await fetchMany([{
         methodname: `gradingform_guide_grader_gradingpanel_store`,
         args: {
             component,
@@ -53,5 +53,5 @@ export const storeCurrentGrade = (component, contextid, itemname, gradeduserid, 
             gradeduserid,
             formdata: jQuery(form).serialize(),
         },
-    }])[0];
+    }])[0]);
 };
