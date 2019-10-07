@@ -60,7 +60,7 @@ class UserPicker {
             return user.id === parseInt(userId);
         });
 
-        if (!userIndex) {
+        if (userIndex === -1) {
             throw Error(`User with id ${userId} not found`);
         }
 
