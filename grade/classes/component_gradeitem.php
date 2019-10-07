@@ -100,6 +100,15 @@ abstract class component_gradeitem {
     abstract protected function get_table_name(): string;
 
     /**
+     * Get the itemid for the current gradeitem.
+     *
+     * @return int
+     */
+    public function get_grade_itemid(): int {
+        return component_gradeitems::get_itemnumber_from_itemname($this->component, $this->itemname);
+    }
+
+    /**
      * Whether grading is enabled for this item.
      *
      * @return bool
@@ -308,12 +317,12 @@ abstract class component_gradeitem {
      */
     public function check_grade_validity(?float $grade): bool {
         $grade = grade_floatval(unformat_float($grade));
-        if ($grade && $grade != -1) {
+        if ($grade) {
             if ($this->is_using_scale()) {
                 // Fetch all options for this scale.
                 $scaleoptions = make_menu_from_list($this->get_scale()->scale);
 
-                if (!array_key_exists((int) $grade, $scaleoptions)) {
+                if ($grade != -1 && !array_key_exists((int) $grade, $scaleoptions)) {
                     // The selected option did not exist.
                     throw new moodle_exception('error:notinrange', 'core_grading', '', (object) [
                         'maxgrade' => count($scaleoptions),
