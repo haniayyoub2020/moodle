@@ -86,7 +86,7 @@ class forum_gradeitem_test extends \advanced_testcase {
     }
 
     /**
-     * Ensure that it is possibel to get, and update, a grade for a user when a rubric is in use.
+     * Ensure that it is possible to get, and update, a grade for a user when a rubric is in use.
      */
     public function test_get_and_store_grade_for_user_with_rubric(): void {
         global $DB;
@@ -117,6 +117,7 @@ class forum_gradeitem_test extends \advanced_testcase {
         // The current grade should be null initially.
         $this->assertCount(0, $DB->get_records('forum_grades'));
         $grade = $gradeitem->get_grade_for_user($student, $grader);
+        $instance = $gradeitem->get_advanced_grading_instance($grader, $grade);
 
         $this->assertIsObject($grade);
         $this->assertEquals($student->id, $grade->userid);
@@ -135,7 +136,10 @@ class forum_gradeitem_test extends \advanced_testcase {
         ]);
 
         // Store a new value.
-        $gradeitem->store_grade_from_formdata($student, $grader, (object) ['advancedgrading' => $data]);
+        $gradeitem->store_grade_from_formdata($student, $grader, (object) [
+            'instanceid' => $instance->get_id(),
+            'advancedgrading' => $data,
+        ]);
     }
 
     /**
