@@ -4051,31 +4051,33 @@ class core_course_external extends external_api {
      *
      * @param int $cmid Course Module id from which the users will be obtained
      * @return array List of users
-     * @throws  invalid_parameter_exception
+     * @throws invalid_parameter_exception
      */
     public static function get_enrolled_users_by_cmid(int $cmid) {
-
-        $params = self::validate_parameters(self::get_enrolled_users_by_cmid_parameters(),
-            [
-                'cmid' => $cmid,
-            ]
-        );
         $warnings = [];
-        $cmid = $params['cmid'];
+
+        [
+            'cmid' => $cmid,
+        ] = self::validate_parameters(self::get_enrolled_users_by_cmid_parameters(), [
+                'cmid' => $cmid,
+        ]);
 
         list($course, $cm) = get_course_and_cm_from_cmid($cmid);
-
         $coursecontext = context_course::instance($course->id);
-
         self::validate_context($coursecontext);
+
         $enrolledusers = get_enrolled_users($coursecontext);
-        // TODO make use of warnings.
+
         $users = array_map(function ($user) {
             $user->fullname = fullname($user);
             return $user;
         }, $enrolledusers);
+        sort($users);
 
-        return ['users' => $users, 'warnings' => $warnings];
+        return [
+            'users' => $users,
+            'warnings' => $warnings,
+        ];
     }
 
     /**
