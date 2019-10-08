@@ -144,29 +144,45 @@ class fetch extends external_api {
         $controller = $instance->get_controller();
         $definition = $controller->get_definition();
         $fillings = $instance->get_guide_filling();
+        $context = $controller->get_context();
+        $definitionid = (int) $definition->id;
 
         $criterion = [];
         if ($definition->guide_criteria) {
-            $criterion = array_map(function($criterion) use ($fillings) {
+            $criterion = array_map(function($criterion) use ($definitionid, $fillings, $context) {
                 $result = [
                     'id' => $criterion['id'],
                     'name' => $criterion['shortname'],
                     'maxscore' => $criterion['maxscore'],
-                    'description' => $criterion['description'],
-                    'descriptionformat' => $criterion['descriptionformat'],
-                    'descriptionmarkers' => $criterion['descriptionmarkers'],
-                    'descriptionmarkersformat' => $criterion['descriptionmarkersformat'],
+                    'description' => self::get_formatted_text(
+                        $context,
+                        $definitionid,
+                        'description',
+                        $criterion['description'],
+                        (int) $criterion['descriptionformat']
+                    ),
+                    'descriptionmarkers' => self::get_formatted_text(
+                        $context,
+                        $definitionid,
+                        'descriptionmarkers',
+                        $criterion['descriptionmarkers'],
+                        (int) $criterion['descriptionmarkersformat']
+                    ),
                     'score' => null,
                     'remark' => null,
-                    'remarkformat' => null,
                 ];
 
                 if (array_key_exists($criterion['id'], $fillings['criteria'])) {
                     $filling = $fillings['criteria'][$criterion['id']];
 
                     $result['score'] = $filling['score'];
-                    $result['remark'] = $filling['remark'];
-                    $result['remarkformat'] = $filling['remarkformat'];
+                    $result['remark'] = self::get_formatted_text(
+                        $context,
+                        $definitionid,
+                        'remark',
+                        $filling['remark'],
+                        (int) $filling['remarkformat']
+                    );
                 }
 
                 return $result;
@@ -175,12 +191,17 @@ class fetch extends external_api {
 
         $comments = [];
         if ($definition->guide_comments) {
-            $comments = array_map(function($comment) {
+            $comments = array_map(function($comment) use ($definitionid, $context) {
                 return [
                     'id' => $comment['id'],
                     'sortorder' => $comment['sortorder'],
-                    'description' => $comment['description'],
-                    'descriptionformat' => $comment['descriptionformat'],
+                    'description' => self::get_formatted_text(
+                        $context,
+                        $definitionid,
+                        'description',
+                        $comment['description'],
+                        (int) $comment['descriptionformat']
+                    ),
                 ];
             }, $definition->guide_comments);
         }
@@ -216,12 +237,9 @@ class fetch extends external_api {
                         'name' => new external_value(PARAM_RAW, 'The name of the criterion'),
                         'maxscore' => new external_value(PARAM_FLOAT, 'The maximum score for this criterion'),
                         'description' => new external_value(PARAM_RAW, 'The description of the criterion'),
-                        'descriptionformat' => new external_format_value('description'),
                         'descriptionmarkers' => new external_value(PARAM_RAW, 'The description of the criterion for markers'),
-                        'descriptionmarkersformat' => new external_format_value('descriptionmarkers'),
                         'score' => new external_value(PARAM_FLOAT, 'The current score for user being assessed', VALUE_OPTIONAL),
                         'remark' => new external_value(PARAM_RAW, 'Any remarks for this criterion for the user being assessed', VALUE_OPTIONAL),
-                        'remarkformat' => new external_format_value('remark', VALUE_OPTIONAL),
                     ]),
                     'The criterion by which this item will be graded'
                 ),
@@ -231,7 +249,6 @@ class fetch extends external_api {
                         'id' => new external_value(PARAM_INT, 'Comment id'),
                         'sortorder' => new external_value(PARAM_INT, 'The sortorder of this comment'),
                         'description' => new external_value(PARAM_RAW, 'The comment value'),
-                        'descriptionformat' => new external_format_value('description'),
                     ]),
                     'Frequently used comments'
                 ),
@@ -240,5 +257,27 @@ class fetch extends external_api {
             ]),
             'warnings' => new external_warnings(),
         ]);
+    }
+
+    /**
+     * Get a formatted version of the remark/description/etc.
+     *
+     * @param context $context
+     * @param int $definitionid
+     * @param string $filearea The file area of the field
+     * @param string $text The text to be formatted
+     * @param int $format The input format of the string
+     * @return string
+     */
+    protected static function get_formatted_text(context $context, int $definitionid, string $filearea, string $text, int $format): string {
+        $formatoptions = [
+            'noclean' => false,
+            'trusted' => false,
+            'filter' => true,
+        ];
+
+        [$newtext, ] = external_format_text($text, $format, $context, 'grading', $filearea, $definitionid, $formatoptions);
+
+        return $newtext;
     }
 }
