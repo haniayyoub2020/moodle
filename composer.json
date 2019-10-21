@@ -8,12 +8,16 @@
         {
             "type": "vcs",
             "url": "https://github.com/moodlehq/php-webdriver.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/andrewnicols/moodle-behat-extension.git"
         }
     ],
     "require-dev": {
         "phpunit/phpunit": "6.5.*",
         "phpunit/dbunit": "3.0.*",
-        "moodlehq/behat-extension": "3.35.3",
+        "moodlehq/behat-extension": "dev-MDL-66945-35 as 3.35.4-dev",
         "mikey179/vfsstream": "^1.6",
         "instaclick/php-webdriver": "dev-local as 1.x-dev"
     }
