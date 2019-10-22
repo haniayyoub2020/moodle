@@ -222,7 +222,7 @@ class core_text {
         $charset = self::parse_charset($charset);
 
         if ($charset === 'utf-8') {
-            if (function_exists('mb_substr')) {
+            if (function_exists('\\mb_substr')) {
                 // this is much faster than iconv - see MDL-31142
                 if ($len === null) {
                     $oldcharset = mb_internal_encoding();
@@ -266,7 +266,7 @@ class core_text {
      * @since Moodle 3.1
      */
     public static function str_max_bytes($string, $bytes) {
-        if (function_exists('mb_strcut')) {
+        if (function_exists('\\mb_strcut')) {
             return mb_strcut($string, 0, $bytes, 'UTF-8');
         }
 
@@ -289,7 +289,7 @@ class core_text {
      */
     public static function strrchr($haystack, $needle, $part = false) {
 
-        if (function_exists('mb_strrchr')) {
+        if (function_exists('\\mb_strrchr')) {
             return mb_strrchr($haystack, $needle, $part, 'UTF-8');
         }
 
@@ -318,7 +318,7 @@ class core_text {
         $charset = self::parse_charset($charset);
 
         if ($charset === 'utf-8') {
-            if (function_exists('mb_strlen')) {
+            if (function_exists('\\mb_strlen')) {
                 return mb_strlen($text, 'UTF-8');
             } else {
                 return iconv_strlen($text, 'UTF-8');
@@ -342,7 +342,7 @@ class core_text {
     public static function strtolower($text, $charset='utf-8') {
         $charset = self::parse_charset($charset);
 
-        if ($charset === 'utf-8' and function_exists('mb_strtolower')) {
+        if ($charset === 'utf-8' and function_exists('\\mb_strtolower')) {
             return mb_strtolower($text, 'UTF-8');
         }
 
@@ -363,7 +363,7 @@ class core_text {
     public static function strtoupper($text, $charset='utf-8') {
         $charset = self::parse_charset($charset);
 
-        if ($charset === 'utf-8' and function_exists('mb_strtoupper')) {
+        if ($charset === 'utf-8' and function_exists('\\mb_strtoupper')) {
             return mb_strtoupper($text, 'UTF-8');
         }
 
@@ -384,7 +384,7 @@ class core_text {
      * @return int the numeric position of the first occurrence of needle in haystack.
      */
     public static function strpos($haystack, $needle, $offset=0) {
-        if (function_exists('mb_strpos')) {
+        if (function_exists('\\mb_strpos')) {
             return mb_strpos($haystack, $needle, $offset, 'UTF-8');
         } else {
             return iconv_strpos($haystack, $needle, $offset, 'UTF-8');
@@ -400,7 +400,7 @@ class core_text {
      * @return int the numeric position of the last occurrence of needle in haystack
      */
     public static function strrpos($haystack, $needle) {
-        if (function_exists('mb_strrpos')) {
+        if (function_exists('\\mb_strrpos')) {
             return mb_strrpos($haystack, $needle, null, 'UTF-8');
         } else {
             return iconv_strrpos($haystack, $needle, 'UTF-8');
@@ -752,7 +752,7 @@ class core_text {
             return $text;
         }
 
-        if (function_exists('mb_convert_case')) {
+        if (function_exists('\\mb_convert_case')) {
             return mb_convert_case($text, MB_CASE_TITLE, 'UTF-8');
         }
 
