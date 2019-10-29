@@ -17,63 +17,49 @@
 /**
  * H5P Autoloader.
  *
- * @package    h5p_v1.24
+ * @package    hvp_v124
  * @copyright  2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 declare(strict_types = 1);
 
-namespace core_h5p;
+namespace hvp_v124;
 
 use moodle_url;
 
 /**
  * H5P Autoloader.
  *
- * @package    h5p_v1.24
+ * @package    hvp_v124
  * @copyright  2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class autoloader {
+class autoloader extends \core_h5p\autoloader {
     /**
      * Get the current version of the H5P core library.
      *
      * @return string
      */
-    abstract public static function get_h5p_version(): string;
-
-    /**
-     * Register the H5P Autoloader.
-     */
-    public static function register(): void {
-        spl_autoload_register([static::class, 'autoload']);
+    final public static function get_h5p_version(): string {
+        return '124';
     }
 
     /**
-     * SPL Autoloading function for H5P.
+     * Return the list of classes with their location within the joubel directory.
      *
-     * @param string $classname The name of the class to load
+     * @return array
      */
-    public static function autoload($classname): void {
-        global $CFG;
-
-        $classes = static::get_class_list();
-
-        if (isset($classes[$classname])) {
-            $h5pversion = static::get_h5p_version();
-            require_once("{$CFG->dirroot}/lib/h5p/v{$h5pversion}/joubel/{$classes[$classname]}");
-        }
-    }
-
-    /**
-     * Get a URL for the current H5P Core Library.
-     *
-     * @param string $filepath The path within the h5p root
-     * @return null|moodle_url
-     */
-    public static function get_h5p_core_library_url(?string $filepath = null): ?moodle_url {
-        $h5pversion = static::get_h5p_version();
-        return new moodle_url("/lib/h5p/v{$h5pversion}/joubel/{$filepath}");
+    protected static function get_class_list(): array {
+        return [
+            'H5PCore' => 'h5p.classes.php',
+            'H5PFrameworkInterface' => 'h5p.classes.php',
+            'H5PContentValidator' => 'h5p.classes.php',
+            'H5PValidator' => 'h5p.classes.php',
+            'H5PStorage' => 'h5p.classes.php',
+            'H5PDevelopment' => 'h5p-development.class.php',
+            'H5PFileStorage' => 'h5p-file-storage.interface.php',
+            'H5PMetadata' => 'h5p-metadata.class.php',
+        ];
     }
 }

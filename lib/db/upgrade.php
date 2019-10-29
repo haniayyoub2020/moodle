@@ -3614,7 +3614,7 @@ function xmldb_main_upgrade($oldversion) {
     if ($oldversion < 2019101600.01) {
 
         // Change the setting $CFG->requestcategoryselection into $CFG->lockrequestcategory with opposite value.
-        set_config('lockrequestcategory', empty($CFG->requestcategoryselection));
+        set_config('lockrequestcategory', !$CFG->requestcategoryselection);
 
         upgrade_main_savepoint(true, 2019101600.01);
     }
@@ -3754,14 +3754,22 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2019102500.04);
     }
 
-    if ($oldversion < 2019103000.13) {
+    if ($oldversion < 2019110400.00) {
 
-        $DB->execute("UPDATE {analytics_models} set contextids = null
-                       WHERE contextids = :zero or contextids = :null", ['zero' => '0', 'null' => 'null']);
+        // Define field id to be added to h5p_libraries.
+        $table = new xmldb_table('h5p_libraries');
+        $field = new xmldb_field('coreapi', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'patchversion');
+
+        // Conditionally launch add field id.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
 
         // Main savepoint reached.
-        upgrade_main_savepoint(true, 2019103000.13);
+        upgrade_main_savepoint(true, 2019110400.00);
     }
 
     return true;
 }
+
+

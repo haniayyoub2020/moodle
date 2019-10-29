@@ -14,6 +14,7 @@
         "filter": "filter",
         "editor": "lib\/editor",
         "format": "course\/format",
+        "hvp": "lib\/h5p",
         "dataformat": "dataformat",
         "profilefield": "user\/profile\/field",
         "report": "report",

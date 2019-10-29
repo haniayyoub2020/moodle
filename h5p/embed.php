@@ -35,15 +35,45 @@ $config->embed = optional_param('embed', 0, PARAM_INT);
 $config->copyright = optional_param('copyright', 0, PARAM_INT);
 
 $PAGE->set_url(new \moodle_url('/h5p/embed.php', array('url' => $url)));
-try {
-    $h5pplayer = new \core_h5p\player($url, $config);
-    $messages = $h5pplayer->get_messages();
 
-} catch (\Exception $e) {
-    $messages = (object) [
-        'exception' => $e->getMessage(),
-    ];
+$package = \core_h5p\content_type::load_from_url($url);
+$context = $package->get_context();
+
+if ($context->contextlevel == CONTEXT_USER && $USER->id !== $context->instanceid) {
+    // For the user context, only the owner can acces.
+    throw new \moodle_exception('h5pprivatefile', 'core_h5p');
 }
+
+[$context, $course, $cm] = get_context_info_array($context->id);
+if ($context->contextlevel == CONTEXT_MODULE) {
+    // Require login to the course first (without login to the module).
+    require_course_login($course, true, null, false, true);
+
+    // Now check if module is available OR it is restricted but the intro is shown on the course page.
+    $cminfo = \cm_info::create($cm);
+    if (!$cminfo->uservisible) {
+        if (!$cm->showdescription || !$cminfo->is_visible_on_course_page()) {
+            // Module intro is not visible on the course page and module is not available, show access error.
+            require_course_login($course, true, $cminfo, false, true);
+        }
+    }
+}
+
+if (!$package->is_deployed()) {
+    require_capability('moodle/h5p:deploy', $package->get_context(), $package->get_owner());
+
+    try {
+        $package->deploy();
+    } catch (\Exception $e) {
+        $messages = [
+            'error' => '',
+            'exception' => $e->getMessage(),
+        ];
+    }
+}
+
+$h5pplayer = $package->get_player_for_url($url, $config);
+$messages = $h5pplayer->get_messages();
 
 if (empty($messages->error) && empty($messages->exception)) {
     // Configure page.

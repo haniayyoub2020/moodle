@@ -37,77 +37,10 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2019 Sara Arjona <sara@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core extends \H5PCore {
+interface core {
 
-    protected $libraries;
-
-    protected function getDependencyPath(array $dependency): string {
-        $library = $this->find_library($dependency);
-
-        return "libraries/{$library->id}/{$library->machinename}-{$library->majorversion}.{$library->minorversion}";
-    }
-
-    public function get_dependency_roots(int $id): array {
-        $roots = [];
-        $dependencies = $this->h5pF->loadContentDependencies($id);
-        $context = \context_system::instance();
-        foreach ($dependencies as $dependency) {
-            $library = $this->find_library($dependency);
-            $roots[self::libraryToString($dependency, true)] = (moodle_url::make_pluginfile_url(
-                $context->id,
-                'core_h5p',
-                'libraries',
-                $library->id,
-                "/" . self::libraryToString($dependency, true),
-                ''
-            ))->out(false);
-        }
-
-        return $roots;
-    }
-
-    protected function find_library($dependency): \stdClass {
-        global $DB;
-        if (null === $this->libraries) {
-            $this->libraries = $DB->get_records('h5p_libraries');
-        }
-
-        $major = $dependency['majorVersion'];
-        $minor = $dependency['minorVersion'];
-        $patch = $dependency['patchVersion'];
-
-        foreach ($this->libraries as $library) {
-            if ($library->machinename !== $dependency['machineName']) {
-                continue;
-            }
-
-            if ($library->majorversion != $major) {
-                continue;
-            }
-            if ($library->minorversion != $minor) {
-                continue;
-            }
-            if ($library->patchversion != $patch) {
-                continue;
-            }
-
-            return $library;
-        }
-
-        return null;
-    }
-
-    public static function get_scripts(): array {
-        global $CFG;
-        $cachebuster = '?ver='.$CFG->jsrev;
-        $liburl = $CFG->wwwroot . '/lib/h5p/';
-        $urls = [];
-
-        foreach (self::$scripts as $script) {
-            $urls[] = new moodle_url($liburl . $script . $cachebuster);
-        }
-        $urls[] = new moodle_url("/h5p/js/h5p_overrides.js");
-
-        return $urls;
-    }
+    /**
+     * Get the list of JS scripts to include on the page.
+     */
+    public static function get_scripts(): array;
 }
