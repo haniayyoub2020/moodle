@@ -15,10 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * H5P player class.
+ * H5P factory class.
+ * This class is used to decouple the construction of H5P related objects.
  *
- * @package    core_h5p
- * @copyright  2019 Sara Arjona <sara@moodle.com>
+ * @package    h5p_v124
+ * @copyright  2019 Mihail Geshoski <mihail@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,59 +27,67 @@ namespace core_h5p;
 
 defined('MOODLE_INTERNAL') || die();
 
+use \H5PStorage as storage;
+use \H5PValidator as validator;
+use \H5PContentValidator as content_validator;
+use stored_file;
+use moodle_url;
+use context;
+
 /**
- * H5P player class, for displaying any local H5P content.
+ * H5P factory class.
+ * This class is used to decouple the construction of H5P related objects.
  *
- * @package    core_h5p
- * @copyright  2019 Sara Arjona <sara@moodle.com>
+ * @package    h5p_v124
+ * @copyright  2019 Mihail Geshoski <mihail@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class player {
+abstract class player {
 
     /**
      * @var string The local H5P URL containing the .h5p file to display.
      */
-    private $url;
+    protected $url;
 
     /**
      * @var core The H5PCore object.
      */
-    private $core;
+    protected $core;
 
     /**
      * @var int H5P DB id.
      */
-    private $h5pid;
+    protected $h5pid;
 
     /**
      * @var array JavaScript requirements for this H5P.
      */
-    private $jsrequires = [];
+    protected $jsrequires = [];
 
     /**
      * @var array CSS requirements for this H5P.
      */
-    private $cssrequires = [];
+    protected $cssrequires = [];
 
     /**
      * @var array H5P content to display.
      */
-    private $content;
+    protected $content;
 
     /**
      * @var string Type of embed object, div or iframe.
      */
-    private $embedtype;
+    protected $embedtype;
 
     /**
      * @var context The context object where the .h5p belongs.
      */
-    private $context;
+    protected $context;
 
     /**
      * @var context The \core_h5p\factory object.
      */
-    private $factory;
+    protected $factory;
 
     /**
      * Inits the H5P player for rendering the content.
@@ -86,25 +95,25 @@ class player {
      * @param string $url Local URL of the H5P file to display.
      * @param stdClass $config Configuration for H5P buttons.
      */
-    public function __construct(string $url, \stdClass $config) {
+    public function __construct(factory $factory, context $context, stored_file $file, string $url, $h5p, \stdClass $config) {
         if (empty($url)) {
             throw new \moodle_exception('h5pinvalidurl', 'core_h5p');
         }
+        $this->factory = $factory;
         $this->url = new \moodle_url($url);
-
-        $this->factory = new \core_h5p\factory();
+        $this->context = $context;
+        $this->h5pid = $h5p->id;
 
         // Create \core_h5p\core instance.
         $this->core = $this->factory->get_core();
+        $this->coreclassname = $this->factory->get_core_classname();
+        $this->autoloaderclassname = $this->factory->get_autoloader_classname();
 
-        // Get the H5P identifier linked to this URL.
-        if ($this->h5pid = $this->get_h5p_id($url, $config)) {
-            // Load the content of the H5P content associated to this $url.
-            $this->content = $this->core->loadContent($this->h5pid);
+        // Load the content of the H5P content associated to this $url.
+        $this->content = $this->core->loadContent($h5p->id);
 
-            // Get the embedtype to use for displaying the H5P content.
-            $this->embedtype = core::determineEmbedType($this->content['embedType'], $this->content['library']['embedTypes']);
-        }
+        // Get the embedtype to use for displaying the H5P content.
+        $this->embedtype = $this->coreclassname::determineEmbedType($this->content['embedType'], $this->content['library']['embedTypes']);
     }
 
     /**
@@ -132,18 +141,18 @@ class player {
         $cid = $this->get_cid();
         $systemcontext = \context_system::instance();
 
-        $disable = array_key_exists('disable', $this->content) ? $this->content['disable'] : core::DISABLE_NONE;
+        $disable = array_key_exists('disable', $this->content) ? $this->content['disable'] : $this->coreclassname::DISABLE_NONE;
         $displayoptions = $this->core->getDisplayOptionsForView($disable, $this->h5pid);
 
         $contenturl = \moodle_url::make_pluginfile_url($systemcontext->id, \core_h5p\file_storage::COMPONENT,
             \core_h5p\file_storage::CONTENT_FILEAREA, $this->h5pid, null, null);
 
         $contentsettings = [
-            'library'         => core::libraryToString($this->content['library']),
+            'library'         => $this->coreclassname::libraryToString($this->content['library']),
             'fullScreen'      => $this->content['library']['fullscreen'],
-            'exportUrl'       => $this->get_export_settings($displayoptions[ core::DISPLAY_OPTION_DOWNLOAD ]),
+            'exportUrl'       => $this->get_export_settings($displayoptions[ $this->coreclassname::DISPLAY_OPTION_DOWNLOAD ]),
             'embedCode'       => $this->get_embed_code($this->url->out(),
-                $displayoptions[ core::DISPLAY_OPTION_EMBED ]),
+                $displayoptions[ $this->coreclassname::DISPLAY_OPTION_EMBED ]),
             'resizeCode'      => $this->get_resize_code(),
             'title'           => $this->content['slug'],
             'displayOptions'  => $displayoptions,
@@ -173,7 +182,7 @@ class player {
      *
      * @return string The HTML code to display this H5P content.
      */
-    public function output() : string {
+    public function output(): string {
         global $OUTPUT;
 
         $template = new \stdClass();
@@ -190,7 +199,7 @@ class player {
      *
      * @return string the title
      */
-    public function get_title() : string {
+    public function get_title(): string {
         return $this->content['title'];
     }
 
@@ -199,7 +208,7 @@ class player {
      *
      * @return context The context.
      */
-    public function get_context() : \context {
+    public function get_context(): \context {
         return $this->context;
     }
 
@@ -213,7 +222,7 @@ class player {
      *
      * @return int|false H5P DB identifier.
      */
-    private function get_h5p_id(string $url, \stdClass $config) {
+    protected function get_h5p_id(string $url, \stdClass $config) {
         global $DB;
 
         $fs = get_file_storage();
@@ -272,7 +281,7 @@ class player {
      *
      * @return string|false pathnamehash for the file in the internal URL.
      */
-    private function get_pluginfile_hash(string $url) {
+    protected function get_pluginfile_hash(string $url) {
         global $USER;
 
         // Decode the URL before start processing it.
@@ -370,7 +379,7 @@ class player {
      *
      * @return int|false The H5P identifier or false if it's not a valid H5P package.
      */
-    private function save_h5p($file, \stdClass $config) : int {
+    protected function save_h5p($file, \stdClass $config): int {
         // This may take a long time.
         \core_php_time_limit::raise();
 
@@ -407,7 +416,7 @@ class player {
      *
      * @return int The representation of display options as int.
      */
-    private function get_display_options(\stdClass $config) : int {
+    protected function get_display_options(\stdClass $config): int {
         $export = isset($config->export) ? $config->export : 0;
         $embed = isset($config->embed) ? $config->embed : 0;
         $copyright = isset($config->copyright) ? $config->copyright : 0;
@@ -417,10 +426,10 @@ class player {
         }
 
         $disableoptions = [
-            core::DISPLAY_OPTION_FRAME     => $frame,
-            core::DISPLAY_OPTION_DOWNLOAD  => $export,
-            core::DISPLAY_OPTION_EMBED     => $embed,
-            core::DISPLAY_OPTION_COPYRIGHT => $copyright,
+            $this->coreclassname::DISPLAY_OPTION_FRAME     => $frame,
+            $this->coreclassname::DISPLAY_OPTION_DOWNLOAD  => $export,
+            $this->coreclassname::DISPLAY_OPTION_EMBED     => $embed,
+            $this->coreclassname::DISPLAY_OPTION_COPYRIGHT => $copyright,
         ];
 
         return $this->core->getStorableDisplayOptions($disableoptions, 0);
@@ -431,7 +440,7 @@ class player {
      *
      * @param stdClass $content The H5P package to delete.
      */
-    private function delete_h5p(\stdClass $content) {
+    protected function delete_h5p(\stdClass $content) {
         $h5pstorage = $this->factory->get_storage();
         // Add an empty slug to the content if it's not defined, because the H5P library requires this field exists.
         // It's not used when deleting a package, so the real slug value is not required at this point.
@@ -446,7 +455,7 @@ class player {
      *
      * @return string The URL of the exported file.
      */
-    private function get_export_settings(bool $downloadenabled) : string {
+    protected function get_export_settings(bool $downloadenabled): string {
 
         if ( ! $downloadenabled) {
             return '';
@@ -473,7 +482,7 @@ class player {
      *
      * @return string
      */
-    private function get_cache_buster() : string {
+    protected function get_cache_buster(): string {
         global $CFG;
         return '?ver=' . $CFG->themerev;
     }
@@ -483,7 +492,7 @@ class player {
      *
      * @return string The identifier.
      */
-    private function get_cid() : string {
+    protected function get_cid(): string {
         return 'cid-' . $this->h5pid;
     }
 
@@ -492,7 +501,7 @@ class player {
      *
      * @return Array core H5P assets.
      */
-    private function get_assets() : array {
+    protected function get_assets(): array {
         global $CFG;
 
         // Get core settings.
@@ -512,12 +521,12 @@ class player {
         $relpath = '/' . preg_replace('/^[^:]+:\/\/[^\/]+\//', '', $liburl);
 
         // Add core stylesheets.
-        foreach (core::$styles as $style) {
+        foreach ($this->coreclassname::$styles as $style) {
             $settings['core']['styles'][] = $relpath . $style . $cachebuster;
             $this->cssrequires[] = new \moodle_url($liburl . $style . $cachebuster);
         }
         // Add core JavaScript.
-        foreach (core::get_scripts() as $script) {
+        foreach ($this->coreclassname::get_scripts() as $script) {
             $settings['core']['scripts'][] = $script->out(false);
             $this->jsrequires[] = $script;
         }
@@ -571,10 +580,9 @@ class player {
      *
      * @return array The settings.
      */
-    private function get_core_settings() : array {
+    protected function get_core_settings(): array {
         global $CFG;
 
-        $basepath = $CFG->wwwroot . '/';
         $systemcontext = \context_system::instance();
 
         // Generate AJAX paths.
@@ -583,9 +591,9 @@ class player {
         $ajaxpaths['contentUserData'] = '';
 
         $settings = array(
-            'baseUrl' => $basepath,
-            'url' => "{$basepath}pluginfile.php/{$systemcontext->instanceid}/core_h5p",
-            'urlLibraries' => "{$basepath}pluginfile.php/{$systemcontext->id}/core_h5p/libraries",
+            'baseUrl' => (new moodle_url('/'))->out(),
+            'url' => (new moodle_url("/pluginfile.php/{$systemcontext->instanceid}/core_h5p"))->out(),
+            'urlLibraries' => (new moodle_url("/pluginfile.php/{$systemcontext->instanceid}/core_h5p/libraries"))->out(),
             'postUserStatistics' => false,
             'ajax' => $ajaxpaths,
             'saveFreq' => false,
@@ -597,7 +605,7 @@ class player {
             'crossorigin' => null,
             'libraryConfig' => $this->core->h5pF->getLibraryConfig(),
             'pluginCacheBuster' => $this->get_cache_buster(),
-            'libraryUrl' => $basepath . 'lib/h5p/js',
+            'libraryUrl' => $this->autoloaderclassname::get_h5p_core_library_url("js"),
             'moodleLibraryPaths' => $this->core->get_dependency_roots($this->h5pid),
         );
 
@@ -609,7 +617,7 @@ class player {
      *
      * @return array Files that the view has dependencies to
      */
-    private function get_dependency_files() : array {
+    protected function get_dependency_files(): array {
         $preloadeddeps = $this->core->loadContentDependencies($this->h5pid, 'preloaded');
         $files = $this->core->getDependenciesFiles($preloadeddeps);
 
@@ -621,11 +629,11 @@ class player {
      *
      * @return string The HTML code with the resize script.
      */
-    private function get_resize_code() : string {
+    protected function get_resize_code(): string {
         global $OUTPUT;
 
         $template = new \stdClass();
-        $template->resizeurl = new \moodle_url('/lib/h5p/js/h5p-resizer.js');
+        $template->resizeurl = $this->autoloaderclassname::get_h5p_core_library_url('js/h5p-resizer.js');
 
         return $OUTPUT->render_from_template('core_h5p/h5presize', $template);
     }
@@ -638,7 +646,7 @@ class player {
      *
      * @return string The HTML code to reuse this H5P content in a different place.
      */
-    private function get_embed_code(string $url, bool $embedenabled) : string {
+    protected function get_embed_code(string $url, bool $embedenabled): string {
         global $OUTPUT;
 
         if ( ! $embedenabled) {
@@ -657,7 +665,8 @@ class player {
      *
      * @return \moodle_url The embed URL.
      */
-    public static function get_embed_url(string $url) : \moodle_url {
+    public static function get_embed_url(string $url): \moodle_url {
         return new \moodle_url('/h5p/embed.php', ['url' => $url]);
     }
+
 }

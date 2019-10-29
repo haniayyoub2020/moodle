@@ -15,23 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * H5P framework interface.
+ * Version information.
  *
- * @package    core_h5p
- * @copyright  2019 Sara Arjona <sara@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   hvp_v124
+ * @copyright 2019 Andrew Nicols <andrew@nicols.co.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace core_h5p;
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * H5P framework interface.
- *
- * @package    core_h5p
- * @copyright  2019 Sara Arjona <sara@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-interface framework {
-}
+$plugin->version   = 2019102900;       // The current module version (Date: YYYYMMDDXX)
+$plugin->requires  = 2019051100;       // Requires this Moodle version
+$plugin->component = 'hvp_v124';      // Full name of the plugin (used for diagnostics)

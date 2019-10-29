@@ -15,23 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * H5P framework interface.
+ * H5P player class.
  *
- * @package    core_h5p
+ * @package    hvp_v124
  * @copyright  2019 Sara Arjona <sara@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace core_h5p;
+namespace hvp_v124;
 
 defined('MOODLE_INTERNAL') || die();
 
+use moodle_url;
+
 /**
- * H5P framework interface.
+ * H5P player class, for displaying any local H5P content.
  *
- * @package    core_h5p
+ * @package    hvp_v124
  * @copyright  2019 Sara Arjona <sara@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface framework {
+class player extends \core_h5p\player {
 }
