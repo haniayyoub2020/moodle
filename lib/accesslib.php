@@ -5998,12 +5998,28 @@ class context_helper extends context {
      * @param int $courseid
      */
     public static function preload_course($courseid) {
+        global $DB;
+
         // Users can call this multiple times without doing any harm
         if (isset(context::$cache_preloaded[$courseid])) {
             return;
         }
-        $coursecontext = context_course::instance($courseid);
-        $coursecontext->get_child_contexts();
+
+        $fields = \context_helper::get_preload_record_columns_sql('cc');
+        $likepath = $DB->sql_concat('c.path', "'/%'");
+        $sql = <<<EOF
+SELECT {$fields}
+  FROM {context} c
+  JOIN {context} cc ON (c.id = cc.id OR cc.path like {$likepath})
+ WHERE c.contextlevel = :contextlevel AND c.instanceid = :instanceid
+EOF;
+        $ctxs = $DB->get_records_sql($sql, [
+            'contextlevel' =>  CONTEXT_COURSE,
+            'instanceid' => $courseid,
+        ]);
+        foreach ($ctxs as $ctx) {
+            self::preload_from_record($ctx);
+        }
 
         context::$cache_preloaded[$courseid] = true;
     }
