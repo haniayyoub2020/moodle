@@ -32,6 +32,7 @@ use \H5PValidator as validator;
 use \H5PContentValidator as content_validator;
 use stored_file;
 use moodle_url;
+use moodle_page;
 use context;
 
 /**
@@ -47,17 +48,17 @@ abstract class player {
     /**
      * @var string The local H5P URL containing the .h5p file to display.
      */
-    protected $url;
+    protected $url = null;
 
     /**
      * @var core The H5PCore object.
      */
-    protected $core;
+    protected $core = null;
 
     /**
      * @var int H5P DB id.
      */
-    protected $h5pid;
+    protected $h5pid = null;
 
     /**
      * @var array JavaScript requirements for this H5P.
@@ -72,22 +73,12 @@ abstract class player {
     /**
      * @var array H5P content to display.
      */
-    protected $content;
+    protected $content = null;
 
     /**
      * @var string Type of embed object, div or iframe.
      */
-    protected $embedtype;
-
-    /**
-     * @var context The context object where the .h5p belongs.
-     */
-    protected $context;
-
-    /**
-     * @var context The \core_h5p\factory object.
-     */
-    protected $factory;
+    protected $embedtype = null;
 
     /**
      * Inits the H5P player for rendering the content.
@@ -95,53 +86,58 @@ abstract class player {
      * @param string $url Local URL of the H5P file to display.
      * @param stdClass $config Configuration for H5P buttons.
      */
-    public function __construct(factory $factory, context $context, stored_file $file, string $url, $h5p, \stdClass $config) {
-        if (empty($url)) {
-            throw new \moodle_exception('h5pinvalidurl', 'core_h5p');
-        }
-        $this->factory = $factory;
-        $this->url = new \moodle_url($url);
-        $this->context = $context;
-        $this->h5pid = $h5p->id;
+    final public function __construct(\core_h5p\content_type $package) {
+        $this->package = $package;
 
-        // Create \core_h5p\core instance.
-        $this->core = $this->factory->get_core();
-        $this->coreclassname = $this->factory->get_core_classname();
-        $this->autoloaderclassname = $this->factory->get_autoloader_classname();
+        if (!$this->package->is_deployed()) {
+            throw new \moodle_exception('Not set up');
+        }
+
+        $factory = $package->get_factory();
+        $this->url = $package->get_url();
+        $this->h5pid = $package->get_id();
+        $this->buttonconfig = $package->get_display_options();
+
+        // Fetch \core_h5p\core instance.
+        $this->core = $factory->get_core();
+        $this->coreclassname = $factory->get_core_classname();
+        $this->autoloaderclassname = $factory->get_autoloader_classname();
 
         // Load the content of the H5P content associated to this $url.
-        $this->content = $this->core->loadContent($h5p->id);
+        // Sadly we have to do this, even though we already have it.
+        $this->content = $this->core->loadContent($package->get_id());
 
         // Get the embedtype to use for displaying the H5P content.
         $this->embedtype = $this->coreclassname::determineEmbedType($this->content['embedType'], $this->content['library']['embedTypes']);
+
     }
 
     /**
      * Get the error messages stored in our H5P framework.
      *
-     * @return stdClass with framework error messages.
+     * @return array List of errors
      */
-    public function get_messages() : \stdClass {
-        $messages = new \stdClass();
-        $messages->error = $this->core->h5pF->getMessages('error');
-
-        if (empty($messages->error)) {
-            $messages->error = false;
-        }
-        return $messages;
+    public function get_errors(): array {
+        return $this->core->h5pF->getMessages('error');
     }
 
     /**
      * Create the H5PIntegration variable that will be included in the page. This variable is used as the
      * main H5P config variable.
+     *
+     * @param moodle_page $page
+     * @param renderer_base $output
      */
-    public function add_assets_to_page() {
-        global $PAGE;
-
+    public function add_assets_to_page(moodle_page $page, $output): void {
         $cid = $this->get_cid();
         $systemcontext = \context_system::instance();
 
-        $disable = array_key_exists('disable', $this->content) ? $this->content['disable'] : $this->coreclassname::DISABLE_NONE;
+        if (array_key_exists('disable', $this->content)) {
+            $disable = $this->content['disable'];
+        } else {
+            $disable = $this->coreclassname::DISABLE_NONE;
+        }
+
         $displayoptions = $this->core->getDisplayOptionsForView($disable, $this->h5pid);
 
         $contenturl = \moodle_url::make_pluginfile_url($systemcontext->id, \core_h5p\file_storage::COMPONENT,
@@ -150,47 +146,52 @@ abstract class player {
         $contentsettings = [
             'library'         => $this->coreclassname::libraryToString($this->content['library']),
             'fullScreen'      => $this->content['library']['fullscreen'],
-            'exportUrl'       => $this->get_export_settings($displayoptions[ $this->coreclassname::DISPLAY_OPTION_DOWNLOAD ]),
-            'embedCode'       => $this->get_embed_code($this->url->out(),
-                $displayoptions[ $this->coreclassname::DISPLAY_OPTION_EMBED ]),
-            'resizeCode'      => $this->get_resize_code(),
+            'exportUrl'       => $this->get_export_settings($displayoptions[$this->coreclassname::DISPLAY_OPTION_DOWNLOAD]),
+            'embedCode'       => $this->get_embed_code($output, $displayoptions[$this->coreclassname::DISPLAY_OPTION_EMBED]),
+            'resizeCode'      => $this->get_resize_code($output),
             'title'           => $this->content['slug'],
             'displayOptions'  => $displayoptions,
-            'url'             => self::get_embed_url($this->url->out())->out(),
+            'url'             => $this->get_embed_url()->out(),
             'contentUrl'      => $contenturl->out(),
             'metadata'        => $this->content['metadata'],
-            'contentUserData' => [0 => ['state' => '{}']]
+            'contentUserData' => [
+                0 => [
+                    'state' => '{}',
+                ],
+            ]
         ];
+
         // Get the core H5P assets, needed by the H5P classes to render the H5P content.
         $settings = $this->get_assets();
         $settings['contents'][$cid] = array_merge($settings['contents'][$cid], $contentsettings);
 
         foreach ($this->jsrequires as $script) {
-            $PAGE->requires->js($script, true);
+            $page->requires->js($script, true);
         }
 
         foreach ($this->cssrequires as $css) {
-            $PAGE->requires->css($css);
+            $page->requires->css($css);
         }
 
         // Print JavaScript settings to page.
-        $PAGE->requires->data_for_js('H5PIntegration', $settings, true);
+        $page->requires->data_for_js('H5PIntegration', $settings, true);
     }
 
     /**
      * Outputs H5P wrapper HTML.
      *
+     * @param renderer_base $output
      * @return string The HTML code to display this H5P content.
      */
-    public function output(): string {
-        global $OUTPUT;
+    public function output($output): string {
+        $params = (object) [
+            'h5pid' => $this->h5pid,
+        ];
 
-        $template = new \stdClass();
-        $template->h5pid = $this->h5pid;
         if ($this->embedtype === 'div') {
-            return $OUTPUT->render_from_template('core_h5p/h5pdiv', $template);
+            return $output->render_from_template('core_h5p/h5pdiv', $params);
         } else {
-            return $OUTPUT->render_from_template('core_h5p/h5piframe', $template);
+            return $output->render_from_template('core_h5p/h5piframe', $params);
         }
     }
 
@@ -204,251 +205,6 @@ abstract class player {
     }
 
     /**
-     * Get the context where the .h5p file belongs.
-     *
-     * @return context The context.
-     */
-    public function get_context(): \context {
-        return $this->context;
-    }
-
-    /**
-     * Get the H5P DB instance id for a H5P pluginfile URL. The H5P file will be saved if it doesn't exist previously or
-     * if its content has changed. Besides, the displayoptions in the $config will be also updated when they have changed and
-     * the user has the right permissions.
-     *
-     * @param string $url H5P pluginfile URL.
-     * @param stdClass $config Configuration for H5P buttons.
-     *
-     * @return int|false H5P DB identifier.
-     */
-    protected function get_h5p_id(string $url, \stdClass $config) {
-        global $DB;
-
-        $fs = get_file_storage();
-
-        // Deconstruct the URL and get the pathname associated.
-        $pathnamehash = $this->get_pluginfile_hash($url);
-        if (!$pathnamehash) {
-            $this->core->h5pF->setErrorMessage(get_string('h5pfilenotfound', 'core_h5p'));
-            return false;
-        }
-
-        // Get the file.
-        $file = $fs->get_file_by_hash($pathnamehash);
-        if (!$file) {
-            $this->core->h5pF->setErrorMessage(get_string('h5pfilenotfound', 'core_h5p'));
-            return false;
-        }
-
-        $h5p = $DB->get_record('h5p', ['pathnamehash' => $pathnamehash]);
-        $contenthash = $file->get_contenthash();
-        if ($h5p && $h5p->contenthash != $contenthash) {
-            // The content exists and it is different from the one deployed previously. The existing one should be removed before
-            // deploying the new version.
-            $this->delete_h5p($h5p);
-            $h5p = false;
-        }
-
-        if ($h5p) {
-            // The H5P content has been deployed previously.
-            $displayoptions = $this->get_display_options($config);
-            // Check if the user can set the displayoptions.
-            if ($displayoptions != $h5p->displayoptions && has_capability('moodle/h5p:setdisplayoptions', $this->context)) {
-                // If the displayoptions has changed and the user has permission to modify it, update this information in the DB.
-                $this->core->h5pF->updateContentFields($h5p->id, ['displayoptions' => $displayoptions]);
-            }
-            return $h5p->id;
-        } else {
-            // The H5P content hasn't been deployed previously.
-
-            // Check if the user uploading the H5P content is "trustable". If the file hasn't been uploaded by a user with this
-            // capability, the content won't be deployed and an error message will be displayed.
-            if (!has_capability('moodle/h5p:deploy', $this->context, $file->get_userid())) {
-                $this->core->h5pF->setErrorMessage(get_string('nopermissiontodeploy', 'core_h5p'));
-                return false;
-            }
-
-            // Validate and store the H5P content before displaying it.
-            return $this->save_h5p($file, $config);
-        }
-    }
-
-    /**
-     * Get the pathnamehash from an H5P internal URL.
-     *
-     * @param  string $url H5P pluginfile URL poiting to an H5P file.
-     *
-     * @return string|false pathnamehash for the file in the internal URL.
-     */
-    protected function get_pluginfile_hash(string $url) {
-        global $USER;
-
-        // Decode the URL before start processing it.
-        $url = new \moodle_url(urldecode($url));
-
-        // Remove params from the URL (such as the 'forcedownload=1'), to avoid errors.
-        $url->remove_params(array_keys($url->params()));
-        $path = $url->out_as_local_url();
-
-        $parts = explode('/', $path);
-        $filename = array_pop($parts);
-        // First is an empty row and then the pluginfile.php part. Both can be ignored.
-        array_shift($parts);
-        array_shift($parts);
-
-        // Get the contextid, component and filearea.
-        $contextid = array_shift($parts);
-        $component = array_shift($parts);
-        $filearea = array_shift($parts);
-
-        // Ignore draft files, because they are considered temporary files, so shouldn't be displayed.
-        if ($filearea == 'draft') {
-            return false;
-        }
-
-        // Get the context.
-        try {
-            list($this->context, $course, $cm) = get_context_info_array($contextid);
-        } catch (\moodle_exception $e) {
-            throw new \moodle_exception('invalidcontextid', 'core_h5p');
-        }
-
-        // For CONTEXT_USER, such as the private files, raise an exception if the owner of the file is not the current user.
-        if ($this->context->contextlevel == CONTEXT_USER && $USER->id !== $this->context->instanceid) {
-            throw new \moodle_exception('h5pprivatefile', 'core_h5p');
-        }
-
-        // For CONTEXT_MODULE, check if the user is enrolled in the course and has permissions view this .h5p file.
-        if ($this->context->contextlevel == CONTEXT_MODULE) {
-            // Require login to the course first (without login to the module).
-            require_course_login($course, true, null, false, true);
-
-            // Now check if module is available OR it is restricted but the intro is shown on the course page.
-            $cminfo = \cm_info::create($cm);
-            if (!$cminfo->uservisible) {
-                if (!$cm->showdescription || !$cminfo->is_visible_on_course_page()) {
-                    // Module intro is not visible on the course page and module is not available, show access error.
-                    require_course_login($course, true, $cminfo, false, true);
-                }
-            }
-        }
-
-        // Some components, such as mod_page or mod_resource, add the revision to the URL to prevent caching problems.
-        // So the URL contains this revision number as itemid but a 0 is always stored in the files table.
-        // In order to get the proper hash, a callback should be done (looking for those exceptions).
-        $pathdata = component_callback($component, 'get_path_from_pluginfile', [$filearea, $parts], null);
-        if (null === $pathdata) {
-            // Look for the components and fileareas which have empty itemid defined in xxx_pluginfile.
-            $hasnullitemid = false;
-            $hasnullitemid = $hasnullitemid || ($component === 'user' && ($filearea === 'private' || $filearea === 'profile'));
-            $hasnullitemid = $hasnullitemid || ($component === 'mod' && $filearea === 'intro');
-            $hasnullitemid = $hasnullitemid || ($component === 'course' &&
-                    ($filearea === 'summary' || $filearea === 'overviewfiles'));
-            $hasnullitemid = $hasnullitemid || ($component === 'coursecat' && $filearea === 'description');
-            $hasnullitemid = $hasnullitemid || ($component === 'backup' &&
-                    ($filearea === 'course' || $filearea === 'activity' || $filearea === 'automated'));
-            if ($hasnullitemid) {
-                $itemid = 0;
-            } else {
-                $itemid = array_shift($parts);
-            }
-
-            if (empty($parts)) {
-                $filepath = '/';
-            } else {
-                $filepath = '/' . implode('/', $parts) . '/';
-            }
-        } else {
-            // The itemid and filepath have been returned by the component callback.
-            [
-                'itemid' => $itemid,
-                'filepath' => $filepath,
-            ] = $pathdata;
-        }
-
-        $fs = get_file_storage();
-        return $fs->get_pathname_hash($contextid, $component, $filearea, $itemid, $filepath, $filename);
-    }
-
-    /**
-     * Store an H5P file
-     *
-     * @param stored_file $file Moodle file instance
-     * @param stdClass $config Button options config.
-     *
-     * @return int|false The H5P identifier or false if it's not a valid H5P package.
-     */
-    protected function save_h5p($file, \stdClass $config): int {
-        // This may take a long time.
-        \core_php_time_limit::raise();
-
-        $path = $this->core->fs->getTmpPath();
-        $this->core->h5pF->getUploadedH5pFolderPath($path);
-        // Add manually the extension to the file to avoid the validation fails.
-        $path .= '.h5p';
-        $this->core->h5pF->getUploadedH5pPath($path);
-
-        // Copy the .h5p file to the temporary folder.
-        $file->copy_content_to($path);
-
-        // Check if the h5p file is valid before saving it.
-        $h5pvalidator = $this->factory->get_validator();
-        if ($h5pvalidator->isValidPackage(false, false)) {
-            $h5pstorage = $this->factory->get_storage();
-
-            $options = ['disable' => $this->get_display_options($config)];
-            $content = [
-                'pathnamehash' => $file->get_pathnamehash(),
-                'contenthash' => $file->get_contenthash(),
-            ];
-
-            $h5pstorage->savePackage($content, null, false, $options);
-            return $h5pstorage->contentId;
-        }
-
-        return false;
-    }
-
-    /**
-     * Get the representation of display options as int.
-     * @param stdClass $config Button options config.
-     *
-     * @return int The representation of display options as int.
-     */
-    protected function get_display_options(\stdClass $config): int {
-        $export = isset($config->export) ? $config->export : 0;
-        $embed = isset($config->embed) ? $config->embed : 0;
-        $copyright = isset($config->copyright) ? $config->copyright : 0;
-        $frame = ($export || $embed || $copyright);
-        if (!$frame) {
-            $frame = isset($config->frame) ? $config->frame : 0;
-        }
-
-        $disableoptions = [
-            $this->coreclassname::DISPLAY_OPTION_FRAME     => $frame,
-            $this->coreclassname::DISPLAY_OPTION_DOWNLOAD  => $export,
-            $this->coreclassname::DISPLAY_OPTION_EMBED     => $embed,
-            $this->coreclassname::DISPLAY_OPTION_COPYRIGHT => $copyright,
-        ];
-
-        return $this->core->getStorableDisplayOptions($disableoptions, 0);
-    }
-
-    /**
-     * Delete an H5P package.
-     *
-     * @param stdClass $content The H5P package to delete.
-     */
-    protected function delete_h5p(\stdClass $content) {
-        $h5pstorage = $this->factory->get_storage();
-        // Add an empty slug to the content if it's not defined, because the H5P library requires this field exists.
-        // It's not used when deleting a package, so the real slug value is not required at this point.
-        $content->slug = $content->slug ?? '';
-        $h5pstorage->deletePackage( (array) $content);
-    }
-
-    /**
      * Export path for settings
      *
      * @param bool $downloadenabled Whether the option to export the H5P content is enabled.
@@ -457,7 +213,7 @@ abstract class player {
      */
     protected function get_export_settings(bool $downloadenabled): string {
 
-        if ( ! $downloadenabled) {
+        if (!$downloadenabled) {
             return '';
         }
 
@@ -627,46 +383,39 @@ abstract class player {
     /**
      * Resizing script for settings
      *
+     * @param renderer_base $output
      * @return string The HTML code with the resize script.
      */
-    protected function get_resize_code(): string {
-        global $OUTPUT;
-
-        $template = new \stdClass();
-        $template->resizeurl = $this->autoloaderclassname::get_h5p_core_library_url('js/h5p-resizer.js');
-
-        return $OUTPUT->render_from_template('core_h5p/h5presize', $template);
+    protected function get_resize_code($output): string {
+        return $output->render_from_template('core_h5p/h5presize', (object) [
+            'resizeurl' => $this->autoloaderclassname::get_h5p_core_library_url('js/h5p-resizer.js'),
+        ]);
     }
 
     /**
      * Embed code for settings
      *
-     * @param string $url The URL of the .h5p file.
+     * @param renderer_base $output
      * @param bool $embedenabled Whether the option to embed the H5P content is enabled.
-     *
      * @return string The HTML code to reuse this H5P content in a different place.
      */
-    protected function get_embed_code(string $url, bool $embedenabled): string {
-        global $OUTPUT;
-
-        if ( ! $embedenabled) {
+    protected function get_embed_code($output, bool $embedenabled): string {
+        if (!$embedenabled) {
             return '';
         }
 
-        $template = new \stdClass();
-        $template->embedurl = self::get_embed_url($url)->out();
-
-        return $OUTPUT->render_from_template('core_h5p/h5pembed', $template);
+        return $output->render_from_template('core_h5p/h5pembed', (object) [
+            'embedurl' => $this->get_embed_url()->out(),
+        ]);
     }
 
     /**
      * Get the encoded URL for embeding this H5P content.
-     * @param  string $url The URL of the .h5p file.
      *
-     * @return \moodle_url The embed URL.
+     * @return moodle_url The embed URL.
      */
-    public static function get_embed_url(string $url): \moodle_url {
-        return new \moodle_url('/h5p/embed.php', ['url' => $url]);
+    protected function get_embed_url(): moodle_url {
+        return new \moodle_url('/h5p/embed.php', ['url' => $this->url]);
     }
 
 }

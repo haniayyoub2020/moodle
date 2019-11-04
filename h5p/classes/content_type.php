@@ -98,6 +98,11 @@ class content_type {
         return new static($file);
     }
 
+    /**
+     * Whether the configuration for a deployed package is loaded.
+     *
+     * @return bool
+     */
     public function is_deployed(): bool {
         return null !== $this->id;
     }
@@ -177,6 +182,9 @@ class content_type {
         $this->load_package_configuration();
     }
 
+    /**
+     * Load the complete package configuraiton.
+     */
     protected function load_package_configuration(): void {
         global $DB;
 
@@ -237,12 +245,15 @@ class content_type {
         return $this->factory;
     }
 
-    public function get_player_for_url(string $url, stdClass $buttonconfig): player {
+    /**
+     * Get the player for this content.
+     *
+     * @return player
+     */
+    public function get_player(): player {
         $factory = $this->get_factory();
 
-        return $factory->get_player($factory, $this->context, $this->file, $url, (object) [
-            'id' => $this->id,
-        ], $buttonconfig);
+        return $factory->get_player($this);
     }
 
     /**
@@ -282,7 +293,7 @@ class content_type {
      * @return moodle_url
      */
     public function get_url(): moodle_url {
-        return new moodle_url();
+        return new moodle_url($this->url);
     }
 
     /**
@@ -342,8 +353,47 @@ class content_type {
         return $this->context;
     }
 
+    /**
+     * Get the owning user's ID.
+     *
+     * @return int
+     */
     public function get_owner(): int {
         return $this->file->get_userid();
+    }
+
+    /**
+     * Get the list of display options.
+     *
+     * @return array
+     */
+    public function get_display_options(): array {
+        return $this->get_factory()->get_core()->getDisplayOptionsForView($this->displayoptions, $this->id);
+    }
+
+    /**
+     * Update the representation of display options as int.
+     */
+    public function update_display_options(stdClass $buttonconfig): void {
+        $export = isset($buttonconfig->export) ? $buttonconfig->export : 0;
+        $embed = isset($buttonconfig->embed) ? $buttonconfig->embed : 0;
+        $copyright = isset($buttonconfig->copyright) ? $buttonconfig->copyright : 0;
+        $frame = ($export || $embed || $copyright);
+        if (!$frame) {
+            $frame = isset($buttonconfig->frame) ? $buttonconfig->frame : 0;
+        }
+
+        $disableoptions = [
+            \H5PCore::DISPLAY_OPTION_FRAME     => $frame,
+            \H5PCore::DISPLAY_OPTION_DOWNLOAD  => $export,
+            \H5PCore::DISPLAY_OPTION_EMBED     => $embed,
+            \H5PCore::DISPLAY_OPTION_COPYRIGHT => $copyright,
+        ];
+
+        $core = $this->get_factory()->get_core();
+        $displayoptions =  $core->getStorableDisplayOptions($disableoptions, 0);
+
+        $core->h5pF->updateContentFields($this->id, ['displayoptions' => $displayoptions]);
     }
 
 }

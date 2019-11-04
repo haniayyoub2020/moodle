@@ -37,15 +37,10 @@
       </div>
    </div>
    <div class="container mt-5">
-      {{#exception}}
-      <div class="alert alert-block fade in alert-danger my-2" role="alert">
-         {{{ exception }}}
-      </div>
-      {{/exception}}
-      {{#error}}
+      {{#messages}}
       <div class="alert alert-block fade in alert-warning my-2" role="alert">
          {{{code}}} : {{{ message }}}
       </div>
-      {{/error}}
+      {{/messages}}
    </div>
 </div>

@@ -58,24 +58,32 @@ if ($context->contextlevel == CONTEXT_MODULE) {
         }
     }
 }
+// TODO MDL-67082
 
+$messages = [];
 if (!$package->is_deployed()) {
+    // The package is not yet deployed.
+    // Attempt to deploy it as the user who owns it.
     require_capability('moodle/h5p:deploy', $package->get_context(), $package->get_owner());
-
     try {
         $package->deploy();
     } catch (\Exception $e) {
-        $messages = [
-            'error' => '',
-            'exception' => $e->getMessage(),
+        $messages[] = (object) [
+            'code' => $e->getCode(),
+            'message' => $e->getMessage(),
         ];
     }
 }
 
-$h5pplayer = $package->get_player_for_url($url, $config);
-$messages = $h5pplayer->get_messages();
+// The package is deployed. Display it.
+$h5pplayer = $package->get_player();
+$messages = array_merge($messages, $h5pplayer->get_errors());
 
-if (empty($messages->error) && empty($messages->exception)) {
+if (empty($messages)) {
+    if (has_capability('moodle/h5p:setdisplayoptions', $package->get_context())) {
+        $package->update_display_options($config);
+    }
+
     // Configure page.
     $PAGE->set_context($h5pplayer->get_context());
     $PAGE->set_title($h5pplayer->get_title());
@@ -89,16 +97,14 @@ if (empty($messages->error) && empty($messages->exception)) {
     $PAGE->requires->js(new moodle_url('/h5p/js/embed.js'));
 
     // Add H5P assets to the page.
-    $h5pplayer->add_assets_to_page();
+    $h5pplayer->add_assets_to_page($PAGE, $OUTPUT);
 
     // Check if there is some error when adding assets to the page.
-    $messages = $h5pplayer->get_messages();
-    if (empty($messages->error) && empty($messages->exception)) {
-
+    $messages = $h5pplayer->get_errors();
+    if (empty($messages)) {
         // Print page HTML.
         echo $OUTPUT->header();
-
-        echo $h5pplayer->output();
+        echo $h5pplayer->output($OUTPUT);
     }
 } else {
     // If there is any error or exception when creating the player, it should be displayed.
@@ -113,11 +119,13 @@ if (empty($messages->error) && empty($messages->exception)) {
     // Errors can't be printed yet, because some more errors might been added while preparing the output
 }
 
-if (!empty($messages->error) || !empty($messages->exception)) {
+if (!empty($messages)) {
     // Print all the errors.
     echo $OUTPUT->header();
     $messages->h5picon = new \moodle_url('/h5p/pix/icon.svg');
-    echo $OUTPUT->render_from_template('core_h5p/h5perror', $messages);
+    echo $OUTPUT->render_from_template('core_h5p/h5perror', (object) [
+        'error' => $messages,
+    ]);
 }
 
 echo $OUTPUT->footer();

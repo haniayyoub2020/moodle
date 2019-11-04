@@ -72,8 +72,8 @@ class factory implements \core_h5p\factory {
      *
      * @return \core_h5p\player
      */
-    public function get_player(factory $factory, context $context, stored_file $file, string $url, $h5p, \stdClass $config): \core_h5p\player {
-        return new player($factory, $context, $file, $url, $h5p, $config);
+    public function get_player(\core_h5p\content_type $content): \core_h5p\player {
+        return new player($content);
     }
 
     /**
