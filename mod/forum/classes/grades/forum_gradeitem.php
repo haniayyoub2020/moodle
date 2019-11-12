@@ -157,20 +157,6 @@ class forum_gradeitem extends component_gradeitem {
         return $DB->get_record($this->get_table_name(), ['id' => $gradeid]);
     }
 
-    public function get_grade_item(): \grade_item {
-        global $CFG;
-
-        require("{$CFG->libdir}/gradelib.php");
-        [$itemtype, $itemmodule] = \core_component::normalize_component($this->component);
-
-        return \grade_item::fetch([
-            'itemtype' => $itemtype,
-            'itemmodule' => $itemmodule,
-            'iteminstance' => $this->itemnumber,
-        ]);
-    }
-
-
     /**
      * Get the grade for the specified user.
      *
@@ -236,6 +222,18 @@ class forum_gradeitem extends component_gradeitem {
             'forum' => $this->forum->get_id(),
             'itemnumber' => $this->itemnumber,
         ]);
+    }
+
+    /**
+     * Get the grade item instance id.
+     *
+     * This is typically the cmid in the case of an activity, and relates to the iteminstance field in the grade_items
+     * table.
+     *
+     * @return int
+     */
+    public function get_grade_instance_id(): int {
+        return $this->forum->get_course_module_record()->id;
     }
 
     /**
