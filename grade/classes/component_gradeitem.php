@@ -408,6 +408,12 @@ abstract class component_gradeitem {
     abstract public function get_all_grades(): array;
 
     /**
+     * Get grades for all users for the specified gradeitem.
+     *
+     * @return stdClass The grades
+     */
+    abstract public function get_grade_item(): \grade_item;
+    /**
      * Create or update the grade.
      *
      * @param stdClass $grade

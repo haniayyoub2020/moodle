@@ -131,8 +131,10 @@ class fetch extends external_api {
         $gradeduser = \core_user::get_user($gradeduserid);
         $hasgrade = $gradeitem->user_has_grade($gradeduser);
         $grade = $gradeitem->get_grade_for_user($gradeduser, $USER);
+        print_object($gradeitem->get_grade_item());
+        $maxgrade = 100;
 
-        return self::get_fetch_data($grade, $hasgrade);
+        return self::get_fetch_data($grade, $hasgrade, $maxgrade);
     }
 
     /**
@@ -142,12 +144,14 @@ class fetch extends external_api {
      * @param bool $hasgrade
      * @return array
      */
-    public static function get_fetch_data(stdClass $grade, bool $hasgrade): array {
+    public static function get_fetch_data(stdClass $grade, bool $hasgrade, float $maxgrade): array {
         return [
             'templatename' => 'core_grades/grades/grader/gradingpanel/point',
             'hasgrade' => $hasgrade,
             'grade' => [
                 'grade' => $grade->grade,
+                'usergrade' => $grade->grade,
+                'maxgrade' => $maxgrade,
                 'timecreated' => $grade->timecreated,
                 'timemodified' => $grade->timemodified,
             ],

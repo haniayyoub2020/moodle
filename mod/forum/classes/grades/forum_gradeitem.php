@@ -29,8 +29,7 @@ namespace mod_forum\grades;
 use coding_exception;
 use context;
 use core_grades\component_gradeitem;
-use core_grades\component_gradeitems;
-use gradingform_instance;
+use core_grades\local\gradeitem as gradeitem;
 use mod_forum\local\container as forum_container;
 use mod_forum\local\entities\forum as forum_entity;
 use required_capability_exception;
@@ -157,6 +156,20 @@ class forum_gradeitem extends component_gradeitem {
 
         return $DB->get_record($this->get_table_name(), ['id' => $gradeid]);
     }
+
+    public function get_grade_item(): \grade_item {
+        global $CFG;
+
+        require("{$CFG->libdir}/gradelib.php");
+        [$itemtype, $itemmodule] = \core_component::normalize_component($this->component);
+
+        return \grade_item::fetch([
+            'itemtype' => $itemtype,
+            'itemmodule' => $itemmodule,
+            'iteminstance' => $this->itemnumber,
+        ]);
+    }
+
 
     /**
      * Get the grade for the specified user.
