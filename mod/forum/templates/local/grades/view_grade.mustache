@@ -35,17 +35,30 @@
         "hasgrade": true
     }
 }}
-<div class="container-fluid" data-region="view-grade">
-    {{#hasgrade}}
-        <div class="row-fluid p-3 bg-info">
-            <h5>{{#str}}gradingstatus, forum{{/str}} {{#str}}graded, forum{{/str}}</h5>
+<div class="container-fluid grade-display" data-region="view-grade">
+    {{#grade}}
+        <div class="row-fluid px-3">
+            <h5 class="font-weight-bold description">{{#str}}grade{{/str}}:</h5>
+            <p class="ml-auto">{{usergrade}} / {{maxgrade}}</p>
         </div>
-    {{/hasgrade}}
-    {{^hasgrade}}
-        <div class="row-fluid p-3 bg-secondary">
-            <h5>{{#str}}gradingstatus, forum{{/str}} {{#str}}notgraded, forum{{/str}}</h5>
+        <div class="row-fluid px-3">
+            <h5 class="font-weight-bold description">{{#str}}date{{/str}}:</h5>
+            <p class="ml-auto">{{#userdate}}{{timemodified}}, {{#str}} strftimedate {{/str}}{{/userdate}}</p>
         </div>
-    {{/hasgrade}}
+    {{/grade}}
+    <div class="row-fluid px-3">
+        <h5 class="font-weight-bold description">
+            {{#str}}gradingstatus, forum{{/str}}
+        </h5>
+        <p class="ml-auto">
+            {{#hasgrade}}
+                {{#str}}graded, forum{{/str}}
+            {{/hasgrade}}
+            {{^hasgrade}}
+                {{#str}}notgraded, forum{{/str}}
+            {{/hasgrade}}
+        </p>
+    </div>
     <div class="row-fluid p-3">
         <fieldset class="w-100" disabled="disabled">
             <div class="w-100" data-region="grade-template"></div>
