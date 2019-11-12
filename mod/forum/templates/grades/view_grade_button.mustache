@@ -29,14 +29,22 @@
     {
     }
 }}
-<a class="btn btn-primary font-weight-bold ml-2 px-4" href=""
-   data-grade-action="view"
-   data-contextid="{{contextid}}"
-   data-cmid="{{cmid}}"
-   data-name="{{name}}"
-   data-group="{{groupid}}"
-   data-userid="{{userid}}"
-   data-grading-component="{{gradingcomponent}}"
-   data-grading-component-subtype="{{gradingcomponentsubtype}}"
-   data-gradable-itemtype="forum"
-   >{{#str}}viewgrades, forum{{/str}}</a>
+<button
+    class="btn btn-secondary"
+    data-grade-action="view"
+    data-contextid="{{contextid}}"
+    data-cmid="{{cmid}}"
+    data-name="{{name}}"
+    data-group="{{groupid}}"
+    data-userid="{{userid}}"
+    data-grading-component="{{gradingcomponent}}"
+    data-grading-component-subtype="{{gradingcomponentsubtype}}"
+    data-gradable-itemtype="forum"
+    >
+        {{#str}}viewgrades, forum{{/str}}
+</button>
+{{#js}}
+    require(['mod_forum/grades/grader'], function(Grader) {
+    Grader.registerLaunchListeners();
+    });
+{{/js}}
