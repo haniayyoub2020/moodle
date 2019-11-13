@@ -83,9 +83,22 @@ class table {
         if (null === $this->fields) {
             $fields = [];
             foreach (array_keys($DB->get_columns($this->tablename)) as $fieldname) {
-                $fields["{$this->fieldprefix}{$fieldname}"] = $fieldname;
+                // In most cases this alias will be sufficient.
+                $alias = "{$this->fieldprefix}{$fieldname}";
+                // Some DBs (Oracle) have a limit of 31 characters on both the field name and any aliases.
+                // Generate a unique shortened name.
+                if (strlen($alias) > 31) {
+                    $alias = substr($alias, 0, -2);
+                }
+                // Because we have manipulated the field names we need to always perform a unique check.
+                if (array_key_exists($alias, $fields)) {
+                    $i = 0;
+                    while (array_key_exists($alias, $fields)) {
+                        $alias = substr($alias, 0, -1 * strlen($i)) . $i++;
+                    }
+                }
+                $fields[$alias] = $fieldname;
             }
-
             $this->fields = $fields;
         }
 

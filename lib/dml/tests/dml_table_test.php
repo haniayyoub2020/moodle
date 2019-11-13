@@ -65,6 +65,52 @@ class core_dml_table_testcase extends database_driver_testcase {
                 'tablealias' => 'banana',
                 'banana.id AS banid, banana.course AS bancourse, banana.name AS banname',
             ],
+            'long field name test' => [
+                'tablename' => 'test_table_long',
+                'fieldlist' => [
+                    'id' => ['id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null],
+                    'thisisareallylongnamewithchars' => ['thisisareallylongnamewithchars', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                ],
+                'primarykey' => 'id',
+                'fieldprefix' => 'ban',
+                'tablealias' => 'banana',
+                'banana.id AS banid, banana.thisisareallylongnamewithchars AS banthisisareallylongnamewithcha',
+            ],
+            'long field name test similar names' => [
+                'tablename' => 'test_table_long',
+                'fieldlist' => [
+                    'id' => ['id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null],
+                    'thisisareallylongnamewithchara' => ['thisisareallylongnamewithchara', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharb' => ['thisisareallylongnamewithcharb', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharc' => ['thisisareallylongnamewithcharc', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchard' => ['thisisareallylongnamewithchard', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchare' => ['thisisareallylongnamewithchare', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharf' => ['thisisareallylongnamewithcharf', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharg' => ['thisisareallylongnamewithcharg', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharh' => ['thisisareallylongnamewithcharh', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchari' => ['thisisareallylongnamewithchari', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharj' => ['thisisareallylongnamewithcharj', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchark' => ['thisisareallylongnamewithchark', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharl' => ['thisisareallylongnamewithcharl', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                ],
+                'primarykey' => 'id',
+                'fieldprefix' => 'ban',
+                'tablealias' => 'banana',
+                'banana.id AS banid, ' .
+                'banana.thisisareallylongnamewithchara AS banthisisareallylongnamewithcha, ' .
+                'banana.thisisareallylongnamewithcharb AS banthisisareallylongnamewithch0, ' .
+                'banana.thisisareallylongnamewithcharc AS banthisisareallylongnamewithch1, ' .
+                'banana.thisisareallylongnamewithchard AS banthisisareallylongnamewithch2, ' .
+                'banana.thisisareallylongnamewithchare AS banthisisareallylongnamewithch3, ' .
+                'banana.thisisareallylongnamewithcharf AS banthisisareallylongnamewithch4, ' .
+                'banana.thisisareallylongnamewithcharg AS banthisisareallylongnamewithch5, ' .
+                'banana.thisisareallylongnamewithcharh AS banthisisareallylongnamewithch6, ' .
+                'banana.thisisareallylongnamewithchari AS banthisisareallylongnamewithch7, ' .
+                'banana.thisisareallylongnamewithcharj AS banthisisareallylongnamewithch8, ' .
+                'banana.thisisareallylongnamewithchark AS banthisisareallylongnamewithch9, ' .
+                'banana.thisisareallylongnamewithcharl AS banthisisareallylongnamewithc10' .
+                '',
+            ],
         ];
     }
 
@@ -149,6 +195,55 @@ class core_dml_table_testcase extends database_driver_testcase {
                     'id' => 1,
                     'course' => 42,
                     'flag' => 'foo',
+                ],
+            ],
+            'long field name test similar names' => [
+                'fieldlist' => [
+                    'id' => ['id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null],
+                    'thisisareallylongnamewithchara' => ['thisisareallylongnamewithchara', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharb' => ['thisisareallylongnamewithcharb', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharc' => ['thisisareallylongnamewithcharc', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchard' => ['thisisareallylongnamewithchard', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchare' => ['thisisareallylongnamewithchare', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharf' => ['thisisareallylongnamewithcharf', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharg' => ['thisisareallylongnamewithcharg', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharh' => ['thisisareallylongnamewithcharh', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchari' => ['thisisareallylongnamewithchari', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharj' => ['thisisareallylongnamewithcharj', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithchark' => ['thisisareallylongnamewithchark', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                    'thisisareallylongnamewithcharl' => ['thisisareallylongnamewithcharl', XMLDB_TYPE_CHAR, '255', null, null, null, 'lala'],
+                ],
+                'primarykey' => 'id',
+                'prefix' => 'ban',
+                'result' => (object) [
+                    'banid' => 19,
+                    'banthisisareallylongnamewithcha' => 'a',
+                    'banthisisareallylongnamewithch0' => 'b',
+                    'banthisisareallylongnamewithch1' => 'c',
+                    'banthisisareallylongnamewithch2' => 'd',
+                    'banthisisareallylongnamewithch3' => 'e',
+                    'banthisisareallylongnamewithch4' => 'f',
+                    'banthisisareallylongnamewithch5' => 'g',
+                    'banthisisareallylongnamewithch6' => 'h',
+                    'banthisisareallylongnamewithch7' => 'i',
+                    'banthisisareallylongnamewithch8' => 'j',
+                    'banthisisareallylongnamewithch9' => 'k',
+                    'banthisisareallylongnamewithc10' => 'l',
+                ],
+                'expectedrecord' => (object) [
+                    'id' => 19,
+                    'thisisareallylongnamewithchara' => 'a',
+                    'thisisareallylongnamewithcharb' => 'b',
+                    'thisisareallylongnamewithcharc' => 'c',
+                    'thisisareallylongnamewithchard' => 'd',
+                    'thisisareallylongnamewithchare' => 'e',
+                    'thisisareallylongnamewithcharf' => 'f',
+                    'thisisareallylongnamewithcharg' => 'g',
+                    'thisisareallylongnamewithcharh' => 'h',
+                    'thisisareallylongnamewithchari' => 'i',
+                    'thisisareallylongnamewithcharj' => 'j',
+                    'thisisareallylongnamewithchark' => 'k',
+                    'thisisareallylongnamewithcharl' => 'l',
                 ],
             ],
         ];
