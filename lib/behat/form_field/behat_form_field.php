@@ -117,12 +117,14 @@ class behat_form_field {
         try {
             $instance->field->keyPress($char, $modifier);
             $instance->field->keyUp($char, $modifier);
-        } catch (WebDriver\Exception $e) {
+        } catch (
+            WebDriver\Exception |
+            \Behat\Mink\Exception\ElementNotFoundException |
+            \Facebook\WebDriver\Exception\NoSuchElementException $e
+        ) {
             // If the JS handler attached to keydown or keypress destroys the element
             // the later events may trigger errors because form element no longer exist
             // or is not visible. Ignore such exceptions here.
-        } catch (\Behat\Mink\Exception\ElementNotFoundException $e) {
-            // Other Mink drivers can throw this for the same reason as above.
         }
     }
 
@@ -201,23 +203,6 @@ class behat_form_field {
         }
 
         return behat_base::wait_for_pending_js_in_session($this->session);
-    }
-
-    /**
-     * Gets the field internal id used by selenium wire protocol.
-     *
-     * Only available when running_javascript().
-     *
-     * @throws coding_exception
-     * @return int
-     */
-    protected function get_internal_field_id() {
-
-        if (!$this->running_javascript()) {
-            throw new coding_exception('You can only get an internal ID using the selenium driver.');
-        }
-
-        return $this->session->getDriver()->getWebDriverSession()->element('xpath', $this->field->getXPath())->getID();
     }
 
     /**

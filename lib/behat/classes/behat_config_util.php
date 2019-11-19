@@ -475,12 +475,12 @@ class behat_config_util {
             $parallelruns = $this->get_number_of_parallel_run();
         }
 
-        $selenium2wdhost = array('wd_host' => 'http://localhost:4444/wd/hub');
+        $wdhost = ['wd_host' => "http://localhost:4444/wd/hub"];
         // If parallel run, then set wd_host if specified.
         if (!empty($currentrun) && !empty($parallelruns)) {
             // Set proper selenium2 wd_host if defined.
             if (!empty($CFG->behat_parallel_run[$currentrun - 1]['wd_host'])) {
-                $selenium2wdhost = array('wd_host' => $CFG->behat_parallel_run[$currentrun - 1]['wd_host']);
+                $wdhost = array('wd_host' => $CFG->behat_parallel_run[$currentrun - 1]['wd_host']);
             }
         }
 
@@ -525,7 +525,12 @@ class behat_config_util {
                     'Behat\MinkExtension' => array(
                         'base_url' => $CFG->behat_wwwroot,
                         'goutte' => null,
-                        'selenium2' => $selenium2wdhost
+                        'selenium2' => $wdhost,
+                    ),
+                    'Moodle\BehatExtension\MinkExtension' => array(
+                        'base_url' => $CFG->behat_wwwroot,
+                        'goutte' => null,
+                        'facebook_web_driver' => $wdhost,
                     ),
                     'Moodle\BehatExtension' => array(
                         'moodledirroot' => $CFG->dirroot,
@@ -612,15 +617,16 @@ class behat_config_util {
     protected function get_behat_profile($profile, $values) {
         // Values should be an array.
         if (!is_array($values)) {
-            return array();
+            return [];
         }
 
         // Check suite values.
-        $behatprofilesuites = array();
+        $behatprofilesuites = [];
 
         // Automatically set tags information to skip app testing if necessary. We skip app testing
         // if the browser is not Chrome. (Note: We also skip if it's not configured, but that is
         // done on the theme/suite level.)
+        // TODO Is default browser now chrome?
         if (empty($values['browser']) || $values['browser'] !== 'chrome') {
             if (!empty($values['tags'])) {
                 $values['tags'] .= ' && ~@app';
@@ -637,14 +643,14 @@ class behat_config_util {
             if (!isset($values['capabilities'])) {
                 $values['capabilities'] = [];
             }
-            if (!isset($values['capabilities']['chrome'])) {
-                $values['capabilities']['chrome'] = [];
+            if (!isset($values['capabilities']['chromeOptions'])) {
+                $values['capabilities']['chromeOptions'] = [];
             }
-            if (!isset($values['capabilities']['chrome']['switches'])) {
-                $values['capabilities']['chrome']['switches'] = [];
+            if (!isset($values['capabilities']['chromeOptions']['args'])) {
+                $values['capabilities']['chromeOptions']['args'] = [];
             }
-            $values['capabilities']['chrome']['switches'][] = '--unlimited-storage';
-            $values['capabilities']['chrome']['switches'][] = '--disable-web-security';
+            $values['capabilities']['chromeOptions']['args'][] = 'unlimited-storage';
+            $values['capabilities']['chromeOptions']['args'][] = 'disable-web-security';
 
             // If the mobile app is enabled, check its version and add appropriate tags.
             if ($mobiletags = $this->get_mobile_version_tags()) {
@@ -669,29 +675,35 @@ class behat_config_util {
             );
         }
 
-        // Selenium2 config values.
-        $behatprofileextension = array();
-        $seleniumconfig = array();
+        // Facebook config values.
+        $profileconfig = [];
         if (isset($values['browser'])) {
-            $seleniumconfig['browser'] = $values['browser'];
-        }
-        if (isset($values['wd_host'])) {
-            $seleniumconfig['wd_host'] = $values['wd_host'];
-        }
-        if (isset($values['capabilities'])) {
-            $seleniumconfig['capabilities'] = $values['capabilities'];
-        }
-        if (!empty($seleniumconfig)) {
-            $behatprofileextension = array(
-                'extensions' => array(
-                    'Behat\MinkExtension' => array(
-                        'selenium2' => $seleniumconfig,
-                    )
-                )
-            );
+            $profileconfig['browser'] = $values['browser'];
+
+            if (!isset($profileconfig['capabilities']['browserName'])) {
+                $profileconfig['capabilities']['browserName'] = $values['browser'];
+            }
         }
 
-        return array($profile => array_merge($behatprofilesuites, $behatprofileextension));
+        if (isset($values['wd_host'])) {
+            $profileconfig['wd_host'] = $values['wd_host'];
+        }
+
+        if (isset($values['capabilities'])) {
+            $profileconfig['capabilities'] = $values['capabilities'];
+        }
+
+        $behatprofileextension = [
+            'extensions' => [
+                'Moodle\BehatExtension\MinkExtension' => [
+                    'facebook_web_driver' => $profileconfig,
+                ],
+            ],
+        ];
+
+        return [
+            $profile => array_merge($behatprofilesuites, $behatprofileextension),
+        ];
     }
 
     /**

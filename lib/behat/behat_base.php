@@ -999,7 +999,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     protected function get_session_user() {
         global $DB;
 
-        $sid = $this->getSession()->getCookie('MoodleSession');
+        $sid = $this->get_session_cookie_value();
         if (empty($sid)) {
             throw new coding_exception('failed to get moodle session');
         }
@@ -1008,6 +1008,17 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             throw new coding_exception('failed to get user from seession id '.$sid);
         }
         return $DB->get_record('user', ['id' => $userid]);
+    }
+
+    /**
+     * Get the value of the session cookie from the WebDriver Session.
+     *
+     * @return string
+     */
+    protected function get_session_cookie_value(): string {
+        $driver = $this->getSession()->getDriver();
+
+        return $this->getSession()->getCookie('MoodleSession');
     }
 
     /**

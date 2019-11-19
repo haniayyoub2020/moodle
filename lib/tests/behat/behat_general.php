@@ -27,18 +27,20 @@
 
 require_once(__DIR__ . '/../../behat/behat_base.php');
 
-use Behat\Mink\Exception\ExpectationException as ExpectationException,
-    Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException,
-    Behat\Mink\Exception\DriverException as DriverException,
-    WebDriver\Exception\NoSuchElement as NoSuchElement,
-    WebDriver\Exception\StaleElementReference as StaleElementReference,
-    Behat\Gherkin\Node\TableNode as TableNode;
+use Behat\Mink\Exception\ExpectationException as ExpectationException;
+use Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException;
+use Behat\Mink\Exception\DriverException as DriverException;
+use WebDriver\Exception\NoSuchElement as NoSuchElement;
+use WebDriver\Exception\StaleElementReference as StaleElementReference;
+use Behat\Gherkin\Node\TableNode as TableNode;
+use Facebook\WebDriver\WebDriverKeys;
+use Facebook\WebDriver\Remote\DriverCommand;
 
 /**
  * Cross component steps definitions.
  *
  * Basic web application definitions from MinkExtension and
- * BehatchExtension. Definitions modified according to our needs
+ * BehatExtension. Definitions modified according to our needs
  * when necessary and including only the ones we need to avoid
  * overlapping and confusion.
  *
@@ -185,18 +187,26 @@ class behat_general extends behat_base {
      * @param string $classname
      */
     public function switch_to_class_iframe($classname) {
+        $driver = $this->getSession()->getDriver();
+
         // We spin to give time to the iframe to be loaded.
         // Using extended timeout as we don't know about which
         // kind of iframe will be loaded.
         $this->spin(
-            function($context, $classname) {
+            function($context, $classname) use ($driver) {
                 $iframe = $this->find('iframe', $classname);
-                if (!empty($iframe->getAttribute('id'))) {
-                    $iframename = $iframe->getAttribute('id');
+
+                if (\Moodle\BehatExtension\Driver\FacebookWebDriver::class === get_class($driver)) {
+                    $element = $driver->getWebDriver()->findElement(\Facebook\WebDriver\WebDriverBy::xpath($iframe->getXpath()));
+                    $driver->getWebDriver()->switchTo()->frame($element);
                 } else {
-                    $iframename = $iframe->getAttribute('name');
+                    if (!empty($iframe->getAttribute('id'))) {
+                        $iframename = $iframe->getAttribute('id');
+                    } else {
+                        $iframename = $iframe->getAttribute('name');
+                    }
+                    $context->getSession()->switchToIFrame($iframename);
                 }
-                $context->getSession()->switchToIFrame($iframename);
 
                 // If no exception we are done.
                 return true;
@@ -248,7 +258,14 @@ class behat_general extends behat_base {
      * @Given /^I accept the currently displayed dialog$/
      */
     public function accept_currently_displayed_alert_dialog() {
-        $this->getSession()->getDriver()->getWebDriverSession()->accept_alert();
+        $driver = $this->getSession()->getDriver();
+
+        if (\Moodle\BehatExtension\Driver\FacebookWebDriver::class === get_class($driver)) {
+            $driver->getWebDriver()->switchTo()->alert()->accept();
+        } else {
+            // TODO Remove when we kill off instaclick.
+            $driver->getWebDriverSession()->accept_alert();
+        }
     }
 
     /**
@@ -256,7 +273,14 @@ class behat_general extends behat_base {
      * @Given /^I dismiss the currently displayed dialog$/
      */
     public function dismiss_currently_displayed_alert_dialog() {
-        $this->getSession()->getDriver()->getWebDriverSession()->dismiss_alert();
+        $driver = $this->getSession()->getDriver();
+
+        if (\Moodle\BehatExtension\Driver\FacebookWebDriver::class === get_class($driver)) {
+            $driver->getWebDriver()->switchTo()->alert()->dismiss();
+        } else {
+            // TODO Remove when we kill off instaclick.
+            $driver->getWebDriverSession()->dismiss_alert();
+        }
     }
 
     /**
@@ -661,6 +685,9 @@ class behat_general extends behat_base {
                         // Do nothing just return, as element is no more on page.
                         return true;
                     } catch (ElementNotFoundException $e) {
+                        // Do nothing just return, as element is no more on page.
+                        return true;
+                    } catch (\Facebook\WebDriver\Exception\NoSuchElementException $e) {
                         // Do nothing just return, as element is no more on page.
                         return true;
                     }
@@ -1443,8 +1470,7 @@ EOF;
         }
 
         // Download the URL and check the size.
-        $session = $this->getSession()->getCookie('MoodleSession');
-        return download_file_content($url, array('Cookie' => 'MoodleSession=' . $session));
+        return download_file_content($url, array('Cookie' => 'MoodleSession=' . $this->get_session_cookie_value()));
     }
 
     /**
@@ -1543,8 +1569,7 @@ EOF;
             throw new ExpectationException('Element does not have src attribute',
                 $this->getSession());
         }
-        $session = $this->getSession()->getCookie('MoodleSession');
-        $content = download_file_content($url, array('Cookie' => 'MoodleSession=' . $session));
+        $content = download_file_content($url, array('Cookie' => 'MoodleSession=' . $this->get_session_cookie_value()));
 
         // Get the content of the fixture file.
         // Replace 'admin/' if it is in start of path with $CFG->admin .
@@ -1752,14 +1777,11 @@ EOF;
         if (!$this->running_javascript()) {
             throw new DriverException('Tab press step is not available with Javascript disabled');
         }
+
         // Gets the node based on the requested selector type and locator.
         $node = $this->get_selected_node($selectortype, $element);
-        $driver = $this->getSession()->getDriver();
-        if ($driver instanceof \Moodle\BehatExtension\Driver\MoodleSelenium2Driver) {
-            $driver->post_key("\xEE\x80\x84", $node->getXpath());
-        } else {
-            $driver->keyDown($node->getXpath(), "\t");
-        }
+        $node->keyDown(keys::translate_key(keys::TAB));
+        $node->keyUp(keys::translate_key(keys::TAB));
     }
 
     /**
@@ -1860,8 +1882,28 @@ EOF;
             throw new DriverException($shift . ' Tab press step is not available with Javascript disabled');
         }
 
-        $value = ($shift == ' shift') ? [\WebDriver\Key::SHIFT . \WebDriver\Key::TAB] : [\WebDriver\Key::TAB];
-        $this->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue(['value' => $value]);
+        if (empty($shift)) {
+            $actions = [
+                ['type' => 'keyDown', 'value' => keys::translate_key(keys::TAB)],
+                ['type' => 'keyUp', 'value' => keys::translate_key(keys::TAB)],
+            ];
+        } else {
+            $actions = [
+                ['type' => 'keyDown', 'value' => keys::translate_key(keys::SHIFT)],
+                ['type' => 'keyDown', 'value' => keys::translate_key(keys::TAB)],
+                ['type' => 'keyUp', 'value' => keys::translate_key(keys::TAB)],
+                ['type' => 'keyUp', 'value' => keys::translate_key(keys::SHIFT)],
+            ];
+        }
+        $this->getSession()->getDriver()->getWebDriver()->execute(DriverCommand::ACTIONS, [
+            'actions' => [
+                [
+                    'type' => 'key',
+                    'id' => 'keyboard',
+                    'actions' => $actions,
+                ],
+            ],
+        ]);
     }
 
     /**

@@ -550,10 +550,22 @@ class behat_hooks extends behat_base {
             // Accepting the alert so the framework can continue properly running
             // the following scenarios. Some browsers already closes the alert, so
             // wrapping in a try & catch.
-            try {
-                $this->getSession()->getDriver()->getWebDriverSession()->accept_alert();
-            } catch (Exception $e) {
-                // Catching the generic one as we never know how drivers reacts here.
+
+            $driver = $this->getSession()->getDriver();
+            if (\Moodle\BehatExtension\Driver\FacebookWebDriver::class === get_class($driver)) {
+                try {
+                    $driver->getWebDriver()->switchTo()->alert()->accept();
+                } catch (Exception $e) {
+                    // Catching the generic one as we never know how drivers reacts here.
+                }
+            } else {
+                // TODO Remove when we kill off instaclick.
+                try {
+                    $driver->getWebDriverSession()->accept_alert();
+                } catch (Exception $e) {
+                    // Catching the generic one as we never know how drivers reacts here.
+                }
+
             }
         } catch (Exception $e) {
             self::$currentstepexception = $e;

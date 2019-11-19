@@ -25,7 +25,7 @@
 
 namespace core_behat;
 
-use WebDriver\Key as WebDriverKeys;
+use Facebook\WebDriver\WebDriverKeys;
 use UnexpectedValueException;
 
 /**
