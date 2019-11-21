@@ -1001,7 +1001,6 @@ class behat_course extends behat_base {
      * @param string $activityname
      */
     public function i_delete_activity($activityname) {
-        $steps = array();
         $activity = $this->escape($activityname);
         if ($this->running_javascript()) {
             $this->i_open_actions_menu($activity);
@@ -1021,8 +1020,6 @@ class behat_course extends behat_base {
         } else {
             $this->execute("behat_forms::press_button", get_string('yes'));
         }
-
-        return $steps;
     }
 
     /**
