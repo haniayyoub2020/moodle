@@ -44,6 +44,9 @@ Feature: In a lesson activity, a teacher can duplicate a lesson page
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "It's the logo"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save page"
     And I follow "Duplicate page: First page name"
@@ -80,6 +83,9 @@ Feature: In a lesson activity, a teacher can duplicate a lesson page
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "It's the logo"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save page"
     And I follow "Duplicate page: True false with an image in the answer"
@@ -117,6 +123,9 @@ Feature: In a lesson activity, a teacher can duplicate a lesson page
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "It's the logo"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save page"
     And I follow "Duplicate page: True false with an image in the feedback"

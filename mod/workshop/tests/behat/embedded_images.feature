@@ -35,6 +35,9 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "moodlelogo.png" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "How to submit"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save and display"
     # Embed the image into Instructions for assessment.
@@ -48,6 +51,9 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "moodlelogo.png" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "How to assess"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save and display"
     # Embed the image into Conclusion.
@@ -61,6 +67,9 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "moodlelogo.png" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "Well done"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save and display"
     # Save the form and check the images are displayed in appropriate phases.

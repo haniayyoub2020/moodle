@@ -11,10 +11,10 @@ Feature: Atto accessibility checker
     And I click on "Accessibility checker" "button"
     Then I should see "Images require alternative text."
     And I follow "/broken-image"
-    And I wait "2" seconds
     And I click on "Insert or edit image" "button"
     And the field "Enter URL" matches value "/broken-image"
     And I set the field "Describe this image for someone who cannot see it" to "No more warning!"
+    And I press tab
     And I press "Save image"
     And I press "Accessibility checker"
     And I should see "Congratulations, no accessibility problems found!"
@@ -22,6 +22,7 @@ Feature: Atto accessibility checker
     And I select the text in the "Description" Atto editor
     And I click on "Insert or edit image" "button"
     And I set the field "Describe this image for someone who cannot see it" to ""
+    And I press tab
     And I set the field "Description not necessary" to "1"
     And I press "Save image"
     And I press "Accessibility checker"

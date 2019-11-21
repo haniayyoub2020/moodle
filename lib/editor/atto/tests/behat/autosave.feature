@@ -64,8 +64,7 @@ Feature: Atto Autosave
     And I click on "moodle-logo.png" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image" to "It's the Moodle"
-    # Wait for the page to "settle".
-    And I wait until the page is ready
+    And I press tab
     And I click on "Save image" "button"
     And I click on "Save and display" "button"
     And I log out

@@ -17,14 +17,14 @@ Feature: Add images to Atto
     And I click on "moodle-logo.png" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "It's the Moodle"
-    # Wait for the page to "settle".
-    And I wait until the page is ready
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And the field "Width" matches value "204"
     And the field "Height" matches value "61"
     And I set the field "Auto size" to "1"
-    And I wait until the page is ready
+    # Wait for the page to "settle".
     And I set the field "Width" to "2040"
-    # Trigger blur on the width field.
     And I take focus off "Width" "field"
     And the field "Height" matches value "610"
     And I set the field "Height" to "61"
@@ -32,6 +32,7 @@ Feature: Add images to Atto
     And I take focus off "Height" "field"
     And the field "Width" matches value "204"
     And I set the field "Auto size" to "0"
+    # Wait for the page to "settle".
     And I wait until the page is ready
     And I set the field "Width" to "123"
     And I set the field "Height" to "456"
@@ -57,6 +58,9 @@ Feature: Add images to Atto
     When I click on "Insert or edit image" "button"
     Then the field "Enter URL" matches value "/nothing/here"
     And I set the field "Describe this image for someone who cannot see it" to "Something"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I set the field "Enter URL" to ""
     And I press "Save image"
     And I set the field "Description" to "<p>Image: <img src='/nothing/again' width='123' height='456' alt='Awesome!'>.</p>"

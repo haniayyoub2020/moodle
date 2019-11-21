@@ -51,6 +51,9 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "It's the logo"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save page"
     And I set the field "qtype" to "Add a question page"
@@ -73,6 +76,9 @@ Feature: In a lesson activity, teacher can add embedded images in questions answ
     And I click on "moodle_logo.jpg" "link"
     And I click on "Select this file" "button"
     And I set the field "Describe this image for someone who cannot see it" to "It's the logo"
+    # YUI does not trigger the change event until a true blur event. After setting this field we must move to another
+    # field. We do so with "I press tab".
+    And I press tab
     And I click on "Save image" "button"
     And I press "Save page"
     And I log out
