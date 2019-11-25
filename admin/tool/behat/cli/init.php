@@ -128,7 +128,7 @@ if ($code == 0) {
 } else if ($code == BEHAT_EXITCODE_INSTALL) {
     // Behat and dependencies are installed and we need to install the test site.
     chdir(__DIR__);
-    passthru("php $utilfile --install $commandoptions", $code);
+    passthru("php $utilfile --install --buildthemes $commandoptions", $code);
     if ($code != 0) {
         chdir($cwd);
         exit($code);
@@ -144,7 +144,7 @@ if ($code == 0) {
     }
 
     chdir(__DIR__);
-    passthru("php $utilfile --install $commandoptions", $code);
+    passthru("php $utilfile --install --buildthemes $commandoptions", $code);
     if ($code != 0) {
         chdir($cwd);
         exit($code);

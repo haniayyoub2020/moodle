@@ -180,11 +180,11 @@ function theme_get_css_filename($themename, $globalrevision, $themerevision, $di
  * @param array          $directions   Must be a subset of ['rtl', 'ltr'].
  * @param bool           $cache        Should the generated files be stored in local cache.
  */
-function theme_build_css_for_themes($themeconfigs = [], $directions = ['rtl', 'ltr'], $cache = true) {
+function theme_build_css_for_themes($themeconfigs = [], $directions = ['rtl', 'ltr'], $cache = true): array {
     global $CFG;
 
     if (empty($themeconfigs)) {
-        return;
+        return [];
     }
 
     require_once("{$CFG->libdir}/csslib.php");
@@ -212,7 +212,7 @@ function theme_build_css_for_themes($themeconfigs = [], $directions = ['rtl', 'l
                 css_store_css($themeconfig, $filename, $themecss[$direction]);
             }
         }
-        $themescss[] = $themecss;
+        $themescss[$themeconfig->name] = $themecss;
 
         if ($cache) {
             // Only update the theme revision after we've successfully created the

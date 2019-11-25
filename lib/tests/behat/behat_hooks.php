@@ -357,12 +357,19 @@ class behat_hooks extends behat_base {
         // Reset $SESSION.
         \core\session\manager::init_empty_session();
 
+        // Fetch the user agent.
+        if ($this->running_javascript()) {
+            $useragent = $this->getSession()->evaluateScript('return navigator.userAgent;');
+            \core_useragent::instance(true, $useragent);
+        }
+
         // Ignore E_NOTICE and E_WARNING during reset, as this might be caused because of some existing process
         // running ajax. This will be investigated in another issue.
         $errorlevel = error_reporting();
         error_reporting($errorlevel & ~E_NOTICE & ~E_WARNING);
         behat_util::reset_all_data();
         error_reporting($errorlevel);
+        behat_util::restore_saved_themes();
 
         // Assign valid data to admin user (some generator-related code needs a valid user).
         $user = $DB->get_record('user', array('username' => 'admin'));
@@ -573,25 +580,14 @@ class behat_hooks extends behat_base {
     }
 
     /**
-     * Executed after scenario having switch window to restart session.
-     * This is needed to close all extra browser windows and starting
-     * one browser window.
+     * Reset the session between each scenario.
      *
      * @param AfterScenarioScope $scope scope passed by event fired after scenario.
-     * @AfterScenario @_switch_window
+     * @AfterScenario
      */
-    public function after_scenario_switchwindow(AfterScenarioScope $scope) {
-        for ($count = 0; $count < behat_base::get_extended_timeout(); $count++) {
-            try {
-                $this->getSession()->restart();
-                break;
-            } catch (DriverException $e) {
-                // Wait for timeout and try again.
-                sleep(self::get_timeout());
-            }
-        }
-        // If session is not restarted above then it will try to start session before next scenario
-        // and if that fails then exception will be thrown.
+    public function reset_webdriver_between_scenarios(AfterScenarioScope $scope) {
+        $this->getSession()->getDriver()->getWebDriver()->quit();
+        $this->getSession()->stop();
     }
 
     /**

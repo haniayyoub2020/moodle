@@ -49,6 +49,7 @@ list($options, $unrecognized) = cli_get_params(
         'updatesteps' => false,
         'optimize-runs' => '',
         'add-core-features-to-theme' => false,
+        'buildthemes' => false,
     ),
     array(
         'h' => 'help',
@@ -207,6 +208,9 @@ if ($options['install']) {
     $code = behat_util::get_behat_status();
     exit($code);
 
+} else if ($options['buildthemes']) {
+    behat_util::build_themes();
+    exit(0);
 } else if ($options['updatesteps']) {
     if (defined('BEHAT_FEATURE_STEP_FILE') && BEHAT_FEATURE_STEP_FILE) {
         $behatstepfile = BEHAT_FEATURE_STEP_FILE;

@@ -1122,7 +1122,7 @@ class behat_config_util {
      * @param int $currentrun current run.
      * @return array list of suites.
      */
-    protected function get_behat_suites($parallelruns = 0, $currentrun = 0) {
+    public function get_behat_suites($parallelruns = 0, $currentrun = 0) {
         $features = $this->get_components_features();
 
         // Get number of parallel runs and current run.

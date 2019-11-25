@@ -131,6 +131,14 @@ class behat_config_manager {
 
     }
 
+    public static function build_themes() {
+        $behatconfigutil = self::get_behat_config_util();
+        $suites = $behatconfigutil->get_behat_suites();
+        print_r($suites);
+        foreach ($suites as $suite) {
+        }
+    }
+
     /**
      * @deprecated since 3.2 - please use behat_config_util.php
      */

@@ -54,6 +54,7 @@ list($options, $unrecognized) = cli_get_params(
         'torun'       => 0,
         'optimize-runs' => '',
         'add-core-features-to-theme' => false,
+        'buildthemes' => false,
     ),
     array(
         'h' => 'help',
@@ -234,6 +235,11 @@ if ($options['diag'] || $options['enable'] || $options['disable']) {
         $processes = cli_execute_parallel($cmd, __DIR__);
         print_sequential_output($processes);
     }
+
+    if ($options['buildthemes']) {
+        behat_util::build_themes();
+    }
+
     exit(0);
 
 } else {
