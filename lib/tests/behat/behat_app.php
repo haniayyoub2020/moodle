@@ -501,6 +501,7 @@ class behat_app extends behat_base {
      * @throws DriverException If there aren't exactly 2 tabs open
      */
     public function i_switch_to_the_browser_tab_opened_by_the_app() {
+        // TODO: get current window and switch to the other.
         $names = $this->getSession()->getWindowNames();
         if (count($names) !== 2) {
             throw new DriverException('Expected to see 2 tabs open, not ' . count($names));
