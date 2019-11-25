@@ -21,6 +21,8 @@ Feature: Managers can create courses
     And I am on "Course 1" course homepage with editing mode on
     And I add the "Latest announcements" block
     Then "Latest announcements" "block" should exist
+    # The page administration for the forum is too long.
+    And I change window size to "large"
     And I follow "Announcements"
     And "Add a new topic" "link" should exist
     And "Subscription mode > Forced subscription" "link" should not exist in current page administration
