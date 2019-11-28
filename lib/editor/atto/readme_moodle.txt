@@ -6,6 +6,7 @@ Description of the import of libraries associated with the Atto editor.
     * Copy the content of the 'currentrelease/uncompressed' folder into yui/src/rangy/js
     * Patch out the AMD / module support from rangy (because we are loading it with YUI)
       To do this - change the code start of each js file to look like (just delete the other lines):
+    * Re-apply the hack from MDL-53625.
 
 (function(factory, root) {
     // No AMD or CommonJS support so we use the rangy property of root (probably the global variable)
