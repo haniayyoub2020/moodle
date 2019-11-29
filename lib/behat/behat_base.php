@@ -1049,6 +1049,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
 
         \core\session\manager::set_user($user);
     }
+
     /**
      * Trigger click on node via javascript instead of actually clicking on it via pointer.
      *
@@ -1062,14 +1063,19 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             $node->click();
         }
         $this->ensure_node_is_visible($node); // Ensures hidden elements can't be clicked.
-        $xpath = $node->getXpath();
-        $driver = $this->getSession()->getDriver();
-        if ($driver instanceof \Moodle\BehatExtension\Driver\MoodleSelenium2Driver) {
-            $script = "Syn.click({{ELEMENT}})";
-            $driver->triggerSynScript($xpath, $script);
-        } else {
-            $driver->click($xpath);
-        }
+
+        $script = <<<EOF
+arguments[0].dispatchEvent(new Event("click", {
+    view: window,
+    bubbles: true,
+    cancelable: true,
+}));
+EOF;
+
+        $driver = $this->getSession()->getDriver()->getWebDriver();
+        $element = $driver->findElement(\Facebook\WebDriver\WebDriverBy::xpath($node->getXpath()));
+
+        $driver->executeScript($script, [$element]);
     }
 
     /**
