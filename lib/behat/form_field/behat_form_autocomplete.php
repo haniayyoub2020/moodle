@@ -70,7 +70,7 @@ class behat_form_autocomplete extends behat_form_text {
             // 1) marked itself as expanded; and
             // 2) have an aria-selected suggestion in the list.
             $expanded = $this->field->getAttribute('aria-expanded');
-            $suggestion = $this->field->getParent()->find('css', '.form-autocomplete-suggestions > [aria-selected="true"]');
+            $suggestion = $this->field->getParent()->getParent()->find('css', '.form-autocomplete-suggestions > [aria-selected="true"]');
 
             if ($expanded && null !== $suggestion) {
                 // A suggestion was found.
