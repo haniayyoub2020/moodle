@@ -579,16 +579,28 @@ class behat_hooks extends behat_base {
         }
     }
 
-    /**
-     * Reset the session between each scenario.
-     *
-     * @param AfterScenarioScope $scope scope passed by event fired after scenario.
-     * @AfterScenario
-     */
-    public function reset_webdriver_between_scenarios(AfterScenarioScope $scope) {
-        $this->getSession()->getDriver()->getWebDriver()->quit();
-        $this->getSession()->stop();
-    }
+     /**
+      * Executed after scenario having switch window to restart session.
+      * This is needed to close all extra browser windows and starting
+      * one browser window.
+      *
+      * @param AfterScenarioScope $scope scope passed by event fired after scenario.
+      * @AfterScenario @_switch_window
+      */
+     public function after_scenario_switchwindow(AfterScenarioScope $scope) {
+         for ($count = 0; $count < behat_base::get_extended_timeout(); $count++) {
+             try {
+                 $this->getSession()->getDriver()->getWebDriver()->quit();
+                 $this->getSession()->stop();
+                 break;
+             } catch (DriverException $e) {
+                 // Wait for timeout and try again.
+                 sleep(self::get_timeout());
+             }
+         }
+         // If session is not restarted above then it will try to start session before next scenario
+         // and if that fails then exception will be thrown.
+     }
 
     /**
      * Getter for self::$faildumpdirname
