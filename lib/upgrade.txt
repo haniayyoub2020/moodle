@@ -1,6 +1,16 @@
 This files describes API changes in core libraries and APIs,
 information provided here is intended especially for developers.
 
+=== 3.9 ===
+* Plugins can now explicitly declare supported and incompatible Moodle versions in version.php
+  - $plugin->supported[37,39];
+    supported takes an array of ascending numbers, that correspond to the branch number of supported versions, inclusive.
+    Moodle versions that are outside of this range will produce a message notifying at install time, but will allow for installation.
+  
+  - $plugin->incompatible = 36;
+    incompatible takes a single int corresponding to the latest incompatible branch. Any Moodle versions including and 
+    below this will be prevented from installing the plugin, and a message will be given when attempting installation.
+
 === 3.8 ===
 * The rotate_image function has been added to the stored_file class (MDL-63349)
 * The yui checknet module is removed. Call \core\session\manager::keepalive instead.
