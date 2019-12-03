@@ -21,9 +21,15 @@
  * @copyright  2018 Toni Barbera
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/str', 'core/notification', 'core/ajax', 'core/templates', 'core/sortable_list', 'core/inplace_editable'],
-    function(
-        $, Str, Notification, Ajax, Templates, SortableList) {
+define([
+    'jquery',
+    'core/str',
+    'core/notification',
+    'core/ajax',
+    'core/templates',
+    'core/sortable_list',
+    'core/pending',
+], function($, Str, Notification, Ajax, Templates, SortableList, Pending) {
 
     /**
      * Display confirmation dialogue
@@ -40,20 +46,26 @@ define(['jquery', 'core/str', 'core/notification', 'core/ajax', 'core/templates'
             {'key': 'confirmdelete' + type, component: 'core_customfield'},
             {'key': 'yes'},
             {'key': 'no'},
-        ]).done(function(s) {
-            Notification.confirm(s[0], s[1], s[2], s[3], function() {
+        ]).then(function(s) {
+            return Notification.confirm(s[0], s[1], s[2], s[3], function() {
+                var pendingPromise = new Pending();
                 var func = (type === 'field') ? 'core_customfield_delete_field' : 'core_customfield_delete_category';
                 Ajax.call([
                     {methodname: func, args: {id: id}},
                     {methodname: 'core_customfield_reload_template', args: {component: component, area: area, itemid: itemid}}
                 ])[1].then(function(response) {
                     return Templates.render('core_customfield/list', response);
-                }).then(function(html, js) {
+                })
+                .then(function(html, js) {
                     Templates.replaceNode($('[data-region="list-page"]'), html, js);
                     return null;
-                }).fail(Notification.exception);
+                })
+                .then(function() {
+                    return pendingPromise.resolve();
+                })
+                .catch(Notification.exception);
             });
-        }).fail(Notification.exception);
+        }).catch(Notification.exception);
     };
 
     /**
