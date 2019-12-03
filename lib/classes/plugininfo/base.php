@@ -254,8 +254,8 @@ abstract class base {
             }
         }
 
-        if (isset($plugin->incompatible)) {
-            if (intval($plugin->incompatible) > 0) {
+        if (isset($plugin->incompatible) && $plugin->incompatible !== null) {
+            if ((ctype_digit($plugin->incompatible) || is_int($plugin->incompatible)) && (int) $plugin->incompatible > 0) {
                 $this->pluginincompatible = intval($plugin->incompatible);
             } else {
                 throw new coding_exception('Incorrect syntax in $plugin->incompatible in '."$this->name");

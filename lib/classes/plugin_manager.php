@@ -918,7 +918,6 @@ class core_plugin_manager {
      * @return bool
      */
     public function check_explicitly_supported($plugin, $branch) {
-
         // Check for correctly formed supported.
         if (isset($pluginsupported)) {
             // Broken apart for readability.
