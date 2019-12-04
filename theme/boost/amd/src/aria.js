@@ -20,7 +20,7 @@
  * @copyright  2018 Damyon Wiese <damyon@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/pending'], function($, Pending) {
+define(['jquery', 'core/pending'], function($) {
     return {
         init: function() {
             // Drop downs from bootstrap don't support keyboard accessibility by default.
@@ -63,15 +63,6 @@ define(['jquery', 'core/pending'], function($, Pending) {
                 }
             });
 
-            // Special handling for navigation keys when menu is open.
-            var shiftFocus = function(element) {
-                var delayedFocus = function(pendingPromise) {
-                    $(this).focus();
-                    pendingPromise.resolve();
-                }.bind(element);
-                setTimeout(delayedFocus, 50, new Pending('core/aria:delayed-focus'));
-            };
-
             $('.dropdown').on('shown.bs.dropdown', function(e) {
                 // We need to focus on the first menuitem.
                 var menu = $(e.target).find('[role="menu"]'),
@@ -90,7 +81,7 @@ define(['jquery', 'core/pending'], function($, Pending) {
                     }
                 }
                 if (foundMenuItem) {
-                    shiftFocus(foundMenuItem);
+                    foundMenuItem.focus();
                 }
             });
             // Search for menu items by finding the first item that has
@@ -116,7 +107,7 @@ define(['jquery', 'core/pending'], function($, Pending) {
                     item = $(menuItems[i]);
                     itemText = item.text().trim().toLowerCase();
                     if (itemText.indexOf(trigger) == 0) {
-                        shiftFocus(item);
+                        item.focus();
                         break;
                     }
                 }
@@ -125,55 +116,43 @@ define(['jquery', 'core/pending'], function($, Pending) {
             // Keyboard navigation for arrow keys, home and end keys.
             $('.dropdown [role="menu"] [role="menuitem"]').keydown(function(e) {
                 var trigger = e.which || e.keyCode,
-                    next = false,
                     menu = $(e.target).closest('[role="menu"]'),
-                    i = 0,
                     menuItems = false;
                 if (!menu) {
                     return;
                 }
-                menuItems = $(menu).find('[role="menuitem"]');
+                menuItems = $(menu).find('[role="menuitem"]').filter(':visible');
                 if (!menuItems) {
                     return;
                 }
+
+                var currentIndex = menuItems.index(e.target);
+                var sortedMenuItems = menuItems.toArray();
+                var searchList = $.merge(sortedMenuItems.slice(currentIndex + 1), sortedMenuItems.slice(0, currentIndex));
+
                 // Down key.
                 if (trigger == 40) {
-                    for (i = 0; i < menuItems.length - 1; i++) {
-                        if (menuItems[i] == e.target) {
-                            next = menuItems[i + 1];
-                            break;
-                        }
+                    if (searchList.length > 1) {
+                        e.preventDefault();
+                        searchList[0].focus();
                     }
-                    if (!next) {
-                        // Wrap to first item.
-                        next = menuItems[0];
-                    }
-
                 } else if (trigger == 38) {
                     // Up key.
-                    for (i = 1; i < menuItems.length; i++) {
-                        if (menuItems[i] == e.target) {
-                            next = menuItems[i - 1];
-                            break;
-                        }
-                    }
-                    if (!next) {
-                        // Wrap to last item.
-                        next = menuItems[menuItems.length - 1];
+                    searchList = searchList.reverse();
+                    if (searchList.length > 1) {
+                        e.preventDefault();
+                        searchList[0].focus();
                     }
 
                 } else if (trigger == 36) {
                     // Home key.
-                    next = menuItems[0];
+                    e.preventDefault();
+                    menuItems[0].focus();
 
                 } else if (trigger == 35) {
                     // End key.
-                    next = menuItems[menuItems.length - 1];
-                }
-                // Variable next is set if we do want to act on the keypress.
-                if (next) {
                     e.preventDefault();
-                    shiftFocus(next);
+                    menuItems[menuItems.length - 1].focus();
                 }
                 return;
             });
@@ -181,7 +160,7 @@ define(['jquery', 'core/pending'], function($, Pending) {
                 // We need to focus on the menu trigger.
                 var trigger = $(e.target).find('[data-toggle="dropdown"]');
                 if (trigger) {
-                    shiftFocus(trigger);
+                    trigger.focus();
                 }
             });
 

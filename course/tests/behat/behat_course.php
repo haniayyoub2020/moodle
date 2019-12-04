@@ -837,7 +837,6 @@ class behat_course extends behat_base {
      * @param string $activityname
      */
     public function i_open_actions_menu($activityname) {
-
         if (!$this->running_javascript()) {
             throw new DriverException('Activities actions menu not available when Javascript is disabled');
         }
@@ -963,16 +962,14 @@ class behat_course extends behat_base {
      * @param string $activityname
      */
     public function i_indent_right_activity($activityname) {
-
         $activity = $this->escape($activityname);
         if ($this->running_javascript()) {
-            $this->i_open_actions_menu($activity);
+            $this->execute('behat_course::i_open_actions_menu', [$this->escape($activityname)]);
         }
 
         $this->execute('behat_course::i_click_on_in_the_activity',
             array(get_string('moveright'), "link", $this->escape($activity))
         );
-
     }
 
     /**
@@ -982,16 +979,14 @@ class behat_course extends behat_base {
      * @param string $activityname
      */
     public function i_indent_left_activity($activityname) {
-
         $activity = $this->escape($activityname);
         if ($this->running_javascript()) {
-            $this->i_open_actions_menu($activity);
+            $this->execute('behat_course::i_open_actions_menu', [$this->escape($activityname)]);
         }
 
         $this->execute('behat_course::i_click_on_in_the_activity',
             array(get_string('moveleft'), "link", $this->escape($activity))
         );
-
     }
 
     /**
@@ -1001,18 +996,15 @@ class behat_course extends behat_base {
      * @param string $activityname
      */
     public function i_delete_activity($activityname) {
-        $activity = $this->escape($activityname);
+        $this->execute('behat_general::i_wait_seconds', [2]);
         if ($this->running_javascript()) {
-            $this->i_open_actions_menu($activity);
+            $this->execute('behat_course::i_open_actions_menu', [$this->escape($activityname)]);
         }
 
         $this->execute('behat_course::i_click_on_in_the_activity',
-            array(get_string('delete'), "link", $this->escape($activity))
+            array(get_string('delete'), "link", $this->escape($activityname))
         );
 
-        // JS enabled.
-        // Not using chain steps here because the exceptions catcher have problems detecting
-        // JS modal windows and avoiding interacting them at the same time.
         if ($this->running_javascript()) {
             $this->execute('behat_general::i_click_on_in_the',
                 array(get_string('yes'), "button", "Confirm", "dialogue")
@@ -1032,12 +1024,11 @@ class behat_course extends behat_base {
         $steps = array();
         $activity = $this->escape($activityname);
         if ($this->running_javascript()) {
-            $this->i_open_actions_menu($activity);
+            $this->execute('behat_course::i_open_actions_menu', [$this->escape($activityname)]);
         }
         $this->execute('behat_course::i_click_on_in_the_activity',
             array(get_string('duplicate'), "link", $activity)
         );
-
     }
 
     /**

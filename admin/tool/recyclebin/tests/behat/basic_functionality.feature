@@ -42,11 +42,11 @@ Feature: Basic recycle bin functionality
       | autohide | 0 | tool_recyclebin |
 
   Scenario: Restore a deleted assignment
-    Given I log in as "teacher1"
+    Given the following "activities" exist:
+      | activity | course | idnumber | name        |
+      | assign   | C1     | assign1  | Test assign |
+    And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assign |
-      | Description | Test |
     And I delete "Test assign" activity
     When I navigate to "Recycle bin" in current page administration
     Then I should see "Test assign"
@@ -85,11 +85,11 @@ Feature: Basic recycle bin functionality
 
   @javascript
   Scenario: Deleting a single item from the recycle bin
-    Given I log in as "teacher1"
+    Given the following "activities" exist:
+      | activity | course | idnumber | name        |
+      | assign   | C1     | assign1  | Test assign |
+    And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assign |
-      | Description | Test |
     And I delete "Test assign" activity
     And I run all adhoc tasks
     And I navigate to "Recycle bin" in current page administration
