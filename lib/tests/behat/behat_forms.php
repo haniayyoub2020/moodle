@@ -81,9 +81,8 @@ class behat_forms extends behat_base {
      * @param TableNode $data
      */
     public function i_set_the_following_fields_to_these_values(TableNode $data) {
-
         // Expand all fields in case we have.
-        $this->expand_all_fields();
+        $this->execute('behat_forms::i_expand_all_fieldsets');
 
         $datahash = $data->getRowsHash();
 
@@ -154,6 +153,7 @@ class behat_forms extends behat_base {
             $collapseexpandlink = $this->find('xpath', $expandallxpath . '|' . $expandonlysection,
                     false, false, behat_base::get_reduced_timeout());
             $collapseexpandlink->click();
+            $this->wait_for_pending_js();
 
         } catch (ElementNotFoundException $e) {
             // The behat_base::find() method throws an exception if there are no elements,
@@ -187,6 +187,7 @@ class behat_forms extends behat_base {
                     $showmores[0]->click();
                 }
             }
+            $this->wait_for_pending_js();
 
         } catch (ElementNotFoundException $e) {
             // We continue with the test.
