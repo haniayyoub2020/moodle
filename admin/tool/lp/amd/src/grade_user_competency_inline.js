@@ -28,7 +28,8 @@ define(['jquery',
         'tool_lp/grade_dialogue',
         'tool_lp/event_base',
         'tool_lp/scalevalues',
-    ], function($, notification, ajax, log, GradeDialogue, EventBase, ScaleValues) {
+        'core/pending',
+    ], function($, notification, ajax, log, GradeDialogue, EventBase, ScaleValues, Pending) {
 
     /**
      * InlineEditor
@@ -48,6 +49,8 @@ define(['jquery',
         if (!trigger.length) {
             throw new Error('Could not find the trigger');
         }
+
+        var pendingPromise = new Pending('tool_lp/grade_user_competency_inline:setup');
 
         this._scaleId = scaleId;
         this._competencyId = competencyId;
@@ -82,6 +85,7 @@ define(['jquery',
                 competencyid: this._competencyId
             };
         }
+        pendingPromise.resolve();
     };
     InlineEditor.prototype = Object.create(EventBase.prototype);
 
@@ -94,6 +98,7 @@ define(['jquery',
         var options = [],
             self = this;
 
+        var pendingPromise = new Pending('tool_lp/grade_user_competency_inline:_setUp');
         var promise = ScaleValues.get_values(self._scaleId);
         promise.then(function(scalevalues) {
             options.push({
@@ -136,6 +141,7 @@ define(['jquery',
 
             return;
         })
+        .then(pendingPromise.resolve)
         .fail(notification.exception);
     };
 
