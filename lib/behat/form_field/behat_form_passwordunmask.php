@@ -58,6 +58,7 @@ require(["jquery"], function($) {
 JS;
             $this->session->executeScript($js);
         }
+        $this->wait_for_pending_js();
 
         $this->field->setValue($value);
 
