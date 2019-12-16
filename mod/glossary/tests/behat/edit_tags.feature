@@ -16,12 +16,9 @@ Feature: Edited glossary entries handle tags correctly
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Glossary" to section "1" and I fill the form with:
-      | Name | Test glossary |
-      | Description | A glossary about dreams! |
-    And I log out
+    And the following "activities" exist:
+      | activity   | name           | course | idnumber  | Description              |
+      | glossary   | Test glossary  | C1     | glossary1 | A glossary about dreams! |
 
   Scenario: Glossary entry edition of custom tags works as expected
     Given I log in as "teacher1"
