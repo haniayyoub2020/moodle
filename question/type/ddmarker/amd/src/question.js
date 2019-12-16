@@ -321,6 +321,7 @@ define(['jquery', 'core/dragdrop', 'qtype_ddmarker/shapes', 'core/key_codes'], f
         var thisQ = this,
             dragged = $(e.target).closest('.dragitem');
 
+        dragged.focus();
         var info = dragDrop.prepare(e);
         if (!info.start) {
             return;
