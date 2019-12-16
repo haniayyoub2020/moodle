@@ -1196,4 +1196,23 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
         return $session->evaluateScript($script, $arguments);
     }
 
+    /**
+     * Get the session key for the current session via Javascript.
+     *
+     * @return string
+     */
+    public function get_sesskey(): string {
+        $this->require_javascript();
+
+        $script = <<<EOF
+(function() {
+    if (M && M.cfg && M.cfg.sesskey) {
+        return M.cfg.sesskey;
+    }
+    return '';
+})();
+EOF;
+
+        return self::execute_script($this->getSession(), $script);
+    }
 }
