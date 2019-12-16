@@ -1290,4 +1290,22 @@ EOF;
 
         $session->executeScript($script, $arguments);
     }
+
+    /**
+     * Get the session key for the current session via Javascript.
+     *
+     * @return string
+     */
+    public function get_sesskey(): string {
+        $script = <<<EOF
+return (function() {
+if (M && M.cfg && M.cfg.sesskey) {
+    return M.cfg.sesskey;
+}
+return '';
+})()
+EOF;
+
+        return $this->evaluate_script($script);
+    }
 }
