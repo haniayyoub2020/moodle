@@ -486,6 +486,19 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     }
 
     /**
+     * Require javascript for the current step.
+     *
+     * @throws DriverException
+     */
+    protected function require_javascript() {
+        if ($this->running_javascript()) {
+            return;
+        }
+
+        throw new DriverException('Javascript is required');
+    }
+
+    /**
      * Checks if the current page is part of the mobile app.
      *
      * @return bool True if it's in the app
@@ -1200,5 +1213,22 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      */
     public static function get_named_replacements(): array {
         return [];
+    }
+
+    /**
+     * Get the session key for the current session via Javascript.
+     */
+    public function get_sesskey(): string {
+        $this->require_javascript();
+
+        $script = <<<EOF
+if (M && M.cfg && M.cfg.sesskey) {
+    return M.cfg.sesskey;
+}
+return '';
+EOF;
+        $driver = $this->getSession()->getDriver()->getWebDriver();
+
+        return $driver->executeScript($script, []);
     }
 }

@@ -750,11 +750,22 @@ class behat_navigation extends behat_base {
         global $DB;
         $course = $DB->get_record("course", array("fullname" => $coursefullname), 'id', MUST_EXIST);
         $url = new moodle_url('/course/view.php', ['id' => $course->id]);
+
+        $sesskey = null;
+
+        if ($this->running_javascript() && $sesskey = $this->get_sesskey()) {
+            $url->param('edit', 1);
+            $url->param('sesskey', $sesskey);
+        }
+
         $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
-        try {
-            $this->execute("behat_forms::press_button", get_string('turneditingon'));
-        } catch (Exception $e) {
-            $this->execute("behat_navigation::i_navigate_to_in_current_page_administration", [get_string('turneditingon')]);
+
+        if (!$this->running_javascript() || !$sesskey) {
+            try {
+                $this->execute("behat_forms::press_button", get_string('turneditingon'));
+            } catch (Exception $e) {
+                $this->execute("behat_navigation::i_navigate_to_in_current_page_administration", [get_string('turneditingon')]);
+            }
         }
     }
 
