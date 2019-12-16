@@ -21,8 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/templates', 'tool_lp/dialogue'],
-       function($, notification, str, ajax, templates, Dialogue) {
+define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/templates', 'tool_lp/dialogue', 'core/pending'],
+       function($, notification, str, ajax, templates, Dialogue, Pending) {
 
     /**
      * UserCompetencyPopup
@@ -80,11 +80,17 @@ define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/templates'
      */
     UserCompetencyPopup.prototype._contextLoaded = function(context) {
         var self = this;
-        templates.render('tool_lp/user_competency_summary_in_plan', context).done(function(html, js) {
-            str.get_string('usercompetencysummary', 'report_competency').done(function(title) {
-                (new Dialogue(title, html, templates.runTemplateJS.bind(templates, js), self._refresh.bind(self), true));
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+        var pendingPromise = new Pending('tool_lp/user_competency_plan_popup:_contextLoaded');
+        templates.render('tool_lp/user_competency_summary_in_plan', context)
+        .then(function(html, js) {
+            return str.get_string('usercompetencysummary', 'report_competency')
+                .then(function(title) {
+                    return new Dialogue(title, html, templates.runTemplateJS.bind(templates, js), self._refresh.bind(self), true);
+                })
+                .then(pendingPromise.resolve)
+                .catch(notification.exception);
+        })
+        .catch(notification.exception);
     };
 
     /**
