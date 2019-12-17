@@ -21,8 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'core/templates', 'tool_lp/dialogue'],
-       function($, notification, str, ajax, log, templates, Dialogue) {
+define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'core/templates', 'tool_lp/dialogue', 'core/pending'],
+       function($, notification, str, ajax, log, templates, Dialogue, Pending) {
 
     /**
      * GradingPopup
@@ -44,6 +44,8 @@ define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'cor
      * @param {Event} e The event
      */
     GradingPopup.prototype._handleClick = function(e) {
+        var pendingPromise = new Pending('report_competency/grading_popup:_handleClick');
+
         var cell = $(e.target).closest(this._userCompetencySelector);
         var competencyId = $(cell).data('competencyid');
         var courseId = $(cell).data('courseid');
@@ -51,18 +53,21 @@ define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'cor
 
         log.debug('Clicked on cell: competencyId=' + competencyId + ', courseId=' + courseId + ', userId=' + userId);
 
-        var requests = ajax.call([{
-            methodname: 'tool_lp_data_for_user_competency_summary_in_course',
-            args: {userid: userId, competencyid: competencyId, courseid: courseId},
-        }, {
-            methodname: 'core_competency_user_competency_viewed_in_course',
-            args: {userid: userId, competencyid: competencyId, courseid: courseId},
-        }]);
+        var requests = ajax.call([
+            {
+                methodname: 'tool_lp_data_for_user_competency_summary_in_course',
+                args: {userid: userId, competencyid: competencyId, courseid: courseId},
+            },
+            {
+                methodname: 'core_competency_user_competency_viewed_in_course',
+                args: {userid: userId, competencyid: competencyId, courseid: courseId},
+            }
+        ]);
 
-        $.when.apply($, requests).then(function(context) {
-            this._contextLoaded.bind(this)(context);
-            return;
-        }.bind(this)).catch(notification.exception);
+        $.when(requests[0], requests[1])
+        .then(this._contextLoaded.bind(this))
+        .always(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -72,14 +77,25 @@ define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'cor
      * @param {Object} context
      */
     GradingPopup.prototype._contextLoaded = function(context) {
-        var self = this;
+        var pendingPromise = new Pending('report_competency/grading_popup:_contextLoaded');
+
         // We have to display user info in popup.
         context.displayuser = true;
-        templates.render('tool_lp/user_competency_summary_in_course', context).done(function(html, js) {
-            str.get_string('usercompetencysummary', 'report_competency').done(function(title) {
-                (new Dialogue(title, html, templates.runTemplateJS.bind(templates, js), self._refresh.bind(self), true));
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+        $.when(
+            templates.render('tool_lp/user_competency_summary_in_course', context),
+            str.get_string('usercompetencysummary', 'report_competency')
+        )
+        .then(function(htmljs, title) {
+            return new Dialogue(
+                title,
+                htmljs[0],
+                templates.runTemplateJS.bind(templates, htmljs[1]),
+                this._refresh.bind(this),
+                true
+            );
+        }.bind(this))
+        .always(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -88,16 +104,22 @@ define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'cor
      * @method _refresh
      */
     GradingPopup.prototype._refresh = function() {
+        var pendingPromise = new Pending('report_competency/grading_popup:_refresh');
+
         var region = $(this._regionSelector);
         var courseId = region.data('courseid');
         var userId = region.data('userid');
 
         ajax.call([{
             methodname: 'report_competency_data_for_report',
-            args: {courseid: courseId, userid: userId},
-            done: this._pageContextLoaded.bind(this),
-            fail: notification.exception
-        }]);
+            args: {
+                courseid: courseId,
+                userid: userId,
+            },
+        }])[0]
+        .then(this._pageContextLoaded.bind(this))
+        .always(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -107,10 +129,16 @@ define(['jquery', 'core/notification', 'core/str', 'core/ajax', 'core/log', 'cor
      * @param {Object} context
      */
     GradingPopup.prototype._pageContextLoaded = function(context) {
-        var self = this;
-        templates.render('report_competency/report', context).done(function(html, js) {
-            templates.replaceNode(self._regionSelector, html, js);
-        }).fail(notification.exception);
+        var pendingPromise = new Pending('report_competency/grading_popup:_pageContextLoaded');
+
+        templates.render('report_competency/report', context)
+        .then(function(html, js) {
+            templates.replaceNode(this._regionSelector, html, js);
+
+            return;
+        }.bind(this))
+        .always(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /** @type {String} The selector for the region with the user competencies */
