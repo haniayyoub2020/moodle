@@ -100,7 +100,7 @@ M.availability_grade.form.getNode = function(json) {
             M.core_availability.form.update();
         }, '.availability_grade input[type=checkbox]');
 
-        root.delegate('valuechange', function() {
+        root.delegate(['valuechange', 'keyup'], function() {
             // For grade values, just update the form fields.
             M.core_availability.form.update();
         }, '.availability_grade input[type=text]');

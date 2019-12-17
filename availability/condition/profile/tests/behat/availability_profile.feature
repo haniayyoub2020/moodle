@@ -32,9 +32,10 @@ Feature: availability_profile
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "User profile" "button"
+    # Toggle first because setting the value changes the shape of the form.
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "User profile field" to "Email address"
     And I set the field "Value to compare against" to "s@example.com"
-    And I click on ".availability-item .availability-eye img" "css_element"
     And I click on "Save and return to course" "button"
 
     # Add
@@ -46,9 +47,10 @@ Feature: availability_profile
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "User profile" "button"
+    # Toggle first because setting the value changes the shape of the form.
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "User profile field" to "Email address"
     And I set the field "Value to compare against" to "q@example.com"
-    And I click on ".availability-item .availability-eye img" "css_element"
     And I click on "Save and return to course" "button"
 
     # Log back in as student.
@@ -88,10 +90,11 @@ Feature: availability_profile
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "User profile" "button"
+    # Toggle first because setting the value changes the shape of the form.
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the following fields to these values:
       | User profile field       | Super field |
       | Value to compare against | Bananaman   |
-    And I click on ".availability-item .availability-eye img" "css_element"
     And I click on "Save and return to course" "button"
 
     # Edit it again and check the setting still works.

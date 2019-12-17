@@ -38,7 +38,7 @@ Feature: availability_grade
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Grade" "button" in the "Add restriction..." "dialogue"
-    And I click on ".availability-item .availability-eye img" "css_element"
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "Grade" to "A1"
     And I press "Save and return to course"
 
@@ -51,11 +51,11 @@ Feature: availability_grade
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Grade" "button" in the "Add restriction..." "dialogue"
-    And I click on ".availability-item .availability-eye img" "css_element"
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "Grade" to "A1"
     And I click on "min" "checkbox" in the ".availability-item" "css_element"
-    And I set the field "Minimum grade percentage (inclusive)" to "50"
     And I click on "max" "checkbox" in the ".availability-item" "css_element"
+    And I set the field "Minimum grade percentage (inclusive)" to "50"
     And I set the field "Maximum grade percentage (exclusive)" to "80"
     And I press "Save and return to course"
 
@@ -80,7 +80,7 @@ Feature: availability_grade
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Grade" "button" in the "Add restriction..." "dialogue"
-    And I click on ".availability-item .availability-eye img" "css_element"
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "Grade" to "A1"
     And I click on "min" "checkbox" in the ".availability-item" "css_element"
     And I set the field "Minimum grade percentage (inclusive)" to "10"

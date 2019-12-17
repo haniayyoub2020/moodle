@@ -51,8 +51,8 @@ Feature: availability_grouping
 
     # Page P1 grouping GX1.
     Given I click on "Grouping" "button"
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "Grouping" to "GX1"
-    And I click on ".availability-item .availability-eye img" "css_element"
     And I set the following fields to these values:
       | Name         | P1 |
       | Description  | x  |
@@ -68,8 +68,8 @@ Feature: availability_grouping
     And I expand all fieldsets
     And I click on "Add restriction..." "button"
     And I click on "Grouping" "button"
+    And I click on "Displayed greyed-out if user does not meet this condition" "link"
     And I set the field "Grouping" to "GX2"
-    And I click on ".availability-item .availability-eye img" "css_element"
     And I click on "Save and return to course" "button"
 
     # Log back in as student.
