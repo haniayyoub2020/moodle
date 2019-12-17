@@ -27,12 +27,11 @@
 
 require_once(__DIR__ . '/../../behat/behat_base.php');
 
-use Behat\Gherkin\Node\TableNode as TableNode;
-use Behat\Mink\Exception\DriverException as DriverException;
-use Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException;
-use Behat\Mink\Exception\ExpectationException as ExpectationException;
-use WebDriver\Exception\NoSuchElement as NoSuchElement;
-use WebDriver\Exception\StaleElementReference as StaleElementReference;
+use Behat\Gherkin\Node\TableNode;
+use Behat\Mink\Element\NodeElement;
+use Behat\Mink\Exception\{DriverException, ElementNotFoundException, ExpectationException};
+use Facebook\WebDriver\Exception\ElementNotInteractableException;
+use WebDriver\Exception\{NoSuchElement, StaleElementReference};
 
 /**
  * Cross component steps definitions.
@@ -290,10 +289,7 @@ class behat_general extends behat_base {
      * @param string $link
      */
     public function click_link($link) {
-
-        $linknode = $this->find_link($link);
-        $this->ensure_node_is_visible($linknode);
-        $linknode->click();
+        $this->click($this->find_link($link));
     }
 
     /**
@@ -381,11 +377,9 @@ class behat_general extends behat_base {
      * @param string $selectortype The type of what we look for
      */
     public function i_click_on($element, $selectortype) {
-
         // Gets the node based on the requested selector type and locator.
         $node = $this->get_selected_node($selectortype, $element);
-        $this->ensure_node_is_visible($node);
-        $node->click();
+        $this->click($node);
     }
 
     /**
@@ -446,10 +440,9 @@ class behat_general extends behat_base {
      * @param string $nodeselectortype The type of selector where we look in
      */
     public function i_click_on_in_the($element, $selectortype, $nodeelement, $nodeselectortype) {
-
         $node = $this->get_node_in_container($selectortype, $element, $nodeselectortype, $nodeelement);
         $this->ensure_node_is_visible($node);
-        $node->click();
+        $this->click($node);
     }
 
     /**
@@ -2047,7 +2040,6 @@ EOF;
      * @param string $selectortype
      */
     public function i_click_on_skipping_visibility_check($element, $selectortype) {
-
         // Gets the node based on the requested selector type and locator.
         $node = $this->get_selected_node($selectortype, $element);
         $this->js_trigger_click($node);
