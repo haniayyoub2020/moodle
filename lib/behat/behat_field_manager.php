@@ -153,6 +153,14 @@ class behat_field_manager {
             $type = $fieldnode->getAttribute('type');
             switch ($type) {
                 case 'text':
+                    if ($type = $fieldnode->getAttribute('data-fieldtype')) {
+                        switch ($type) {
+                            case 'autocomplete':
+                            case 'tags':
+                                return 'autocomplete';
+                        }
+                    }
+                    return 'text';
                 case 'password':
                 case 'email':
                 case 'file':

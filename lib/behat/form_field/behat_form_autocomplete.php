@@ -25,7 +25,10 @@
 
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
-require_once(__DIR__  . '/behat_form_text.php');
+require_once(__DIR__ . '/behat_form_text.php');
+require_once(__DIR__ . '/../classes/keys.php');
+
+use core_behat\keys;
 
 /**
  * Auto complete form field.
@@ -77,15 +80,12 @@ class behat_form_autocomplete extends behat_form_text {
                 // Click on the first item in the list.
                 $suggestion->click();
             } else {
-                // Press the return key to create a new tag.
-                // Note: We cannot use $this->key_press() because the keyPress action, in combination with the keyDown
-                // submits the form.
-                $this->field->keyDown(13);
-                $this->field->keyUp(13);
+                // Press the ENTER key to create a new tag.
+                // Note: Use keyDown and keyUp, but not a keyPress. The keyPress is intended for visible characters and
+                // ENTER is not a visible character.
+                $this->field->keyDown(keys::translate_key(keys::ENTER));
+                $this->field->keyUp(keys::translate_key(keys::ENTER));
             }
-
-            $this->wait_for_pending_js();
-            $this->key_press(27);
             $this->wait_for_pending_js();
         }
     }
