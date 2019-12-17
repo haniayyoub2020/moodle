@@ -34,6 +34,7 @@ use Behat\Mink\Exception\ElementNotFoundException;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Element\Element;
 use Behat\Mink\Session;
+use Facebook\WebDriver\Exception\NoSuchWindowException;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 
@@ -264,6 +265,30 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             'locator' => $locator,
             'container' => $container,
         ];
+    }
+
+    /**
+     * Underlying helper to click on a node.
+     *
+     * Note: This is primarily to work around a Geckodriver bug.
+     *
+     * @param NodeElement $node
+     */
+    protected function click(NodeElement $node) {
+        $this->ensure_node_is_visible($node);
+        try {
+            $node->click();
+        } catch (ElementNotInteractableException $e) {
+            // There is a bug in Geckodriver which means that it is unable to click any link which contains a block
+            // level node. See https://github.com/mozilla/geckodriver/issues/653.
+            // The workaround is to click on it's first descendant instead.
+            if ($child = $node->find('xpath', './*[1]')) {
+                $child->click();
+
+                return;
+            }
+            throw $e;
+        }
     }
 
     /**
