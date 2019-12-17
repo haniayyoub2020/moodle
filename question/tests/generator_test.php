@@ -80,4 +80,31 @@ class core_question_generator_testcase extends advanced_testcase {
         $quest4 = $generator->create_question('shortanswer', null, ['name' => 'sa1', 'category' => $qcat1->id, 'idnumber' => '0']);
         $this->assertSame('0', $quest4->idnumber);
     }
+
+    /**
+     * Ensure that creating a question works as expected.
+     */
+    public function test_create_question() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $category = $generator->create_question_category();
+
+        $count = $DB->count_records('question');
+
+        $question = $generator->create_question('truefalse', null, [
+            'category' => $category->id,
+            'tags' => 'foo,bar, baz ,bum',
+        ]);
+
+        $this->assertEquals($count + 1, $DB->count_records('question'));
+
+        $tags = core_tag_tag::get_item_tags_array('core_question', 'question', $question->id);
+        $this->assertcount(4, $tags);
+        $this->assertArrayHasKey('foo', array_flip($tags));
+        $this->assertArrayHasKey('bar', array_flip($tags));
+        $this->assertArrayHasKey('baz', array_flip($tags));
+        $this->assertArrayHasKey('bum', array_flip($tags));
+    }
 }

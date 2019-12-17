@@ -115,11 +115,26 @@ class core_question_generator extends component_generator_base {
 
         $question = question_bank::get_qtype($qtype)->save_question($question, $fromform);
 
-        if ($overrides && array_key_exists('createdby', $overrides)) {
-            // Manually update the createdby because questiontypebase forces current user and some tests require a
-            // specific user.
-            $question->createdby = $overrides['createdby'];
-            $DB->update_record('question', $question);
+        if ($overrides) {
+            if (array_key_exists('createdby', $overrides)) {
+                // Manually update the createdby because questiontypebase forces current user and some tests require a
+                // specific user.
+                $question->createdby = $overrides['createdby'];
+                $DB->update_record('question', $question);
+            }
+
+            if (array_key_exists('tags', $overrides)) {
+                $questioncontext = \context::instance_by_id($DB->get_field('question_categories', 'contextid', ['id' => $question->category]));
+                // If we have any question context level tags then set those tags now.
+                core_tag_tag::set_item_tags(
+                    'core_question',
+                    'question',
+                    $question->id,
+                    $questioncontext,
+                    array_map('trim', explode(',', $overrides['tags'])),
+                    0
+                );
+            }
         }
 
         return $question;
