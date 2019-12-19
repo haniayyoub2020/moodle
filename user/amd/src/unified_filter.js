@@ -21,8 +21,8 @@
  * @copyright  2017 Jun Pataleta
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'],
-        function($, Autocomplete, Str, Notification) {
+define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification', 'core/pending'],
+        function($, Autocomplete, Str, Notification, Pending) {
 
     /**
      * Selectors.
@@ -109,6 +109,9 @@ define(['jquery', 'core/form-autocomplete', 'core/str', 'core/notification'],
 
             // Prevent form from submitting unnecessarily, eg. on blur when no filter is selected.
             if (last.join(',') != current.join(',')) {
+                // Create a new Pending promise but do not resolve it.
+                // The page is going to reload and we want ot block behat until it has done so.
+                new Pending('core_user/unified_filter:submit');
                 this.form.submit();
             }
         });
