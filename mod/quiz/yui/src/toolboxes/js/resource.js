@@ -103,6 +103,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @returns {boolean}
      */
     handle_data_action: function(ev) {
+        M.util.js_pending('mod_quiz/toolbox/resource:handle_data_action');
         // We need to get the anchor element that triggered this event.
         var node = ev.target;
         if (!node.test('a')) {
@@ -116,6 +117,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
 
         if (!node.test('a') || !action || !activity) {
             // It wasn't a valid action node.
+            M.util.js_complete('mod_quiz/toolbox/resource:handle_data_action');
             return;
         }
 
@@ -143,6 +145,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
                 // Nothing to do here!
                 break;
         }
+        M.util.js_complete('mod_quiz/toolbox/resource:handle_data_action');
     },
 
     /**
@@ -172,6 +175,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @param {Node} activity The activity node that this action will be performed on.
      */
     delete_with_confirmation: function(ev, button, activity) {
+        M.util.js_pending('mod_quiz/toolbox/resource:delete_with_confirmation');
         // Prevent the default button action.
         ev.preventDefault();
 
@@ -209,6 +213,8 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
             });
 
         }, this);
+
+        M.util.js_complete('mod_quiz/toolbox/resource:delete_with_confirmation');
     },
 
     /**
@@ -247,6 +253,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @param {EventFacade} ev The event that was fired.
      */
     delete_multiple_action: function(ev) {
+        M.util.js_pending('mod_quiz/toolbox/resource:delete_multiple_action');
         var problemsection = this.find_sections_that_would_become_empty();
 
         if (typeof problemsection !== 'undefined') {
@@ -259,6 +266,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
         } else {
             this.delete_multiple_with_confirmation(ev);
         }
+        M.util.js_complete('mod_quiz/toolbox/resource:delete_multiple_action');
     },
 
     /**
@@ -269,6 +277,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @param {EventFacade} ev The event that was fired.
      */
     delete_multiple_with_confirmation: function(ev) {
+        M.util.js_pending('mod_quiz/toolbox/resource:delete_multiple_with_confirmation');
         ev.preventDefault();
 
         var ids = '';
@@ -283,6 +292,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
 
         // Do nothing if no slots are selected.
         if (!slots || !slots.length) {
+            M.util.js_complete('mod_quiz/toolbox/resource:delete_multiple_with_confirmation');
             return;
         }
 
@@ -317,6 +327,8 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
             });
 
         }, this);
+
+        M.util.js_complete('mod_quiz/toolbox/resource:delete_multiple_with_confirmation');
     },
 
     /**
@@ -331,6 +343,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @return Boolean
      */
     edit_maxmark: function(ev, button, activity) {
+        M.util.js_pending('mod_quiz/toolbox/resource:edit_maxmark');
         // Get the element we're working on
         var instancemaxmark = activity.one(SELECTOR.INSTANCEMAXMARK),
             instance = activity.one(SELECTOR.ACTIVITYINSTANCE),
@@ -394,6 +407,8 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
             // Handle form submission.
             thisevent = editform.on('submit', this.edit_maxmark_submit, this, activity, oldmaxmark);
             this.editmaxmarkevents.push(thisevent);
+
+            M.util.js_complete('mod_quiz/toolbox/resource:edit_maxmark');
         });
     },
 
@@ -407,6 +422,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @param {String} originalmaxmark The original maxmark the activity or resource had.
      */
     edit_maxmark_submit: function(ev, activity, originalmaxmark) {
+        M.util.js_pending('mod_quiz/toolbox/resource:edit_maxmark_submit');
         // We don't actually want to submit anything.
         ev.preventDefault();
         var newmaxmark = Y.Lang.trim(activity.one(SELECTOR.ACTIVITYFORM + ' ' + SELECTOR.ACTIVITYMAXMARK).get('value'));
@@ -424,6 +440,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
                 if (response.instancemaxmark) {
                     activity.one(SELECTOR.INSTANCEMAXMARK).setContent(response.instancemaxmark);
                 }
+                M.util.js_complete('mod_quiz/toolbox/resource:edit_maxmark_submit');
             });
         }
     },
@@ -452,6 +469,8 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @param {Node} activity  The activity whose maxmark we were altering.
      */
     edit_maxmark_clear: function(activity) {
+        M.util.js_pending('mod_quiz/toolbox/resource:edit_maxmark_clear');
+
         // Detach all listen events to prevent duplicate triggers
         new Y.EventHandle(this.editmaxmarkevents).detach();
 
@@ -470,14 +489,8 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
         // Refocus the link which was clicked originally so the user can continue using keyboard nav.
         Y.later(100, this, function() {
             activity.one(SELECTOR.EDITMAXMARK).focus();
+            M.util.js_complete('mod_quiz/toolbox/resource:edit_maxmark_clear');
         });
-
-        // TODO MDL-50768 This hack is to keep Behat happy until they release a version of
-        // MinkSelenium2Driver that fixes
-        // https://github.com/Behat/MinkSelenium2Driver/issues/80.
-        if (!Y.one('input[name=maxmark')) {
-            Y.one('body').append('<input type="text" name="maxmark" style="display: none">');
-        }
     },
 
     /**
@@ -493,6 +506,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @chainable
      */
     update_page_break: function(ev, button, activity, action) {
+        M.util.js_pending('mod_quiz/toolbox/resource:update_page_break');
         // Prevent the default button action
         ev.preventDefault();
 
@@ -517,6 +531,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
                 }
                 this.reorganise_edit_page();
             }
+            M.util.js_complete('mod_quiz/toolbox/resource:update_page_break');
         });
 
         return this;
@@ -535,6 +550,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
      * @chainable
      */
     update_dependency: function(ev, button, activity, action) {
+        M.util.js_pending('mod_quiz/toolbox/resource:update_dependency');
         // Prevent the default button action.
         ev.preventDefault();
         var spinner = this.add_spinner(activity);
@@ -550,6 +566,7 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
             if (response.hasOwnProperty('requireprevious')) {
                 Y.Moodle.mod_quiz.util.slot.updateDependencyIcon(activity, response.requireprevious);
             }
+            M.util.js_complete('mod_quiz/toolbox/resource:update_dependency');
         });
 
         return this;
