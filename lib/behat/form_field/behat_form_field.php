@@ -25,8 +25,11 @@
 
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
-use Behat\Mink\Session as Session,
-    Behat\Mink\Element\NodeElement as NodeElement;
+require_once(__DIR__ . '/../classes/keys.php');
+
+use Behat\Mink\Element\NodeElement as NodeElement;
+use Behat\Mink\Session as Session;
+use core_behat\keys;
 
 /**
  * Representation of a form field.
@@ -102,6 +105,10 @@ class behat_form_field {
      * @param string $modifier keyboard modifier (could be 'ctrl', 'alt', 'shift' or 'meta')
      */
     public function key_press($char, $modifier = null) {
+        if ($char === 13) {
+            $char = keys::translate_key(keys::ENTER);
+        }
+
         // We delegate to the best guess, if we arrived here
         // using the generic behat_form_field is because we are
         // dealing with a fgroup element.
