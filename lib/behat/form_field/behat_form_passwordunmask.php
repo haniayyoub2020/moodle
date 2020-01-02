@@ -23,11 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
 require_once(__DIR__  . '/behat_form_text.php');
+require_once(__DIR__ . '/../classes/keys.php');
+
+use core_behat\keys;
 
 /**
  * Allows interaction with passwordunmask form fields.
@@ -65,10 +66,13 @@ JS;
         // Ensure all pending JS is finished.
         if ($this->running_javascript()) {
             // Press enter key after setting password, so we have a stable page.
-            $this->field->keyDown(13);
-            $this->field->keyPress(13);
-            $this->field->keyUp(13);
-            $this->session->wait(behat_base::get_timeout() * 1000, behat_base::PAGE_READY_JS);
+            $this->field->keyDown(keys::translate_key(keys::ENTER));
+            $this->wait_for_pending_js();
+            try {
+                $this->field->keyUp(keys::translate_key(keys::ENTER));
+            } catch (\Exception $e) {
+                // Some elements are removed when the enter/escape/blur happens so keyUp is optional.
+            }
         }
     }
 }
