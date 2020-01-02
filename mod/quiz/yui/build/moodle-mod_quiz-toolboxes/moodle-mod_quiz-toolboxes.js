@@ -608,13 +608,16 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
             var editform = Y.Node.create('<form action="#" />');
             var editinstructions = Y.Node.create('<span class="' + CSS.EDITINSTRUCTIONS + '" id="id_editinstructions" />')
                 .set('innerHTML', M.util.get_string('edittitleinstructions', 'moodle'));
-            var editor = Y.Node.create('<input name="maxmark" type="text" class="' + CSS.TITLEEDITOR + '" />').setAttrs({
+            var editor = Y.Node.create('<input name="maxmark" type="text" class="' + CSS.TITLEEDITOR + '" />')
+            .setAttrs({
                 'value': maxmarktext,
                 'autocomplete': 'off',
                 'aria-describedby': 'id_editinstructions',
                 'maxLength': '12',
                 'size': parseInt(this.get('config').questiondecimalpoints, 10) + 2
-            });
+            })
+            // Note: For some reason YUI refuses to set data attributs in setAttrs.
+            .setAttribute('data-fieldtype', 'inplaceeditable');
 
             // Clear the existing content and put the editor in.
             editform.appendChild(editor);
@@ -1011,7 +1014,8 @@ Y.extend(SECTIONTOOLBOX, TOOLBOX, {
                 'autocomplete': 'off',
                 'aria-describedby': 'id_editinstructions',
                 'maxLength': '255' // This is the maxlength in DB.
-            });
+            })
+            .setAttribute('data-fieldtype', 'inplaceeditable');
 
             // Clear the existing content and put the editor in.
             editform.appendChild(editor);
