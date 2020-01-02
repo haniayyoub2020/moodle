@@ -1717,9 +1717,26 @@ EOF;
             $char = (int)$char;
         }
 
+        switch ($char) {
+            case 13:
+                $char = keys::translate_key(keys::ENTER);
+                break;
+            case 27:
+                $char = keys::translate_key(keys::ESCAPE);
+                break;
+            case ' ':
+            case 32:
+                $char = keys::translate_key(keys::SPACE);
+                break;
+        }
+
         $node->keyDown($char, $modifier);
-        $node->keyPress($char, $modifier);
-        $node->keyUp($char, $modifier);
+        $this->wait_for_pending_js();
+        try {
+            $node->keyUp($char, $modifier);
+        } catch (\Exception $e) {
+            // Some elements are removed when the enter/escape/blur happens so keyUp is optional.
+        }
     }
 
     /**
