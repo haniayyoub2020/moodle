@@ -153,6 +153,13 @@ class behat_field_manager {
             $type = $fieldnode->getAttribute('type');
             switch ($type) {
                 case 'text':
+                    if ($type = $fieldnode->getAttribute('data-fieldtype')) {
+                        switch ($type) {
+                            case 'inplaceeditable':
+                                return 'inplaceeditable';
+                        }
+                    }
+                    return 'text';
                 case 'password':
                 case 'email':
                 case 'file':
@@ -224,6 +231,9 @@ class behat_field_manager {
         if ($type = $fieldnode->getParent()->getAttribute('data-fieldtype')) {
             if ($type == 'tags') {
                 return 'autocomplete';
+            }
+            if ($type == 'inplaceeditable') {
+                return 'inplaceeditable';
             }
             return $type;
         }
