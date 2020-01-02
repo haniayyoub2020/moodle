@@ -738,6 +738,8 @@ function validate_param($param, $type, $allownull=NULL_NOT_ALLOWED, $debuginfo='
         } else if (!is_numeric($param) or !preg_match('/^[\+-]?[0-9]*\.?[0-9]*(e[-+]?[0-9]+)?$/i', (string)$param)) {
             throw new invalid_parameter_exception($debuginfo);
         }
+    } else if ($type === PARAM_INT && ctype_digit($param) && (int) $param === $cleaned) {
+        // Allow trailing zeroes.
     } else if ((string)$param !== (string)$cleaned) {
         // Conversion to string is usually lossless.
         throw new invalid_parameter_exception($debuginfo);
