@@ -47,19 +47,18 @@ class behat_form_inplaceeditable extends behat_form_text {
             throw new \coding_exception('Setting the value of an inplace editable field requires javascript.');
         }
 
-        // Set the value.
-        $this->field->setValue($this->normalise_value($value));
+        $this->execute('behat_general::i_click_on', [
+            $this->field->find('css', 'a[data-action="edit"]'),
+            'NodeElement',
+        ]);
 
-        // Press enter key to save the value.
-        // Note: Do not keyUp, because the field no longer exists.
-        $this->field->keyDown(13);
-        $this->wait_for_pending_js();
+        // Use char 10 [Return] to save changes.
+        $value .= chr(10);
 
-        try {
-            $this->field->keyUp(13);
-        } catch (\Exception $e) {
-            // Some elements are removed when the enter/escape/blur happens so keyUp is optional.
-        }
+        // We cannot use setValue because it explicitly sends a blur event, which does not work with inplace editable.
+        $this->field->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue([
+            'value' => str_split($value),
+        ]);
     }
 
     /**

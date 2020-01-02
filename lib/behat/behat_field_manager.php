@@ -181,6 +181,12 @@ class behat_field_manager {
             return 'select';
         }
 
+        if ($type = $fieldnode->getAttribute('data-fieldtype')) {
+            if ($type === 'inplaceeditable') {
+                return 'inplaceeditable';
+            }
+        }
+
         // We can not provide a closer field type.
         return false;
     }

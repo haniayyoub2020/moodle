@@ -260,6 +260,12 @@ XPATH
 .//*[@data-passwordunmask='wrapper']
     /descendant::input[@id = %locator% or @id = //label[contains(normalize-space(string(.)), %locator%)]/@for]
 XPATH
+        ,
+             'inplaceeditable' => <<<XPATH
+.//*[@data-fieldtype='inplaceeditable'][
+    span[@title = %locator% or @id = %locator% or @id = //label[contains(normalize-space(string(.)), %locator%)]/@for]
+]
+XPATH
         ],
     ];
 
