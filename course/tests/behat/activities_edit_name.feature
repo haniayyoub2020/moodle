@@ -23,7 +23,6 @@ Feature: Edit activity name in-place
     # Rename activity
     And I click on "Edit title" "link" in the "//div[contains(@class,'activityinstance') and contains(.,'Test forum name')]" "xpath_element"
     And I set the field "New name for activity Test forum name" to "Good news"
-    And I press key "13" in the field "New name for activity Test forum name"
     Then I should not see "Test forum name" in the ".course-content" "css_element"
     And "New name for activity Test forum name" "field" should not exist
     And I should see "Good news"
@@ -32,7 +31,19 @@ Feature: Edit activity name in-place
     And I should not see "Test forum name"
     # Cancel renaming
     And I click on "Edit title" "link" in the "//div[contains(@class,'activityinstance') and contains(.,'Good news')]" "xpath_element"
-    And I set the field "New name for activity Good news" to "Terrible news"
+    And I press key "T" in the field "New name for activity Good news"
+    And I press key "e" in the field "New name for activity Good news"
+    And I press key "r" in the field "New name for activity Good news"
+    And I press key "r" in the field "New name for activity Good news"
+    And I press key "i" in the field "New name for activity Good news"
+    And I press key "b" in the field "New name for activity Good news"
+    And I press key "l" in the field "New name for activity Good news"
+    And I press key "e" in the field "New name for activity Good news"
+    And I press key " " in the field "New name for activity Good news"
+    And I press key "n" in the field "New name for activity Good news"
+    And I press key "e" in the field "New name for activity Good news"
+    And I press key "w" in the field "New name for activity Good news"
+    And I press key "s" in the field "New name for activity Good news"
     And I press key "27" in the field "New name for activity Good news"
     And "New name for activity Good news" "field" should not exist
     And I should see "Good news"
@@ -40,4 +51,3 @@ Feature: Edit activity name in-place
     And I am on "Course 1" course homepage
     And I should see "Good news"
     And I should not see "Terrible news"
-    And I log out

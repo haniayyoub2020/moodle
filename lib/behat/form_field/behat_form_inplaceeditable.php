@@ -23,11 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use Facebook\WebDriver\WebDriverKeys;
-
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
 require_once(__DIR__  . '/behat_form_text.php');
+require_once(__DIR__ . '/../classes/keys.php');
+
+use core_behat\keys;
 
 /**
  * Custom interaction with inplace editable elements.
@@ -50,17 +51,22 @@ class behat_form_inplaceeditable extends behat_form_text {
         }
 
         $initialvalue = $this->field->getValue();
-        $this->field->setValue($value);
+
+        // Clear the existing value.
+        for ($i = 0; $i < strlen($initialvalue); $i++) {
+            $this->field->keyDown(keys::translate_key(keys::BACKSPACE));
+            $this->field->keyUp(keys::translate_key(keys::BACKSPACE));
+        }
+
+        // Type in the new value.
+        $keys = array_filter(str_split($value));
+        foreach ($keys as $key) {
+            $this->field->keyDown($key);
+            $this->field->keyUp($key);
+        }
 
         // Press enter key to save the value.
         // Note: Do not keyUp, because the field no longer exists.
-        $this->field->keyDown(13);
-        $this->wait_for_pending_js();
-
-        try {
-            $this->field->keyUp(13);
-        } catch (\Exception $e) {
-            // Some elements are removed when the enter/escape/blur happens so keyUp is optional.
-        }
+        $this->field->keyDown(keys::translate_key(keys::ENTER));
     }
 }
