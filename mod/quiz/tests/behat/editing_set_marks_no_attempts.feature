@@ -14,19 +14,24 @@ Feature: Edit quiz marks with no attempts
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
+    And the following "question categories" exist:
+      | contextlevel | reference | name           |
+      | Course       | C1        | Test questions |
+    And the following "questions" exist:
+      | questioncategory | qtype       | name  | questiontext    | Default mark |
+      | Test questions   | truefalse   | TF1   | First question  | 2.0          |
+      | Test questions   | truefalse   | TF2   | Second question | 3.0          |
     And the following "activities" exist:
       | activity   | name   | course | idnumber | grade | decimalpoints | questiondecimalpoints |
       | quiz       | Quiz 1 | C1     | quiz1    | 20    | 2             | -1                    |
+    And quiz "Quiz 1" contains the following questions:
+      | question | page | maxmark |
+      | TF1      | 1    | 2.0     |
+      | TF2      | 1    | 3.0     |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I add a "True/False" question to the "Quiz 1" quiz with:
-      | Question name | First question |
-      | Question text | Answer me      |
-      | Default mark  | 2.0            |
-    And I add a "True/False" question to the "Quiz 1" quiz with:
-      | Question name | Second question |
-      | Question text | Answer again    |
-      | Default mark  | 3.0             |
+    And I follow "Quiz 1"
+    And I navigate to "Edit quiz" in current page administration
 
   @javascript
   Scenario: Set the max mark for a question.
