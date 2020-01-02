@@ -26,6 +26,9 @@
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
 require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
+require_once(__DIR__ . '/../../../../../lib/behat/classes/keys.php');
+
+use core_behat\keys;
 
 /**
  * Steps definitions related with the drag and drop markers question type.
@@ -108,17 +111,16 @@ class behat_qtype_ddmarker extends behat_base {
      */
     public function i_type_on_marker_in_the_drag_and_drop_markers_question($direction, $repeats, $marker) {
         $keycodes = array(
-            'up'    => chr(38),
-            'down'  => chr(40),
-            'left'  => chr(37),
-            'right' => chr(39),
+            'up'    => keys::translate_key(keys::ARROW_UP),
+            'down'  => keys::translate_key(keys::ARROW_DOWN),
+            'left'  => keys::translate_key(keys::ARROW_LEFT),
+            'right' => keys::translate_key(keys::ARROW_RIGHT),
         );
         list($marker, $item) = $this->parse_marker_name($marker);
         $node = $this->get_selected_node('xpath_element', $this->marker_xpath($marker, $item));
         $this->ensure_node_is_visible($node);
         for ($i = 0; $i < $repeats; $i++) {
             $node->keyDown($keycodes[$direction]);
-            $node->keyPress($keycodes[$direction]);
             $node->keyUp($keycodes[$direction]);
         }
     }

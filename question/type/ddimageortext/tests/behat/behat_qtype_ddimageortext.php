@@ -26,6 +26,9 @@
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
 require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
+require_once(__DIR__ . '/../../../../../lib/behat/classes/keys.php');
+
+use core_behat\keys;
 
 /**
  * Steps definitions related with the drag and drop onto image question type.
@@ -81,8 +84,10 @@ class behat_qtype_ddimageortext extends behat_base {
         $node = $this->get_selected_node('xpath_element', $this->drop_xpath($placenumber));
         $this->ensure_node_is_visible($node);
         foreach (str_split($keys) as $key) {
+            if ($key === ' ') {
+                $key = keys::translate_key(keys::SPACE);
+            }
             $node->keyDown($key);
-            $node->keyPress($key);
             $node->keyUp($key);
         }
     }
