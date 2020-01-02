@@ -839,86 +839,139 @@ class core_moodlelib_testcase extends advanced_testcase {
         }
     }
 
-    public function test_validate_param() {
-        try {
-            $param = validate_param('11a', PARAM_INT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
+    /**
+     * @dataProvider validate_param_valid_provider
+     */
+    public function test_validate_param_valid($type, $allownull, $value, $expected): void {
+        $this->assertEquals($expected, validate_param($value, $type, $allownull));
+    }
 
-        $param = validate_param('11', PARAM_INT);
-        $this->assertSame(11, $param);
+    public function validate_param_valid_provider(): array {
+        $realtests = [
+            // Valid floats.
+            [PARAM_FLOAT, false, 1.0, 1.0],
+            [PARAM_FLOAT, false, 10, 10],
+            [PARAM_FLOAT, false, '0', 0],
+            [PARAM_FLOAT, false, '119813454.545464564564546564545646556564465465456465465465645645465645645645', 119813454.545464564564546564545646556564465465456465465465645645465645645645],
+            [PARAM_FLOAT, false, '011.1', 11.1],
+            [PARAM_FLOAT, false, '11', 11],
+            [PARAM_FLOAT, false, '+.1', .1],
+            [PARAM_FLOAT, false, '-.1', -.1],
+            [PARAM_FLOAT, false, '1e10', '1e10'],
+            [PARAM_FLOAT, false, '.1e+10', '.1e+10'],
+            [PARAM_FLOAT, false, '1E-1', '1E-1'],
 
-        try {
-            $param = validate_param(null, PARAM_INT, false);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
+            // Integer tests.
+            [PARAM_INT, false, '-10', -10],
+            [PARAM_INT, false, '0', 0],
+            [PARAM_INT, false, '010', 10],
+            [PARAM_INT, false, '010000000000', 10000000000],
+            [PARAM_INT, false, '1', 1],
+            [PARAM_INT, false, '10', 10],
+            [PARAM_INT, false, '11', 11],
+            [PARAM_INT, false, -0, 0],
+            [PARAM_INT, false, -10, -10],
+            [PARAM_INT, false, 0, 0],
+            [PARAM_INT, false, 11, 11],
 
-        $param = validate_param(null, PARAM_INT, true);
-        $this->assertSame(null, $param);
+            // A null value should not except when allowed for all types.
+            [PARAM_INT, true, null, null],
+        ];
 
-        try {
-            $param = validate_param(array(), PARAM_INT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
-        try {
-            $param = validate_param(new stdClass, PARAM_INT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
+        return array_merge(
+            $realtests,
+            $this->validate_param_get_null_tests(true)
+        );
+    }
 
-        $param = validate_param('1.0', PARAM_FLOAT);
-        $this->assertSame(1.0, $param);
+    protected function get_param_type_list(): array {
+        return [
+            PARAM_ALPHA,
+            PARAM_ALPHAEXT,
+            PARAM_ALPHANUM,
+            PARAM_ALPHANUMEXT,
+            PARAM_AUTH,
+            PARAM_BASE64,
+            PARAM_BOOL,
+            PARAM_CAPABILITY,
+            PARAM_CLEAN,
+            PARAM_EMAIL,
+            PARAM_FILE,
+            PARAM_FLOAT,
+            PARAM_LOCALISEDFLOAT,
+            PARAM_HOST,
+            PARAM_INT,
+            PARAM_LANG,
+            PARAM_LOCALURL,
+            PARAM_NOTAGS,
+            PARAM_PATH,
+            PARAM_PEM,
+            PARAM_PERMISSION,
+            PARAM_RAW,
+            PARAM_RAW_TRIMMED,
+            PARAM_SAFEDIR,
+            PARAM_SAFEPATH,
+            PARAM_SEQUENCE,
+            PARAM_TAG,
+            PARAM_TAGLIST,
+            PARAM_TEXT,
+            PARAM_THEME,
+            PARAM_USERNAME,
+            PARAM_STRINGID,
+            PARAM_CLEAN,
+            PARAM_TIMEZONE,
+            PARAM_CLEANHTML,
+            PARAM_COMPONENT,
+            PARAM_AREA,
+            PARAM_PLUGIN,
+        ];
+    }
 
-        // Make sure valid floats do not cause exception.
-        validate_param(1.0, PARAM_FLOAT);
-        validate_param(10, PARAM_FLOAT);
-        validate_param('0', PARAM_FLOAT);
-        validate_param('119813454.545464564564546564545646556564465465456465465465645645465645645645', PARAM_FLOAT);
-        validate_param('011.1', PARAM_FLOAT);
-        validate_param('11', PARAM_FLOAT);
-        validate_param('+.1', PARAM_FLOAT);
-        validate_param('-.1', PARAM_FLOAT);
-        validate_param('1e10', PARAM_FLOAT);
-        validate_param('.1e+10', PARAM_FLOAT);
-        validate_param('1E-1', PARAM_FLOAT);
+    protected function validate_param_get_null_tests($isnull): array {
+        return array_map(function($type) use ($isnull) {
+            return [$type, $isnull, null, null];
+        }, $this->get_param_type_list());
+    }
 
-        try {
-            $param = validate_param('1,2', PARAM_FLOAT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
-        try {
-            $param = validate_param('', PARAM_FLOAT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
-        try {
-            $param = validate_param('.', PARAM_FLOAT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
-        try {
-            $param = validate_param('e10', PARAM_FLOAT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
-        try {
-            $param = validate_param('abc', PARAM_FLOAT);
-            $this->fail('invalid_parameter_exception expected');
-        } catch (moodle_exception $ex) {
-            $this->assertInstanceOf('invalid_parameter_exception', $ex);
-        }
+    /**
+     * @dataProvider validate_param_invalid_provider
+     */
+    public function test_validate_param_invalid($type, $allownull, $value): void {
+        $this->expectException(invalid_parameter_exception::class);
+        validate_param($value, $type, $allownull);
+    }
+
+    public function validate_param_invalid_provider(): array {
+        $realtests = [
+            // Invalid integers.
+            [PARAM_INT, false, '11a'],
+            [PARAM_INT, false, []],
+            [PARAM_INT, false, (object) []],
+
+            // Invalid floats.
+            [PARAM_FLOAT, false, ''],
+            [PARAM_FLOAT, false, []],
+            [PARAM_FLOAT, false, (object) []],
+            [PARAM_FLOAT, false, '1,2'],
+            [PARAM_FLOAT, false, '.'],
+            [PARAM_FLOAT, false, 'e10'],
+            [PARAM_FLOAT, false, 'abc'],
+        ];
+
+        $arraytests = array_map(function($type) use ($isnull) {
+            return [$type, false, []];
+        }, $this->get_param_type_list());
+
+        $objecttests = array_map(function($type) use ($isnull) {
+            return [$type, false, (object) []];
+        }, $this->get_param_type_list());
+
+        return array_merge(
+            $realtests,
+            $this->validate_param_get_null_tests(false),
+            $arraytests,
+            $objecttests,
+        );
     }
 
     public function test_shorten_text_no_tags_already_short_enough() {
