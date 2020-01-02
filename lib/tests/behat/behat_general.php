@@ -26,15 +26,17 @@
 // NOTE: no MOODLE_INTERNAL test here, this file may be required by behat before including /config.php.
 
 require_once(__DIR__ . '/../../behat/behat_base.php');
+require_once(__DIR__ . '/../../behat/classes/keys.php');
 
-use Behat\Mink\Exception\ExpectationException as ExpectationException;
-use Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException;
-use Behat\Mink\Exception\DriverException as DriverException;
-use WebDriver\Exception\NoSuchElement as NoSuchElement;
-use WebDriver\Exception\StaleElementReference as StaleElementReference;
-use Behat\Gherkin\Node\TableNode as TableNode;
-use Facebook\WebDriver\WebDriverKeys;
+use Behat\Gherkin\Node\TableNode;
+use Behat\Mink\Exception\DriverException;
+use Behat\Mink\Exception\ElementNotFoundException;
+use Behat\Mink\Exception\ExpectationException;
 use Facebook\WebDriver\Remote\DriverCommand;
+use Facebook\WebDriver\WebDriverKeys;
+use WebDriver\Exception\NoSuchElement;
+use WebDriver\Exception\StaleElementReference;
+use core_behat\keys;
 
 /**
  * Cross component steps definitions.
@@ -1890,6 +1892,34 @@ EOF;
             ];
         }
         $this->getSession()->getDriver()->getWebDriver()->execute(DriverCommand::ACTIONS, [
+            'actions' => [
+                [
+                    'type' => 'key',
+                    'id' => 'keyboard',
+                    'actions' => $actions,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Press the [escape] key.
+     *
+     * @When /^I press escape$/
+     * @throws DriverException
+     */
+    public function i_press_escape() {
+        if (!$this->running_javascript()) {
+            return;
+        }
+
+        $driver = $this->getSession()->getDriver();
+
+        $actions = [
+            ['type' => 'keyDown', 'value' => keys::translate_key(keys::ESCAPE)],
+            ['type' => 'keyUp', 'value' => keys::translate_key(keys::ESCAPE)],
+        ];
+        $driver->getWebDriver()->execute(DriverCommand::ACTIONS, [
             'actions' => [
                 [
                     'type' => 'key',
