@@ -17,13 +17,11 @@ Feature: Restrict activity availability through grade conditions
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
+    And the following "activities" exist:
+      | activity   | name                   | intro                                                                 | course | assignsubmission_onlinetext_enabled | assignsubmission_file_enabled | idnumber    |
+      | assign     | Grade assignment       | Grade this assignment to revoke restriction on restriction assignment | C1     | 1                                   | 0                             | book1       |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Grade assignment |
-      | Description | Grade this assignment to revoke restriction on restricted assignment |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
     # Adding the page like this because id_availableform_enabled needs to be clicked to trigger the action.
     And I add a "Page" to section "2"
     And I expand all fieldsets
@@ -36,6 +34,10 @@ Feature: Restrict activity availability through grade conditions
       | Page content | Test page contents |
       | id | Grade assignment |
       | minval | 20 |
+    # Strictly speaking not necessary but this works around a JS bug whereby the value is only checked on click or YUI
+    # 'valuechange' which does not behave well with synthetic events.
+    And I set the field "min" to "0"
+    And I set the field "min" to "1"
     And I press "Save and return to course"
     And I log out
     When I log in as "student1"
@@ -48,6 +50,8 @@ Feature: Restrict activity availability through grade conditions
     And I set the following fields to these values:
       | Online text | I'm the student submission |
     And I press "Save changes"
+    And I press "Submit assignment"
+    And I press "Continue"
     And I should see "Submitted for grading"
     And I log out
     And I log in as "teacher1"
