@@ -620,13 +620,17 @@ class behat_config_util {
             return [];
         }
 
+        // Ensure that we have capabilities
+        if (!isset($values['capabilities'])) {
+            $values['capabilities'] = [];
+        }
+
         // Check suite values.
         $behatprofilesuites = [];
 
         // Automatically set tags information to skip app testing if necessary. We skip app testing
         // if the browser is not Chrome. (Note: We also skip if it's not configured, but that is
         // done on the theme/suite level.)
-        // TODO Is default browser now chrome?
         if (empty($values['browser']) || $values['browser'] !== 'chrome') {
             if (!empty($values['tags'])) {
                 $values['tags'] .= ' && ~@app';
@@ -635,20 +639,28 @@ class behat_config_util {
             }
         }
 
-        // Automatically add Chrome command line option to skip the prompt about allowing file
-        // storage - needed for mobile app testing (won't hurt for everything else either).
-        // We also need to disable web security, otherwise it can't make CSS requests to the server
-        // on localhost due to CORS restrictions.
         if (!empty($values['browser']) && $values['browser'] === 'chrome') {
-            if (!isset($values['capabilities'])) {
-                $values['capabilities'] = [];
-            }
+            // Normalise the options.
+            // Under the instaclick driver we had chrome->switches, now we have chromeOptions->args
             if (!isset($values['capabilities']['chromeOptions'])) {
                 $values['capabilities']['chromeOptions'] = [];
             }
             if (!isset($values['capabilities']['chromeOptions']['args'])) {
                 $values['capabilities']['chromeOptions']['args'] = [];
             }
+
+            if (empty($values['capabilities']['chromeOptions']['args']) && isset($values['capabilities']['chrome']['switches'])) {
+                foreach ($values['capabilities']['chrome']['switches'] as $switch) {
+                    // Remove the leading -- characters - no longer required.
+                    $values['capabilities']['chromeOptions']['args'][] = substr($switch, 2);
+                }
+            }
+            unset($values['capabilities']['chrome']);
+
+            // Automatically add Chrome command line option to skip the prompt about allowing file
+            // storage - needed for mobile app testing (won't hurt for everything else either).
+            // We also need to disable web security, otherwise it can't make CSS requests to the server
+            // on localhost due to CORS restrictions.
             $values['capabilities']['chromeOptions']['args'][] = 'unlimited-storage';
             $values['capabilities']['chromeOptions']['args'][] = 'disable-web-security';
 
