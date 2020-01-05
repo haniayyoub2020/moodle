@@ -171,8 +171,9 @@ abstract class behat_generator_base {
      *
      * @param string    $generatortype The name of the entity to create.
      * @param TableNode $data from the step.
+     * @param bool      $onlyone Whether there is only one record and it is pivotted
      */
-    public function generate_items(string $generatortype, TableNode $data) {
+    public function generate_items(string $generatortype, TableNode $data, bool $onlyone = false) {
         // Now that we need them require the data generators.
         require_once(__DIR__ . '/../../testing/generator/lib.php');
 
@@ -193,8 +194,17 @@ abstract class behat_generator_base {
 
         $generatortype = $entityinfo['datagenerator'];
 
-        foreach ($data->getHash() as $elementdata) {
+        if ($onlyone) {
+            // There is only one record to generate, and the table has been pivotted.
+            // The rows each represent a single field.
+            $rows = [$data->getRowsHash()];
+        } else {
+            // There are multiple records to generate.
+            // The rows represent an item to create.
+            $rows = $data->getHash();
+        }
 
+        foreach ($rows as $elementdata) {
             // Check if all the required fields are there.
             foreach ($entityinfo['required'] as $requiredfield) {
                 if (!isset($elementdata[$requiredfield])) {
