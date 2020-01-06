@@ -9,6 +9,7 @@ Feature: A selected file can be cancelled
     Given the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
+    And I change window size to "large"
     And I log in as "admin"
     And I follow "Manage private files"
     And I upload "lib/tests/fixtures/empty.txt" file to "Files" filemanager
