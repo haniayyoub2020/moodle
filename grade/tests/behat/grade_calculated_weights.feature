@@ -26,6 +26,7 @@ Feature: We can understand the gradebook user report
       | assign | C1 | a6 | <span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> Test assignment six | Submit something! |
     And the "multilang" filter is "on"
     And the "multilang" filter applies to "content and headings"
+    And I change window size to "large"
     And I log in as "admin"
     And I set the following administration settings values:
       | grade_aggregations_visible | Mean of grades,Weighted mean of grades,Simple weighted mean of grades,Mean of grades (with extra credits),Median of grades,Lowest grade,Highest grade,Mode of grades,Natural |

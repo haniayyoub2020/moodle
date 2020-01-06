@@ -19,6 +19,7 @@ Feature: Gradebook calculations for calculated grade items before the fix 201506
       | teacher1 | C1     | editingteacher |
       | student1 | C1     | student        |
       | student2 | C1     | student        |
+    And I change window size to "large"
     And I log in as "admin"
     And I am on "Course 1" course homepage
     And I navigate to "Setup > Gradebook setup" in the course gradebook
