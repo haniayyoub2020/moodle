@@ -706,7 +706,7 @@ M.gradereport_grader.classes.existingfield = function(ajax, userid, itemid) {
     }
     if (this.grade) {
         // Handle the Enter key being pressed.
-        this.keyevents.push(this.report.Y.on('key', this.keypress_enter, this.grade, 'up:13', this));
+        this.keyevents.push(this.report.Y.on('key', this.keypress_enter, this.grade, 'press:13', this));
         // Handle CTRL + arrow keys.
         this.keyevents.push(this.report.Y.on('key', this.keypress_arrows, this.grade, 'down:37,38,39,40+ctrl', this));
     }
@@ -1087,7 +1087,7 @@ M.gradereport_grader.classes.textfield.prototype.attach_key_events = function() 
         // Handle Tab.
         this.keyevents.push(this.report.Y.on('key', a.keypress_tab, this.feedback, 'down:9', a, true));
         // Handle the Enter key being pressed.
-        this.keyevents.push(this.report.Y.on('key', a.keypress_enter, this.feedback, 'up:13', a));
+        this.keyevents.push(this.report.Y.on('key', a.keypress_enter, this.feedback, 'press:13', a));
     } else {
         if (this.grade) {
             // Handle Tab and Shift+Tab.
@@ -1101,7 +1101,7 @@ M.gradereport_grader.classes.textfield.prototype.attach_key_events = function() 
 
     if (this.grade) {
         // Handle the Enter key being pressed.
-        this.keyevents.push(this.report.Y.on('key', a.keypress_enter, this.grade, 'up:13', a));
+        this.keyevents.push(this.report.Y.on('key', a.keypress_enter, this.grade, 'press:13', a));
         // Prevent the default key action on all fields for arrow keys on all key events!
         // Note: this still does not work in FF!!!!!
         this.keyevents.push(this.report.Y.on('key', function(e){e.preventDefault();}, this.grade, 'down:37,38,39,40+ctrl'));
