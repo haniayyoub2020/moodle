@@ -4,7 +4,8 @@ Feature: See the competencies for an activity on the course competencies page.
   In order to see only the competencies for an activity in the course competencies page.
 
   Background:
-    Given the following lp "frameworks" exist:
+    Given I change the window size to "large"
+    And the following lp "frameworks" exist:
       | shortname | idnumber |
       | Test-Framework | ID-FW1 |
     And the following lp "competencies" exist:
@@ -54,8 +55,8 @@ Feature: See the competencies for an activity on the course competencies page.
     And I should see "Test-Comp2"
     And I set the field "Filter competencies by resource or activity" to "PageName1"
     And I should see "Test-Comp1"
-    And I should not see "Test-Comp2"
+    But I should not see "Test-Comp2"
     And I set the field "Filter competencies by resource or activity" to "PageName2"
-    And I should not see "Test-Comp1"
+    But I should not see "Test-Comp1"
     And I should not see "Test-Comp2"
-    And I should see "No competencies have been linked to this activity or resource."
+    But I should see "No competencies have been linked to this activity or resource."
