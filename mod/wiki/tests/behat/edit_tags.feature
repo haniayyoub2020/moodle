@@ -45,13 +45,11 @@ Feature: Edited wiki pages handle tags correctly
 
   @javascript
   Scenario: Wiki page edition of standard tags works as expected
-    Given I log in as "admin"
-    And I navigate to "Appearance > Manage tags" in site administration
-    And I follow "Default collection"
-    And I follow "Add standard tags"
-    And I set the field "Enter comma-separated list of new tags" to "OT1, OT2, OT3"
-    And I press "Continue"
-    And I log out
+    Given the following "tags" exist:
+        | name | isstandard |
+        | OT1  | 1          |
+        | OT2  | 1          |
+        | OT3  | 1          |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test wiki name"
