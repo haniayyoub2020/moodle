@@ -846,6 +846,20 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @see Moodle\BehatExtension\Tester\MoodleStepTester
      */
     public function look_for_exceptions() {
+        self::check_for_exceptions($this->getSession());
+    }
+
+    /**
+     * Internal step definition to find exceptions, debugging() messages and PHP debug messages.
+     *
+     * Part of behat_hooks class as is part of the testing framework, is auto-executed
+     * after each step so no features will splicitly use it.
+     *
+     * @param Behat\Mink\Session $session
+     * @throws Exception Unknown type, depending on what we caught in the hook or basic \Exception.
+     * @see Moodle\BehatExtension\Tester\MoodleStepTester
+     */
+    public static function check_for_exceptions(\Behat\Mink\Session $session): void {
         // Wrap in try in case we were interacting with a closed window.
         try {
 
@@ -863,7 +877,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
 
             // Joined xpath expression. Most of the time there will be no exceptions, so this pre-check
             // is faster than to send the 4 xpath queries for each step.
-            if (!$this->getSession()->getDriver()->find($joinedxpath)) {
+            if (!$session->getDriver()->find($joinedxpath)) {
                 // Check if we have recorded any errors in driver process.
                 $phperrors = behat_get_shutdown_process_errors();
                 if (!empty($phperrors)) {
@@ -879,31 +893,31 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             }
 
             // Exceptions.
-            if ($errormsg = $this->getSession()->getPage()->find('xpath', $exceptionsxpath)) {
+            if ($errormsg = $session->getPage()->find('xpath', $exceptionsxpath)) {
 
                 // Getting the debugging info and the backtrace.
-                $errorinfoboxes = $this->getSession()->getPage()->findAll('css', 'div.alert-error');
+                $errorinfoboxes = $session->getPage()->findAll('css', 'div.alert-error');
                 // If errorinfoboxes is empty, try find alert-danger (bootstrap4) class.
                 if (empty($errorinfoboxes)) {
-                    $errorinfoboxes = $this->getSession()->getPage()->findAll('css', 'div.alert-danger');
+                    $errorinfoboxes = $session->getPage()->findAll('css', 'div.alert-danger');
                 }
                 // If errorinfoboxes is empty, try find notifytiny (original) class.
                 if (empty($errorinfoboxes)) {
-                    $errorinfoboxes = $this->getSession()->getPage()->findAll('css', 'div.notifytiny');
+                    $errorinfoboxes = $session->getPage()->findAll('css', 'div.notifytiny');
                 }
 
                 // If errorinfoboxes is empty, try find ajax/JS exception in dialogue.
                 if (empty($errorinfoboxes)) {
-                    $errorinfoboxes = $this->getSession()->getPage()->findAll('css', 'div.moodle-exception-message');
+                    $errorinfoboxes = $session->getPage()->findAll('css', 'div.moodle-exception-message');
 
                     // If ajax/JS exception.
                     if ($errorinfoboxes) {
-                        $errorinfo = $this->get_debug_text($errorinfoboxes[0]->getHtml());
+                        $errorinfo = self::get_debug_text($errorinfoboxes[0]->getHtml());
                     }
 
                 } else {
-                    $errorinfo = $this->get_debug_text($errorinfoboxes[0]->getHtml()) . "\n" .
-                        $this->get_debug_text($errorinfoboxes[1]->getHtml());
+                    $errorinfo = self::get_debug_text($errorinfoboxes[0]->getHtml()) . "\n" .
+                        self::get_debug_text($errorinfoboxes[1]->getHtml());
                 }
 
                 $msg = "Moodle exception: " . $errormsg->getText() . "\n" . $errorinfo;
@@ -911,21 +925,21 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             }
 
             // Debugging messages.
-            if ($debuggingmessages = $this->getSession()->getPage()->findAll('xpath', $debuggingxpath)) {
+            if ($debuggingmessages = $session->getPage()->findAll('xpath', $debuggingxpath)) {
                 $msgs = array();
                 foreach ($debuggingmessages as $debuggingmessage) {
-                    $msgs[] = $this->get_debug_text($debuggingmessage->getHtml());
+                    $msgs[] = self::get_debug_text($debuggingmessage->getHtml());
                 }
                 $msg = "debugging() message/s found:\n" . implode("\n", $msgs);
                 throw new \Exception(html_entity_decode($msg));
             }
 
             // PHP debug messages.
-            if ($phpmessages = $this->getSession()->getPage()->findAll('xpath', $phperrorxpath)) {
+            if ($phpmessages = $session->getPage()->findAll('xpath', $phperrorxpath)) {
 
                 $msgs = array();
                 foreach ($phpmessages as $phpmessage) {
-                    $msgs[] = $this->get_debug_text($phpmessage->getHtml());
+                    $msgs[] = self::get_debug_text($phpmessage->getHtml());
                 }
                 $msg = "PHP debug message/s found:\n" . implode("\n", $msgs);
                 throw new \Exception(html_entity_decode($msg));
@@ -934,9 +948,9 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             // Any other backtrace.
             // First looking through xpath as it is faster than get and parse the whole page contents,
             // we get the contents and look for matches once we found something to suspect that there is a backtrace.
-            if ($this->getSession()->getDriver()->find($othersxpath)) {
+            if ($session->getDriver()->find($othersxpath)) {
                 $backtracespattern = '/(line [0-9]* of [^:]*: call to [\->&;:a-zA-Z_\x7f-\xff][\->&;:a-zA-Z0-9_\x7f-\xff]*)/';
-                if (preg_match_all($backtracespattern, $this->getSession()->getPage()->getContent(), $backtraces)) {
+                if (preg_match_all($backtracespattern, $session->getPage()->getContent(), $backtraces)) {
                     $msgs = array();
                     foreach ($backtraces[0] as $backtrace) {
                         $msgs[] = $backtrace . '()';
@@ -959,7 +973,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @param string $html
      * @return string
      */
-    protected function get_debug_text($html) {
+    protected static function get_debug_text($html) {
 
         // Replacing HTML tags for new lines and keeping only the text.
         $notags = preg_replace('/<+\s*\/*\s*([A-Z][A-Z0-9]*)\b[^>]*\/*\s*>*/i', "\n", $html);

@@ -174,6 +174,46 @@ class behat_form_field {
     }
 
     /**
+     * Helper function to execute api in a given context.
+     *
+     * @param string $contextapi context in which api is defined.
+     * @param array $params list of params to pass.
+     * @throws Exception
+     */
+    protected function execute($contextapi, $params = array()) {
+        if (!is_array($params)) {
+            $params = array($params);
+        }
+
+        // Get required context and execute the api.
+        $contextapi = explode("::", $contextapi);
+        $context = behat_context_helper::get($contextapi[0]);
+        call_user_func_array(array($context, $contextapi[1]), $params);
+
+        // NOTE: Wait for pending js and look for exception are not optional, as this might lead to unexpected results.
+        // Don't make them optional for performance reasons.
+
+        // Wait for pending js.
+        $this->wait_for_pending_js();
+
+        // Look for exceptions.
+        $this->look_for_exceptions();
+    }
+
+    /**
+     * Internal step definition to find exceptions, debugging() messages and PHP debug messages.
+     *
+     * Part of behat_hooks class as is part of the testing framework, is auto-executed
+     * after each step so no features will splicitly use it.
+     *
+     * @throws Exception Unknown type, depending on what we caught in the hook or basic \Exception.
+     * @see Moodle\BehatExtension\Tester\MoodleStepTester
+     */
+    public function look_for_exceptions() {
+        behat_base::check_for_exceptions($this->session);
+    }
+
+    /**
      * Returns whether the scenario is running in a browser that can run Javascript or not.
      *
      * @return bool
