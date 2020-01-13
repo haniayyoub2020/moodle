@@ -145,6 +145,11 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             throw new ExpectationException($exception, $this->getSession());
         }
 
+        // Shortcut when provided with a NodeElement.
+        if (is_a($locator, NodeElement::class)) {
+            return [$locator];
+        }
+
         // Generic info.
         if (!$exception) {
             // With named selectors we can be more specific.
