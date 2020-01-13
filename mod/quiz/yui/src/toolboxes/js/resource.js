@@ -123,9 +123,11 @@ Y.extend(RESOURCETOOLBOX, TOOLBOX, {
 
         // Switch based upon the action and do the desired thing.
         switch (action) {
-            case 'editmaxmark':
-                // The user wishes to edit the maxmark of the resource.
-                this.edit_maxmark(ev, node, activity, action);
+            case 'edit':
+                if (node.getData('target') === 'maxmark') {
+                    // The user wishes to edit the maxmark of the resource.
+                    this.edit_maxmark(ev, node, activity, action);
+                }
                 break;
             case 'delete':
                 // The user is deleting the activity.

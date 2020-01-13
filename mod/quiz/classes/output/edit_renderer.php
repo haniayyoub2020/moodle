@@ -1037,12 +1037,13 @@ class edit_renderer extends \plugin_renderer_base {
                 $this->pix_icon('t/editstring', '', 'moodle', array('class' => 'editicon visibleifjs', 'title' => '')),
                 array(
                     'class' => 'editing_maxmark',
-                    'data-action' => 'editmaxmark',
+                    'data-action' => 'edit',
+                    'data-target' => 'maxmark',
                     'title' => get_string('editmaxmark', 'quiz'),
                 )
             )
         );
-        return html_writer::span($output, 'instancemaxmarkcontainer');
+        return html_writer::span($output, 'instancemaxmarkcontainer', ['data-fieldtype' => 'inplaceeditable']);
     }
 
     /**

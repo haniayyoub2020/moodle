@@ -1852,6 +1852,29 @@ EOF;
     }
 
     /**
+     * Manually press a key.
+     *
+     * @When I press the :key key
+     * @param string $key
+     * @throws DriverException
+     */
+    public function i_manually_press_key($key) {
+        if (!$this->running_javascript()) {
+            throw new DriverException($shift . ' Tab press step is not available with Javascript disabled');
+        }
+
+        $value = constant(\WebDriver\Key::class . "::" . strtoupper($key));
+
+        if ($value === null) {
+            throw new \InvalidArgumentException("Unrecognised key: '{$key}'");
+        }
+
+        $this->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue([
+            'value' => [$value],
+        ]);
+    }
+
+    /**
      * Trigger click on node via javascript instead of actually clicking on it via pointer.
      * This function resolves the issue of nested elements.
      *

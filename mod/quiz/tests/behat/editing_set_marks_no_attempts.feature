@@ -14,19 +14,22 @@ Feature: Edit quiz marks with no attempts
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | C1     | editingteacher |
+    And the following "question categories" exist:
+      | contextlevel | reference | name           |
+      | Course       | C1        | Test questions |
+    And the following "questions" exist:
+      | questioncategory | qtype       | name            | questiontext | defaultmark |
+      | Test questions   | truefalse   | First Question  | Answer me    | 2.0         |
+      | Test questions   | truefalse   | Second question | Answer again | 3.0         |
     And the following "activities" exist:
       | activity   | name   | course | idnumber | grade | decimalpoints | questiondecimalpoints |
       | quiz       | Quiz 1 | C1     | quiz1    | 20    | 2             | -1                    |
+    And quiz "Quiz 1" contains the following questions:
+      | question        | page | maxmark |
+      | First Question  | 1    | 2.0     |
+      | Second question | 1    | 3.0     |
     And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I add a "True/False" question to the "Quiz 1" quiz with:
-      | Question name | First question |
-      | Question text | Answer me      |
-      | Default mark  | 2.0            |
-    And I add a "True/False" question to the "Quiz 1" quiz with:
-      | Question name | Second question |
-      | Question text | Answer again    |
-      | Default mark  | 3.0             |
+    And I am on the "Quiz 1" "mod_quiz > Edit" page
 
   @javascript
   Scenario: Set the max mark for a question.
@@ -37,7 +40,7 @@ Feature: Edit quiz marks with no attempts
 
     When I follow "Edit maximum mark"
     And I wait until "li input[name=maxmark]" "css_element" exists
-    And I take focus off "li input[name=maxmark]" "css_element"
+    And I press the escape key
     Then I should see "7.00"
     And I should see "3.00"
     And I should see "Total of marks: 10.00"

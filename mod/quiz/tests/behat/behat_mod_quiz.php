@@ -387,13 +387,10 @@ class behat_mod_quiz extends behat_question_base {
      * @param string $newmark the mark to set
      */
     public function i_set_the_max_mark_for_quiz_question($questionname, $newmark) {
-        $this->execute('behat_general::click_link', $this->escape(get_string('editmaxmark', 'quiz')));
-
-        $this->execute('behat_general::wait_until_exists', array("li input[name=maxmark]", "css_element"));
-
-        $this->execute('behat_general::assert_page_contains_text', $this->escape(get_string('edittitleinstructions')));
-
-        $this->execute('behat_forms::i_set_the_field_to', array('maxmark', $this->escape($newmark)));
+        $this->execute('behat_forms::i_set_the_field_to', [
+            get_string('maxmark', 'mod_quiz'),
+            $this->escape($newmark)
+        ]);
     }
 
     /**
