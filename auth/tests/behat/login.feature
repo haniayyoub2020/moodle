@@ -24,6 +24,13 @@ Feature: Authentication
     And I press "Log in"
     Then I should see "You are logged in as" in the "page-footer" "region"
 
+  @javascript @axe
+  Scenario: Login page must be accessible
+    Given I am on site homepage
+    When I follow "Log in"
+    Then I should not see any accessibility violations
+
+
   Scenario: Log in as an unexisting user filling the form
     Given the following "users" exist:
       | username | password | firstname | lastname | email |
