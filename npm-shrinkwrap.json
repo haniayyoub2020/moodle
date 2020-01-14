@@ -1132,6 +1132,12 @@
       "integrity": "sha512-ReZxvNHIOv88FlT7rxcXIIC0fPt4KZqZbOlivyWtXLt8ESx84zd3kMC6iK5jVeS2qt+g7ftS7ye4fi06X5rtRQ==",
       "dev": true
     },
+    "axe-core": {
+      "version": "3.4.1",
+      "resolved": "https://registry.npmjs.org/axe-core/-/axe-core-3.4.1.tgz",
+      "integrity": "sha512-+EhIdwR0hF6aeMx46gFDUy6qyCfsL0DmBrV3Z+LxYbsOd8e1zBaPHa3f9Rbjsz2dEwSBkLw6TwML/CAIIAqRpw==",
+      "dev": true
+    },
     "babel-code-frame": {
       "version": "6.26.0",
       "resolved": "https://registry.npmjs.org/babel-code-frame/-/babel-code-frame-6.26.0.tgz",
