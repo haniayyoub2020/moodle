@@ -458,31 +458,6 @@ class behat_hooks extends behat_base {
     }
 
     /**
-     * Wait for JS to complete before beginning interacting with the DOM.
-     *
-     * Executed only when running against a real browser. We wrap it
-     * all in a try & catch to forward the exception to i_look_for_exceptions
-     * so the exception will be at scenario level, which causes a failure, by
-     * default would be at framework level, which will stop the execution of
-     * the run.
-     *
-     * @param BeforeStepScope $scope scope passed by event fired before step.
-     * @BeforeStep
-     */
-    public function before_step_javascript(BeforeStepScope $scope) {
-        self::$currentstepexception = null;
-
-        // Only run if JS.
-        if ($this->running_javascript()) {
-            try {
-                $this->wait_for_pending_js();
-            } catch (Exception $e) {
-                self::$currentstepexception = $e;
-            }
-        }
-    }
-
-    /**
      * Wait for JS to complete after finishing the step.
      *
      * With this we ensure that there are not AJAX calls
@@ -529,35 +504,14 @@ class behat_hooks extends behat_base {
 
         if ($isfailed && !empty($CFG->behat_pause_on_fail)) {
             $exception = $scope->getTestResult()->getException();
-            $message = "<colour:lightRed>Scenario failed. ";
+            $message = "<colour:lightRed>Scenario failed at step:\n";
+            $message .= "\t<colour:lightYellow>" . $scope->getStep()->getText() . "\n";
             $message .= "<colour:lightYellow>Paused for inspection. Press <colour:lightRed>Enter/Return<colour:lightYellow> to continue.<newline>";
             $message .= "<colour:lightRed>Exception follows:<newline>";
             $message .= trim($exception->getMessage());
             behat_util::pause($this->getSession(), $message);
         }
 
-        // Only run if JS.
-        if (!$this->running_javascript()) {
-            return;
-        }
-
-        try {
-            $this->wait_for_pending_js();
-            self::$currentstepexception = null;
-        } catch (UnexpectedAlertOpen $e) {
-            self::$currentstepexception = $e;
-
-            // Accepting the alert so the framework can continue properly running
-            // the following scenarios. Some browsers already closes the alert, so
-            // wrapping in a try & catch.
-            try {
-                $this->getSession()->getDriver()->getWebDriverSession()->accept_alert();
-            } catch (Exception $e) {
-                // Catching the generic one as we never know how drivers reacts here.
-            }
-        } catch (Exception $e) {
-            self::$currentstepexception = $e;
-        }
     }
 
     /**
@@ -704,6 +658,20 @@ class behat_hooks extends behat_base {
         }
 
         $this->look_for_exceptions();
+    }
+
+    /**
+     * Internal step definition to check for pending JS.
+     *
+     * Part of behat_hooks class as is part of the testing framework, is auto-executed
+     * after each step so features do not need to explicitly use it.
+     *
+     * @Given /^I wait for pending javascript$/
+     * @throw Exception Unknown type, depending on what we caught in the hook or basic \Exception.
+     * @see Moodle\BehatExtension\EventDispatcher\Tester\ChainedStepTester
+     */
+    public function i_wait_for_pending_js() {
+        $this->wait_for_pending_js();
     }
 
     /**
