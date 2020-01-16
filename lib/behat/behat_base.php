@@ -715,14 +715,18 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             // The window inner height will be as specified, which means the available viewport will
             // actually be smaller if there is a horizontal scrollbar. We assume that horizontal
             // scrollbars are rare so this doesn't matter.
-            $offset = $this->getSession()->getDriver()->evaluateScript(
-                    'return (function() { var before = document.body.style.overflowY;' .
-                    'document.body.style.overflowY = "scroll";' .
-                    'var result = {};' .
-                    'result.x = window.outerWidth - document.body.offsetWidth;' .
-                    'result.y = window.outerHeight - window.innerHeight;' .
-                    'document.body.style.overflowY = before;' .
-                    'return result; })();');
+            $js = <<<EOF
+return (function() {
+    var before = document.body.style.overflowY;
+    document.body.style.overflowY = "scroll";
+    var result = {};
+    result.x = window.outerWidth - document.body.offsetWidth;
+    result.y = window.outerHeight - window.innerHeight;
+    document.body.style.overflowY = before;
+    return result;
+})();
+EOF;
+            $offset = self::execute_script($this->getSession(), $js);
             $width += $offset['x'];
             $height += $offset['y'];
         }
@@ -772,7 +776,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
                             return "incomplete"
                         }
                     }());'));
-                $pending = $session->evaluateScript($jscode);
+                $pending = self::execute_script($session, $jscode);
             } catch (NoSuchWindow $nsw) {
                 // We catch an exception here, in case we just closed the window we were interacting with.
                 // No javascript is running if there is no window right?

@@ -402,7 +402,7 @@ class behat_navigation extends behat_base {
         )";
 
         // Adding an extra click we need to show the 'Log in' link.
-        if (!$this->getSession()->getDriver()->evaluateScript($navbuttonjs)) {
+        if (!self::execute_script($this->getSession(), $navbuttonjs)) {
             return false;
         }
 
