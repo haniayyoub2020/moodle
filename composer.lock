@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "33d162e5ba1ec0bcfa8585269fb01103",
+    "content-hash": "d5b4a2a5dc69b352f11e410d14f48076",
     "packages": [],
     "packages-dev": [
         {
@@ -919,16 +919,16 @@
         },
         {
             "name": "moodlehq/behat-extension",
-            "version": "dev-67704_master",
+            "version": "dev-67704-alt",
             "source": {
                 "type": "git",
                 "url": "https://github.com/andrewnicols/moodle-behat-extension.git",
-                "reference": "c1e4e574a0d8670ad683b4fc6e0f21f2b958038d"
+                "reference": "15a00fe0c8a111a30227703a6fbec623b63bccdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/andrewnicols/moodle-behat-extension/zipball/c1e4e574a0d8670ad683b4fc6e0f21f2b958038d",
-                "reference": "c1e4e574a0d8670ad683b4fc6e0f21f2b958038d",
+                "url": "https://api.github.com/repos/andrewnicols/moodle-behat-extension/zipball/15a00fe0c8a111a30227703a6fbec623b63bccdd",
+                "reference": "15a00fe0c8a111a30227703a6fbec623b63bccdd",
                 "shasum": ""
             },
             "require": {
@@ -964,9 +964,9 @@
                 "Moodle"
             ],
             "support": {
-                "source": "https://github.com/andrewnicols/moodle-behat-extension/tree/67704_master"
+                "source": "https://github.com/andrewnicols/moodle-behat-extension/tree/67704-alt"
             },
-            "time": "2020-01-16T07:07:59+00:00"
+            "time": "2020-01-17T01:27:13+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -3452,7 +3452,7 @@
         {
             "alias": "3.39.2-dev",
             "alias_normalized": "3.39.2.0-dev",
-            "version": "dev-67704_master",
+            "version": "dev-67704-alt",
             "package": "moodlehq/behat-extension"
         },
         {
