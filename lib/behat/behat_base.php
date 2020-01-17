@@ -482,6 +482,19 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     }
 
     /**
+     * Require javascript for the current step.
+     *
+     * @throws DriverException
+     */
+    protected function require_javascript() {
+        if ($this->running_javascript()) {
+            return;
+        }
+
+        throw new DriverException('Javascript is required');
+    }
+
+    /**
      * Spins around an element until it exists
      *
      * @throws ExpectationException
@@ -1170,4 +1183,17 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     public static function get_named_replacements(): array {
         return [];
     }
+
+    /**
+     * Execute the supplied script with the arguments, returning the result.
+     *
+     * @param Session $session
+     * @param string $script
+     * @param array $arguments
+     * @return null|string
+     */
+    public static function execute_script(Session $session, string $script, array $arguments = []) {
+        return $session->evaluateScript($script, $arguments);
+    }
+
 }
