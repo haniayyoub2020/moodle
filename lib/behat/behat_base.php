@@ -477,12 +477,45 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
     }
 
     /**
-     * Returns whether the scenario is running in a browser that can run Javascript or not.
+     * Whether Javascript is available in the current Session.
      *
      * @return boolean
      */
     protected function running_javascript() {
-        return get_class($this->getSession()->getDriver()) !== 'Behat\Mink\Driver\GoutteDriver';
+        return self::running_javascript_in_session($this->getSession());
+    }
+
+    /**
+     * Require that javascript be available in the current Session.
+     *
+     * @throws DriverException
+     */
+    protected function require_javascript() {
+        return self::require_javascript_in_session($this->getSession());
+    }
+
+    /**
+     * Whether Javascript is available in the specified Session.
+     *
+     * @param Session $session
+     * @return boolean
+     */
+    protected static function running_javascript_in_session(Session $session): bool {
+        return get_class($session->getDriver()) !== 'Behat\Mink\Driver\GoutteDriver';
+    }
+
+    /**
+     * Require that javascript be available for the specified Session.
+     *
+     * @param Session $session
+     * @throws DriverException
+     */
+    protected static function require_javascript_in_session(Session $session): void {
+        if (self::running_javascript_in_session($session)) {
+            return;
+        }
+
+        throw new DriverException('Javascript is required');
     }
 
     /**
@@ -1200,5 +1233,57 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      */
     public static function get_named_replacements(): array {
         return [];
+    }
+
+    /**
+     * Evaluate the supplied script in the current session, with the arguments provided, returning the result.
+     *
+     * @param string $script
+     * @param array $arguments
+     * @return string
+     */
+    public function evaluate_script(string $script, array $arguments = []): string {
+        return self::evaluate_script_in_session($this->getSession(), $script, $arguments);
+    }
+
+    /**
+     * Evaluate the supplied script in the specified session, with the arguments provided, returning the result.
+     *
+     * @param Session $session
+     * @param string $script
+     * @param array $arguments
+     * @return string
+     */
+    public static function evaluate_script_in_session(Session $session, string $script, array $arguments = []): string {
+        self::require_javascript_in_session($session);
+
+        return $session->evaluateScript($script, $arguments);
+    }
+
+    /**
+     * Execute the supplied script in the current session, with the arguments provided.
+     *
+     * No result will be returned.
+     *
+     * @param string $script
+     * @param array $arguments
+     */
+    public function execute_script(string $script, array $arguments = []): void {
+        self::execute_script_in_session($this->getSession(), $script, $arguments);
+    }
+
+    /**
+     * Excecute the supplied script in the specified session, with the arguments provided.
+     *
+     * No result will be returned.
+     *
+     * @param Session $session
+     * @param string $script
+     * @param array $arguments
+     */
+    public static function execute_script_in_session(Session $session, string $script, array $arguments = []): void {
+        self::require_javascript_in_session($session);
+
+        $session->executeScript($script, $arguments);
     }
 }
