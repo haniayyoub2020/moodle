@@ -159,6 +159,11 @@ if ($options['profile']) {
 }
 
 // Command line tags have precedence (std behat behavior).
+$verbose = empty($options['verbose']) ? false : true;
+if ($verbose) {
+    $extraopts['verbose'] = '--verbose=verbose';
+}
+
 if ($options['tags']) {
     $tags = $options['tags'];
     $extraopts['tags'] = '--tags="' . $tags . '"';
@@ -207,7 +212,6 @@ if ($options['rerun']) {
 $cmds = array();
 $exitcodes = array();
 $status = 0;
-$verbose = empty($options['verbose']) ? false : true;
 
 // Execute behat run commands.
 if (empty($parallelrun)) {
