@@ -116,15 +116,832 @@ Feature: Teacher can search and enrol users one by one into the course
     And I log in as "teacher001"
     And I am on "Course 001" course homepage
 
-  @javascript
+  @javascript @arntest
   Scenario: Teacher can search and enrol one particular student
     Given I navigate to course participants
-    And I press "Enrol users"
-    When I set the field "Select users" to "student001"
-    And I should see "Student 001"
-    And I click on "Enrol users" "button" in the "Enrol users" "dialogue"
-    Then I should see "Active" in the "Student 001" "table_row"
-    And I should see "1 enrolled users"
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
+
+    Given I navigate to course participants
+    When I press "Enrol users"
+    And I set the field "Select users" to "student001"
+    And I click on "Cancel" "button" in the "Enrol users" "dialogue"
 
   @javascript
   Scenario: Searching for a non-existing user
