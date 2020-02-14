@@ -20,16 +20,17 @@
  * @copyright  2016 Damyon Wiese <damyon@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['core/templates',
-         'jquery',
-         'core/str',
-         'core/config',
-         'core/notification',
-         'core/modal_factory',
-         'core/modal_events',
-         'core/fragment',
-       ],
-       function(Template, $, Str, Config, Notification, ModalFactory, ModalEvents, Fragment) {
+define([
+    'core/templates',
+    'jquery',
+    'core/str',
+    'core/config',
+    'core/notification',
+    'core/modal_factory',
+    'core/modal_events',
+    'core/fragment',
+    'core/pending',
+], function(Template, $, Str, Config, Notification, ModalFactory, ModalEvents, Fragment, Pending) {
 
     /** @type {Object} The list of selectors for the quick enrolment modal. */
     var SELECTORS = {
@@ -65,6 +66,7 @@ define(['core/templates',
      */
     QuickEnrolment.prototype.initModal = function() {
         var triggerButtons = $(SELECTORS.TRIGGERBUTTONS);
+        var pendingPromise = new Pending('enrol_manual/quickenrolment:initModal');
 
         $.when(
             Str.get_strings([
@@ -105,7 +107,8 @@ define(['core/templates',
 
             return;
         }.bind(this))
-        .fail(Notification.exception);
+        .then(pendingPromise.resolve)
+        .catch(Notification.exception);
     };
 
     /**
