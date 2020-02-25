@@ -35,6 +35,58 @@ information provided here is intended especially for developers.
 * A number of changes to tablelib have been made:
   - flexible_table:
     The `flexible_table` class has been moved to the `core_table` API. It is now possible to autoload the class from `core_table\flexible_table`.
+    A backwards compatability layer has been placed in the old `\flexible_table` class-space. The following architectural changes have additionally been made:
+    - The following protected variables have been renamed:
+      - `started_output`        => `outputstarted` (Please use the new `has_output_started()` function instead).
+      - `sort_default_column`   => `defaultsortcolumn` (Please use the `sortable()` function to set this instead).
+      - `sort_default_order`    => `defaultsortorder` (Please use the `sortable()` function to set this instead).
+      - `use_pages`             => `usepages` (Please use the new `is_paginated()` function instead).
+      - `use_initials`          => `useinitials (Please use the `initials`, `get_initial_first`, and `get_initial_last` functions).
+      - `is_sortable`           => `sortable` (Please use the `is_sortable()` function instead).
+      - `is_collapsible`        => `collapsible` (Please use the new `is_collapsible()` function instead).
+      - `column_nosort`         => `columnosort` (Please use `no_sorting()` and `is_sortable()` instead).
+      - `column_suppress`       => `columntosuppress` (Please use the second argument to `column_suppress($column, $value)` if required).
+      - `column_class`          => `columnclasses` (Please use the `column_class()` function to set this property).
+    - The following new functions have been added:
+      - `is_paginated()`
+      - `is_collapsible()`
+      - `has_output_started()`
+      - `get_total_row_count()`
+      - `get_current_row()`
+      - `get_current_page()`
+    - The following changes have been made to function signature:
+      - `column_suppress()` now takes a second argument allowing you to un-suppress a column
+    - Visibility of the following properties has been changed:
+      - 'attributes' is now protected. Please use the `set_attribute()` function to set this property.
+      - `baseurl` is now protected. Please use the `define_baseurl()` function to set this property.
+      - 'column_class' is now protected. Please use the `column_class()` function to set this property.
+      - 'column_nosort' is now protected. Please use the `no_sorting()` function to set this property.
+      - 'column_style' is now protected. Please use the `column_style()` and `column_style_all()` functions to set this property.
+      - 'column_suppress' is now protected. Please use the `column_suppress()` function to set this property.
+      - 'column_textsort' is now protected. Please use the `text_sorting()` function to set this property.
+      - 'columns' is now protected. Please use the `define_columns()` function to set this property.
+      - 'currentrow' is now protected. Please use the `get_current_row()` function to set this property.
+      - 'currpage' is now protected. Please use the `get_current_page()` function to set this property.
+      - `download` is now private. Please use the `is_downloading()` function to set and fetch this property.
+      - `downloadable` is now private. Please use the `downloadable()` function to set and fetch this property.
+      - 'exportclass' is now protected. Please use the `export_class_instance()` function to set this property.
+      - 'headers' is now protected. Please use the `define_headers()` function to set this property.
+      - 'is_collapsible' is now protected. Please use the `collapsible()` and `is_collapsible()` functions to set and fetch this property.
+      - 'is_sortable' is now protected. Please use the `sortable()` and `is_sortable()` functions to set and fetch this property.
+      - 'maxsortkeys' is now protected. It is not expected that this value should be accessible.
+      - `pagesize` is now protected. Please use the `pagesize()` and `get_page_size()` functions to set and fetch this property.
+      - 'request' is now protected. Please use the `set_control_variables()` function to set this property.
+      - 'setup' is now protected. It is not expected that this value should be accessible.
+      - 'showdownloadbuttonsat' is now protected. Please use the `show_download_buttons_at()` function to set this property.
+      - 'sort_default_column' is now protected. Please use the `sortable()` function to set this property.
+      - 'sort_default_order' is now protected. Please use the `sortable()` function to set this property.
+      - 'started_output' is now protected. Please use the `has_output_started()` function to fetch this property.
+      - `totalrows` is now protected. Please use the `get_total_row_count()` function to fetch this property.
+      - 'uniqueid' is now protected. Please use the `constructor()` to set this property.
+      - 'use_initials' is now protected. Please use the `initialbars()` function to set this property.
+      - 'use_pages' is now protected. Please use the `pageable()` and `is_paginated()` functions to set and fetch this property.
+  - table_sql:
+    - The `table_sql` class has been moved to the `core_table` API. It is now possible to autoload the class from `core_table\sql_table`.
   - The TABLE_VAR_*, and TABLE_P_* constants have been moved to new constants on the `core_table\flexible_table` class.
 
 === 3.8 ===

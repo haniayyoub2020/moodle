@@ -52,11 +52,10 @@ class sql_table extends flexible_table {
     /**
      * @var bool Overriding default for this.
      */
-    public $is_sortable    = true;
-    /**
-     * @var bool Overriding default for this.
-     */
-    public $is_collapsible = true;
+    public $sortable    = true;
+
+    /** @var bool Overriding default for this */
+    public $collapsible = true;
 
     /**
      * @param string $uniqueid a string identifying this table.Used as a key in
