@@ -23,7 +23,6 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 require_login();
 
@@ -88,7 +87,7 @@ $PAGE->navbar->add(get_string('pluginname', 'block_rss_client'));
 $PAGE->navbar->add(get_string('managefeeds', 'block_rss_client'), $managefeeds);
 echo $OUTPUT->header();
 
-$table = new flexible_table('rss-display-feeds');
+$table = new \core_table\flexible_table('rss-display-feeds');
 
 $table->define_columns(array('feed', 'actions'));
 $table->define_headers(array(get_string('feed', 'block_rss_client'), get_string('actions', 'moodle')));

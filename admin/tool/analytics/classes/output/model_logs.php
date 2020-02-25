@@ -24,8 +24,9 @@
 
 namespace tool_analytics\output;
 
+use core_table\sql_table;
+
 defined('MOODLE_INTERNAL') || die;
-require_once($CFG->libdir . '/tablelib.php');
 
 /**
  * Model logs table class.
@@ -34,7 +35,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2017 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class model_logs extends \table_sql {
+class model_logs extends sql_table {
 
     /**
      * @var \core_analytics\model

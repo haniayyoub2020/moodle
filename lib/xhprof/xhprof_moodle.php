@@ -23,11 +23,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_table\sql_table;
+
 // Need some stuff from xhprof.
 require_once($CFG->libdir . '/xhprof/xhprof_lib/utils/xhprof_lib.php');
 require_once($CFG->libdir . '/xhprof/xhprof_lib/utils/xhprof_runs.php');
 // Need some stuff from moodle.
-require_once($CFG->libdir . '/tablelib.php');
 require_once($CFG->libdir . '/setuplib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->libdir . '/phpunit/classes/util.php');
@@ -967,11 +968,11 @@ class moodle_xhprofrun implements iXHProfRuns {
 }
 
 /**
- * Simple subclass of {@link table_sql} that provides
+ * Simple subclass of {@link core_table\sql_table} that provides
  * some custom formatters for various columns, in order
  * to make the main profiles list nicer
  */
-class xhprof_table_sql extends table_sql {
+class xhprof_table_sql extends sql_table {
 
     protected $listurlmode = false;
 

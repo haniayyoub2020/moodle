@@ -24,7 +24,8 @@
 
 require_once("../../config.php");
 require_once("lib.php");
-require_once($CFG->libdir.'/tablelib.php');
+
+use core_table\flexible_table;
 
 ////////////////////////////////////////////////////////
 //get the params
@@ -194,10 +195,10 @@ $table->set_attribute('cellspacing', '0');
 $table->set_attribute('id', 'showentrytable');
 $table->set_attribute('class', 'generaltable generalbox');
 $table->set_control_variables(array(
-            TABLE_VAR_SORT    => 'ssort',
-            TABLE_VAR_IFIRST  => 'sifirst',
-            TABLE_VAR_ILAST   => 'silast',
-            TABLE_VAR_PAGE    => 'spage'
+            flexible_table::TABLE_VAR_SORT    => 'ssort',
+            flexible_table::TABLE_VAR_IFIRST  => 'sifirst',
+            flexible_table::TABLE_VAR_ILAST   => 'silast',
+            flexible_table::TABLE_VAR_PAGE    => 'spage'
             ));
 
 $table->no_sorting('select');

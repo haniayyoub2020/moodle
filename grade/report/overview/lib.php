@@ -23,7 +23,6 @@
  */
 
 require_once($CFG->dirroot . '/grade/report/lib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 /**
  * Class providing an API for the overview report building and displaying.
@@ -151,7 +150,7 @@ class grade_report_overview extends grade_report {
             $tableheaders = array($this->get_lang_string('coursename', 'grades'),
                                   $this->get_lang_string('grade'));
         }
-        $this->table = new flexible_table('grade-report-overview-'.$this->user->id);
+        $this->table = new \core_table\flexible_table('grade-report-overview-'.$this->user->id);
 
         $this->table->define_columns($tablecolumns);
         $this->table->define_headers($tableheaders);

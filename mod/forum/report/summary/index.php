@@ -84,7 +84,7 @@ $canexport = !$download && has_capability('mod/forum:exportforum', $context);
 
 $table = new \forumreport_summary\summary_table($courseid, $filters, $allowbulkoperations,
         $canseeprivatereplies, $perpage, $canexport);
-$table->baseurl = $url;
+$table->define_baseurl($url);
 
 $eventparams = [
     'context' => $context,
@@ -111,7 +111,7 @@ if ($download) {
     $renderer = $PAGE->get_renderer('forumreport_summary');
 
     echo $renderer->render_filters_form($cm, $url, $filters);
-    $table->show_download_buttons_at(array(TABLE_P_BOTTOM));
+    $table->show_download_buttons_at(array(\core_table\flexible_table::TABLE_P_BOTTOM));
     echo $renderer->render_summary_table($table);
     echo $OUTPUT->footer();
 }

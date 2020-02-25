@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\flexible_table;
+use core_table\sql_table;
 
 /**
  * Class mod_feedback_responses_table
@@ -34,7 +34,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright 2016 Marina Glancy
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_feedback_responses_table extends table_sql {
+class mod_feedback_responses_table extends sql_table {
 
     /**
      * Maximum number of feedback questions to display in the "Show responses" table
@@ -389,7 +389,7 @@ class mod_feedback_responses_table extends table_sql {
         parent::define_columns($columns);
         foreach ($this->columns as $column => $column) {
             // Automatically assign classes to columns.
-            $this->column_class[$column] = ' ' . $column;
+            $this->column_class($column, $column);
         }
     }
 
@@ -426,12 +426,12 @@ class mod_feedback_responses_table extends table_sql {
 
         // Toggle 'Show all' link.
         if ($this->totalrows > FEEDBACK_DEFAULT_PAGE_COUNT) {
-            if (!$this->use_pages) {
-                echo html_writer::div(html_writer::link(new moodle_url($this->baseurl, [$this->showallparamname => 0]),
-                        get_string('showperpage', '', FEEDBACK_DEFAULT_PAGE_COUNT)), 'showall');
-            } else {
+            if ($this->is_paginated()) {
                 echo html_writer::div(html_writer::link(new moodle_url($this->baseurl, [$this->showallparamname => 1]),
                         get_string('showall', '', $this->totalrows)), 'showall');
+            } else {
+                echo html_writer::div(html_writer::link(new moodle_url($this->baseurl, [$this->showallparamname => 0]),
+                        get_string('showperpage', '', FEEDBACK_DEFAULT_PAGE_COUNT)), 'showall');
             }
         }
     }
@@ -467,7 +467,7 @@ class mod_feedback_responses_table extends table_sql {
         }
         return [
             $lastrow ? $this->get_link_single_entry($lastrow) : null,
-            new moodle_url($this->baseurl, [$this->request[TABLE_VAR_PAGE] => $page]),
+            new moodle_url($this->baseurl, [$this->request[flexible_table::TABLE_VAR_PAGE] => $page]),
             $nextrow ? $this->get_link_single_entry($nextrow) : null,
         ];
     }

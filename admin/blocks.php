@@ -5,7 +5,6 @@
     require_once('../config.php');
     require_once($CFG->libdir.'/adminlib.php');
     require_once($CFG->libdir.'/blocklib.php');
-    require_once($CFG->libdir.'/tablelib.php');
 
     admin_externalpage_setup('manageblocks');
 
@@ -79,7 +78,7 @@
 
 /// Print the table of all blocks
 
-    $table = new flexible_table('admin-blocks-compatible');
+    $table = new \core_table\flexible_table('admin-blocks-compatible');
 
     $table->define_columns(array('name', 'instances', 'version', 'hideshow', 'undeletable', 'settings', 'uninstall'));
     $table->define_headers(array($strname, $strcourses, $strversion, $strhide.'/'.$strshow, $strprotecthdr, $strsettings, $struninstall));
@@ -209,7 +208,7 @@
     if (!empty($incompatible)) {
         echo $OUTPUT->heading(get_string('incompatibleblocks', 'blockstable', 'admin'));
 
-        $table = new flexible_table('admin-blocks-incompatible');
+        $table = new \core_table\flexible_table('admin-blocks-incompatible');
 
         $table->define_columns(array('block', 'uninstall'));
         $table->define_headers(array($strname, $struninstall));

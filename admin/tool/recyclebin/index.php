@@ -23,7 +23,6 @@
  */
 
 require_once(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 $contextid = required_param('contextid', PARAM_INT);
 $action = optional_param('action', null, PARAM_ALPHA);
@@ -160,7 +159,7 @@ $headers = array(
 );
 
 // Define a table.
-$table = new flexible_table('recyclebin');
+$table = new \core_table\flexible_table('recyclebin');
 $table->define_columns($columns);
 $table->column_style('restore', 'text-align', 'center');
 $table->column_style('delete', 'text-align', 'center');

@@ -40,8 +40,9 @@ echo $OUTPUT->heading($title);
 
 if (\tool_dataprivacy\api::is_site_dpo($USER->id)) {
     $table = new \tool_dataprivacy\output\expired_contexts_table($filter);
-    $table->baseurl = $url;
-    $table->baseurl->param('filter', $filter);
+    $table->define_base_url(new moodle_url($url), [
+        'filter' => $filter,
+    ]);
 
     $datadeletionpage = new \tool_dataprivacy\output\data_deletion_page($filter, $table);
 

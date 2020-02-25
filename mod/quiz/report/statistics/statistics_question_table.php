@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\flexible_table;
 
 /**
  * This table shows statistics about a particular question.

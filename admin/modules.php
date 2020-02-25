@@ -4,7 +4,6 @@
     require_once('../config.php');
     require_once('../course/lib.php');
     require_once($CFG->libdir.'/adminlib.php');
-    require_once($CFG->libdir.'/tablelib.php');
 
     // defines
     define('MODULE_TABLE','module_administration_table');
@@ -79,7 +78,7 @@
 
 /// Print the table of all modules
     // construct the flexible table ready to display
-    $table = new flexible_table(MODULE_TABLE);
+    $table = new \core_table\flexible_table(MODULE_TABLE);
     $table->define_columns(array('name', 'instances', 'version', 'hideshow', 'uninstall', 'settings'));
     $table->define_headers(array($stractivitymodule, $stractivities, $strversion, "$strhide/$strshow", $strsettings, $struninstall));
     $table->define_baseurl($CFG->wwwroot.'/'.$CFG->admin.'/modules.php');
@@ -161,5 +160,3 @@
     $table->print_html();
 
     echo $OUTPUT->footer();
-
-

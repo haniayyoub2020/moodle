@@ -24,7 +24,6 @@
 
 require_once(__DIR__ . '/../config.php');
 require_once("{$CFG->libdir}/adminlib.php");
-require_once("{$CFG->libdir}/tablelib.php");
 require_once("{$CFG->libdir}/filelib.php");
 
 $filter = optional_param('filter', '', PARAM_RAW);
@@ -85,7 +84,7 @@ echo $OUTPUT->render_from_template('core_admin/tasklogs', (object) [
 ]);
 
 $table = new \core_admin\task_log_table($filter, $result);
-$table->baseurl = $pageurl;
+$table->define_baseurl($pageurl);
 $table->out(100, false);
 
 echo $OUTPUT->footer();

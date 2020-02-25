@@ -25,12 +25,10 @@
 namespace tool_lp\output;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
-
+use core_competency\template;
+use core_table\sql_table;
 use html_writer;
 use moodle_url;
-use table_sql;
-use core_competency\template;
 
 /**
  * Template cohorts table class.
@@ -42,7 +40,7 @@ use core_competency\template;
  * @copyright  2015 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class template_cohorts_table extends table_sql {
+class template_cohorts_table extends sql_table {
 
     /** @var context The context. */
     protected $context;

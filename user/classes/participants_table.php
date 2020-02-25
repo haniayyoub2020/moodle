@@ -24,15 +24,15 @@
 
 namespace core_user;
 
-use context;
-use core_user\output\status_field;
 use DateTime;
+use context;
+use core_table\sql_table;
+use core_user\output\status_field;
 
 defined('MOODLE_INTERNAL') || die;
 
 global $CFG;
 
-require_once($CFG->libdir . '/tablelib.php');
 require_once($CFG->dirroot . '/user/lib.php');
 
 /**
@@ -42,7 +42,7 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @copyright  2017 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class participants_table extends \table_sql {
+class participants_table extends sql_table {
 
     /**
      * @var int $courseid The course id

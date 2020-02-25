@@ -24,18 +24,19 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/tablelib.php');
+use core_table\sql_table;
+
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot.'/mod/assign/locallib.php');
 
 /**
- * Extends table_sql to provide a table of assignment submissions
+ * Extends core_table\sql_table to provide a table of assignment submissions
  *
  * @package   mod_assign
  * @copyright 2012 NetSpot {@link http://www.netspot.com.au}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assign_grading_table extends table_sql implements renderable {
+class assign_grading_table extends sql_table implements renderable {
     /** @var assign $assignment */
     private $assignment = null;
     /** @var int $perpage */

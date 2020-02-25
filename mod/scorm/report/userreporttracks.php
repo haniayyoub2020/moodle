@@ -24,7 +24,6 @@
 
 require_once("../../../config.php");
 require_once($CFG->dirroot.'/mod/scorm/locallib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 $id = required_param('id', PARAM_INT); // Course Module ID.
 $userid = required_param('user', PARAM_INT); // User ID.
@@ -91,7 +90,7 @@ $courseshortname = format_string($course->shortname, true,
     array('context' => context_course::instance($course->id)));
 $exportfilename = $courseshortname . '-' . format_string($scorm->name, true) . '-' . get_string('details', 'scorm');
 
-$table = new flexible_table('mod_scorm-userreporttracks');
+$table = new \core_table\flexible_table('mod_scorm-userreporttracks');
 
 if (!$table->is_downloading($download, $exportfilename)) {
     echo $OUTPUT->header();
@@ -106,7 +105,7 @@ $table->define_baseurl($PAGE->url);
 $table->define_columns(array('element', 'value'));
 $table->define_headers(array(get_string('element', 'scorm'), get_string('value', 'scorm')));
 $table->set_attribute('class', 'generaltable generalbox boxaligncenter scormtrackreport');
-$table->show_download_buttons_at(array(TABLE_P_BOTTOM));
+$table->show_download_buttons_at(array(\core_table\flexible_table::TABLE_P_BOTTOM));
 $table->setup();
 
 foreach ($trackdata as $element => $value) {

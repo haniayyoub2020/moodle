@@ -24,16 +24,14 @@
 namespace tool_dataprivacy\output;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
-
+use Exception;
 use coding_exception;
 use context_helper;
+use core_table\sql_table;
 use dml_exception;
-use Exception;
 use html_writer;
 use pix_icon;
 use stdClass;
-use table_sql;
 use tool_dataprivacy\api;
 use tool_dataprivacy\expired_context;
 use tool_dataprivacy\external\purpose_exporter;
@@ -47,7 +45,7 @@ defined('MOODLE_INTERNAL') || die;
  * @copyright  2018 Jun Pataleta <jun@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class expired_contexts_table extends table_sql {
+class expired_contexts_table extends sql_table {
 
     /** @var int The context level acting as a filter for this table. */
     protected $contextlevel = null;

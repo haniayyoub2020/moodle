@@ -161,8 +161,8 @@ if (isset($script)) {
     // Print the controller block with different options.
     echo profiling_list_controls($listurl);
 
-    // TODO: Fix flexitable to validate tsort/thide/tshow/tifirs/tilast/page
-    // TODO: Fix table_sql to allow it to work without WHERE clause
+    // TODO: Fix core_table\flexible_table to validate tsort/thide/tshow/tifirs/tilast/page
+    // TODO: Fix core_table\sql_table to allow it to work without WHERE clause
     // add silly condition (1 = 1) because of table_sql bug
     $table->set_sql($dbfields, '{profiling}', $sqlconditions, $sqlparams);
     $table->set_count_sql("SELECT COUNT(*) FROM {profiling} WHERE $sqlconditions", $sqlparams);

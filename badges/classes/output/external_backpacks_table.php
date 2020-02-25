@@ -26,12 +26,11 @@ namespace core_badges\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
 require_once($CFG->libdir . '/badgeslib.php');
 
+use core_table\sql_table;
 use html_writer;
 use moodle_url;
-use table_sql;
 
 /**
  * Backpacks table class.
@@ -40,7 +39,7 @@ use table_sql;
  * @copyright  2019 Damyon Wiese
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class external_backpacks_table extends table_sql {
+class external_backpacks_table extends sql_table {
 
     /**
      * Sets up the table.

@@ -26,8 +26,9 @@ namespace report_configlog\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_table\sql_table;
+
 require_once($CFG->libdir . '/searchlib.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 /**
  * Report table class.
@@ -36,7 +37,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2019 Paul Holden (pholden@greenhead.ac.uk)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_table extends \table_sql implements \renderable {
+class report_table extends sql_table implements \renderable {
 
     /** @var string $search */
     protected $search;

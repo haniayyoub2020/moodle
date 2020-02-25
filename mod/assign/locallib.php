@@ -2063,7 +2063,7 @@ class assign {
      * @return string Order by clause for list_participants
      */
     private function get_grading_sort_sql() {
-        $usersort = flexible_table::get_sort_for_table('mod_assign_grading');
+        $usersort = \core_table\flexible_table::get_sort_for_table('mod_assign_grading');
         $extrauserfields = get_extra_user_fields($this->get_context());
 
         $userfields = explode(',', user_picture::fields('', $extrauserfields));

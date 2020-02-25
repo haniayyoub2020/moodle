@@ -9977,8 +9977,7 @@ class admin_setting_managewebservicetokens extends admin_setting {
 
         $table = new \webservice\token_table('webservicetokens');
         $table->define_baseurl($baseurl);
-        $table->attributes['class'] = 'admintable generaltable'; // Any need changing?
-        $table->data  = array();
+        $table->set_attribute('class', 'admintable generaltable');
         ob_start();
         $table->out(10, false);
         $tablehtml = ob_get_contents();

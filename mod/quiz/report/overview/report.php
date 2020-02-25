@@ -183,8 +183,9 @@ class quiz_overview_report extends quiz_attempts_report {
 
             $this->add_grade_columns($quiz, $options->usercanseegrades, $columns, $headers, false);
 
+            $sql = $table->get_sql();
             if (!$table->is_downloading() && has_capability('mod/quiz:regrade', $this->context) &&
-                    $this->has_regraded_questions($table->sql->from, $table->sql->where, $table->sql->params)) {
+                    $this->has_regraded_questions($sql->from, $sql->where, $sql->params)) {
                 $columns[] = 'regraded';
                 $headers[] = get_string('regrade', 'quiz_overview');
             }

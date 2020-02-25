@@ -24,11 +24,13 @@
 
 namespace tool_policy;
 
+use core_table\flexible_table;
+use core_table\sql_table;
+use core_user;
+use stdClass;
 use tool_policy\output\acceptances_filter;
 use tool_policy\output\renderer;
 use tool_policy\output\user_agreement;
-use core_user;
-use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -42,7 +44,7 @@ require_once($CFG->dirroot.'/lib/tablelib.php');
  * @copyright   2018 Marina Glancy
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class acceptances_table extends \table_sql {
+class acceptances_table extends sql_table {
 
     /** @var array */
     protected $versionids;
@@ -138,29 +140,28 @@ class acceptances_table extends \table_sql {
     }
 
     /**
-     * Allows to add only one column name and header to the table (parent class methods only allow to set all).
+     * Add a single column, setting sortability and class.
      *
      * @param string $key
      * @param string $label
      * @param bool $sortable
-     * @param string $columnclass
+     * @param string|null $columnclass
      */
-    protected function add_column_header($key, $label, $sortable = true, $columnclass = '') {
+    protected function add_column_header(string $key, string $label, bool $sortable = true, ?string $columnclass = null) {
         if (empty($this->columns)) {
             $this->define_columns([$key]);
             $this->define_headers([$label]);
         } else {
-            $this->columns[$key] = count($this->columns);
-            $this->column_style[$key] = array();
-            $this->column_class[$key] = $columnclass;
-            $this->column_suppress[$key] = false;
-            $this->headers[] = $label;
+            $this->add_column($key);
+            $this->define_header($key, $label);
         }
-        if ($columnclass !== null) {
-            $this->column_class($key, $columnclass);
-        }
+
         if (!$sortable) {
             $this->no_sorting($key);
+        }
+
+        if ($columnclass !== null) {
+            $this->column_class($key, $columnclass);
         }
     }
 
@@ -518,7 +519,7 @@ class acceptances_table extends \table_sql {
     protected function get_return_url() {
         $pageurl = $this->baseurl;
         if ($this->currpage) {
-            $pageurl = new \moodle_url($pageurl, [$this->request[TABLE_VAR_PAGE] => $this->currpage]);
+            $pageurl = new \moodle_url($pageurl, [$this->request[flexible_table::TABLE_VAR_PAGE] => $this->currpage]);
         }
         return $pageurl;
     }

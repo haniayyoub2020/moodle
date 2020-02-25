@@ -28,7 +28,6 @@
 require_once(__DIR__ . '/../config.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 // Check permissions.
 require_login(null, false);
@@ -144,7 +143,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('manageqbehaviours', 'admin'));
 
 // Set up the table.
-$table = new flexible_table('qbehaviouradmintable');
+$table = new \core_table\flexible_table('qbehaviouradmintable');
 $table->define_baseurl($thispageurl);
 $table->define_columns(array('behaviour', 'numqas', 'version', 'requires',
         'available', 'uninstall'));
@@ -238,4 +237,3 @@ function question_behaviour_icon_html($action, $behaviour, $icon, $alt, $tip) {
             new pix_icon($icon, $alt, 'moodle', array('title' => '', 'class' => 'iconsmall')),
             null, array('title' => $tip));
 }
-

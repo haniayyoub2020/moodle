@@ -26,9 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/tablelib.php');
-
-
 /**
  * Base class for quiz reports that are basically a table with one row for each attempt.
  *
@@ -183,7 +180,7 @@ abstract class quiz_attempts_report extends quiz_default_report {
 
     /**
      * Add all the user-related columns to the $columns and $headers arrays.
-     * @param table_sql $table the table being constructed.
+     * @param sql_table $table the table being constructed.
      * @param array $columns the list of columns. Added to.
      * @param array $headers the columns headings. Added to.
      */
@@ -212,7 +209,7 @@ abstract class quiz_attempts_report extends quiz_default_report {
 
     /**
      * Set the display options for the user-related columns in the table.
-     * @param table_sql $table the table being constructed.
+     * @param sql_table $table the table being constructed.
      */
     protected function configure_user_columns($table) {
         $table->column_suppress('picture');
@@ -278,7 +275,7 @@ abstract class quiz_attempts_report extends quiz_default_report {
 
     /**
      * Set up the table.
-     * @param table_sql $table the table being constructed.
+     * @param sql_table $table the table being constructed.
      * @param array $columns the list of columns.
      * @param array $headers the columns headings.
      * @param moodle_url $reporturl the URL of this report.

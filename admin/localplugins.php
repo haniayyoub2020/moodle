@@ -29,7 +29,6 @@
 
 require_once(__DIR__ . '/../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('managelocalplugins');
 
@@ -38,7 +37,7 @@ echo $OUTPUT->heading(get_string('localplugins'));
 
 /// Print the table of all installed local plugins
 
-$table = new flexible_table('localplugins_administration_table');
+$table = new \core_table\flexible_table('localplugins_administration_table');
 $table->define_columns(array('name', 'version', 'uninstall'));
 $table->define_headers(array(get_string('plugin'), get_string('version'), get_string('uninstallplugin', 'core_admin')));
 $table->define_baseurl($PAGE->url);

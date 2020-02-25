@@ -23,7 +23,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die;
-require_once($CFG->libdir . '/tablelib.php');
+
+use core_table\sql_table;
 
 /**
  * Table log class for displaying logs.
@@ -33,7 +34,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2014 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_loglive_table_log extends table_sql {
+class report_loglive_table_log extends sql_table {
 
     /** @var array list of user fullnames shown in report */
     protected $userfullnames = array();

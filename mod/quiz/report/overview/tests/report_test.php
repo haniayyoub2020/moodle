@@ -176,7 +176,12 @@ class quiz_overview_report_testcase extends advanced_testcase {
         $q->maxmark = 10;
         $table = new quiz_overview_table($quiz, $context, $qmsubselect, $reportoptions,
                 $empty, $studentsjoins, array(1 => $q), null);
-        $table->download = $isdownloading; // Cannot call the is_downloading API, because it gives errors.
+
+        // Some eport types will start to output content when calling `start_document` on the exporter.
+        ob_start();
+        $table->is_downloading($isdownloading);
+        ob_end_clean();
+
         $table->define_columns(array('fullname'));
         $table->sortable(true, 'uniqueid');
         $table->define_baseurl(new moodle_url('/mod/quiz/report.php'));
@@ -189,7 +194,7 @@ class quiz_overview_report_testcase extends advanced_testcase {
         // Should be 4 rows, matching count($table->rawdata) tested below.
         // The count is only done if not downloading.
         if (!$isdownloading) {
-            $this->assertEquals(4, $table->totalrows);
+            $this->assertEquals(4, $table->get_total_row_count());
         }
 
         // Verify what was returned: Student 1's best and in progress attempts.

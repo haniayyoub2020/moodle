@@ -60,7 +60,7 @@ class renderer extends \plugin_renderer_base {
     protected function render_tablelog(tablelog $tablelog) {
         $o = '';
         ob_start();
-        $tablelog->out($tablelog->pagesize, false);
+        $tablelog->out($tablelog->get_page_size(), false);
         $o = ob_get_contents();
         ob_end_clean();
 

@@ -28,7 +28,6 @@
 require_once(__DIR__ . '/../config.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 admin_externalpage_setup('manageqtypes');
 
@@ -127,7 +126,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('manageqtypes', 'admin'));
 
 // Set up the table.
-$table = new flexible_table('qtypeadmintable');
+$table = new \core_table\flexible_table('qtypeadmintable');
 $table->define_baseurl($thispageurl);
 $table->define_columns(array('questiontype', 'numquestions', 'version', 'requires',
         'availableto', 'uninstall', 'settings'));
@@ -251,4 +250,3 @@ function question_type_icon_html($action, $qtypename, $icon, $alt, $tip) {
             new pix_icon($icon, $alt, 'moodle', array('title' => '', 'class' => 'iconsmall')),
             null, array('title' => $tip));
 }
-

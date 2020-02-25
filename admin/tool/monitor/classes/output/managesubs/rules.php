@@ -26,7 +26,7 @@ namespace tool_monitor\output\managesubs;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\sql_table;
 
 /**
  * Renderable class to display a set of rules in the manage subscriptions page.
@@ -36,7 +36,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2014 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class rules extends \table_sql implements \renderable {
+class rules extends sql_table implements \renderable {
 
     /**
      * @var int course id.

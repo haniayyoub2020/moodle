@@ -238,7 +238,7 @@ $participanttable->out($perpage, true);
 $participanttablehtml = ob_get_contents();
 ob_end_clean();
 
-echo html_writer::tag('p', get_string('participantscount', 'moodle', $participanttable->totalrows));
+echo html_writer::tag('p', get_string('participantscount', 'moodle', $participanttable->get_total_row_count()));
 
 if ($bulkoperations) {
     echo '<form action="action_redir.php" method="post" id="participantsform">';
@@ -251,20 +251,20 @@ echo $participanttablehtml;
 
 $perpageurl = clone($baseurl);
 $perpageurl->remove_params('perpage');
-if ($perpage == SHOW_ALL_PAGE_SIZE && $participanttable->totalrows > DEFAULT_PAGE_SIZE) {
+if ($perpage == SHOW_ALL_PAGE_SIZE && $participanttable->get_total_row_count() > DEFAULT_PAGE_SIZE) {
     $perpageurl->param('perpage', DEFAULT_PAGE_SIZE);
     echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showperpage', '', DEFAULT_PAGE_SIZE)), array(), 'showall');
 
-} else if ($participanttable->get_page_size() < $participanttable->totalrows) {
+} else if ($participanttable->get_page_size() < $participanttable->get_total_row_count()) {
     $perpageurl->param('perpage', SHOW_ALL_PAGE_SIZE);
-    echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showall', '', $participanttable->totalrows)),
+    echo $OUTPUT->container(html_writer::link($perpageurl, get_string('showall', '', $participanttable->get_total_row_count())),
         array(), 'showall');
 }
 
 if ($bulkoperations) {
     echo '<br /><div class="buttons"><div class="form-inline">';
 
-    if ($participanttable->get_page_size() < $participanttable->totalrows) {
+    if ($participanttable->get_page_size() < $participanttable->get_total_row_count()) {
         $perpageurl = clone($baseurl);
         $perpageurl->remove_params('perpage');
         $perpageurl->param('perpage', SHOW_ALL_PAGE_SIZE);
@@ -275,9 +275,9 @@ if ($bulkoperations) {
     }
 
     echo html_writer::start_tag('div', array('class' => 'btn-group'));
-    if ($participanttable->get_page_size() < $participanttable->totalrows) {
+    if ($participanttable->get_page_size() < $participanttable->get_total_row_count()) {
         // Select all users, refresh page showing all users and mark them all selected.
-        $label = get_string('selectalluserswithcount', 'moodle', $participanttable->totalrows);
+        $label = get_string('selectalluserswithcount', 'moodle', $participanttable->get_total_row_count());
         echo html_writer::tag('input', "", array('type' => 'button', 'id' => 'checkall', 'class' => 'btn btn-secondary',
                 'value' => $label, 'data-showallink' => $showalllink));
     }

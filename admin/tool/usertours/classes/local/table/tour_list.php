@@ -26,10 +26,9 @@ namespace tool_usertours\local\table;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_table\flexible_table;
 use tool_usertours\helper;
 use tool_usertours\tour;
-
-require_once($CFG->libdir . '/tablelib.php');
 
 /**
  * Table to show the list of tours.
@@ -37,7 +36,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tour_list extends \flexible_table {
+class tour_list extends flexible_table {
     /**
      * Construct the tour table.
      */

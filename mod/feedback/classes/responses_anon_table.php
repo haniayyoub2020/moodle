@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_table\flexible_table;
+
 /**
  * Class mod_feedback_responses_anon_table
  *
@@ -51,7 +53,7 @@ class mod_feedback_responses_anon_table extends mod_feedback_responses_table {
         // There potentially can be both tables with anonymouns and non-anonymous responses on
         // the same page (for example when feedback anonymity was changed after some people
         // already responded). In this case we need to distinguish tables' pagination parameters.
-        $this->request[TABLE_VAR_PAGE] = 'apage';
+        $this->request[flexible_table::TABLE_VAR_PAGE] = 'apage';
 
         $tablecolumns = ['random_response'];
         $tableheaders = [get_string('response_nr', 'feedback')];

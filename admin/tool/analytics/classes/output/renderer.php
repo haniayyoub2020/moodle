@@ -26,9 +26,10 @@ namespace tool_analytics\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_table\sql_table;
 use plugin_renderer_base;
-use templatable;
 use renderable;
+use templatable;
 
 /**
  * Renderer class.
@@ -53,10 +54,10 @@ class renderer extends plugin_renderer_base {
     /**
      * Renders a table.
      *
-     * @param \table_sql $table
+     * @param sql_table $table
      * @return string HTML
      */
-    public function render_table(\table_sql $table) {
+    public function render_table(sql_table $table) {
 
         ob_start();
         $table->out(10, true);

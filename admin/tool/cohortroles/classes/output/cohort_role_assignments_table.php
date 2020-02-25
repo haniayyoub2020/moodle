@@ -25,13 +25,11 @@
 namespace tool_cohortroles\output;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
-
 use context_helper;
 use context_system;
+use core_table\sql_table;
 use html_writer;
 use moodle_url;
-use table_sql;
 
 /**
  * Cohort role assignments table.
@@ -40,7 +38,7 @@ use table_sql;
  * @copyright  2015 Damyon Wiese
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cohort_role_assignments_table extends table_sql {
+class cohort_role_assignments_table extends sql_table {
 
     /**
      * Sets up the table.

@@ -499,7 +499,7 @@ class report_log_renderable implements renderable {
         $this->tablelog = new report_log_table_log('report_log', $filter);
         $this->tablelog->define_baseurl($this->url);
         $this->tablelog->is_downloadable(true);
-        $this->tablelog->show_download_buttons_at(array(TABLE_P_BOTTOM));
+        $this->tablelog->show_download_buttons_at(array(\core_table\flexible_table::TABLE_P_BOTTOM));
     }
 
     /**

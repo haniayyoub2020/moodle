@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+use core_table\sql_table;
+
 /**
  * Table log class for displaying logs.
  *
@@ -31,7 +33,7 @@ defined('MOODLE_INTERNAL') || die;
  * @copyright  2014 Rajesh Taneja <rajesh.taneja@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class report_log_table_log extends table_sql {
+class report_log_table_log extends sql_table {
 
     /** @var array list of user fullnames shown in report */
     private $userfullnames = array();

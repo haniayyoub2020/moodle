@@ -24,8 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\flexible_table;
 
 /**
  * Class mod_feedback_templates_table

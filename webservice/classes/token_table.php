@@ -26,7 +26,8 @@ namespace webservice;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\sql_table;
+
 require_once($CFG->dirroot . '/webservice/lib.php');
 require_once($CFG->dirroot . '/user/lib.php');
 
@@ -37,7 +38,7 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @copyright  2017 John Okely <john@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class token_table extends \table_sql {
+class token_table extends sql_table {
 
     /**
      * @var bool $showalltokens Whether or not the user is able to see all tokens.

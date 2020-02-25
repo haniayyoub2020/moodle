@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\sql_table;
 
 /**
  * Class core_tag_manage_table
@@ -33,7 +33,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright 2015 Marina Glancy
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class core_tag_manage_table extends table_sql {
+class core_tag_manage_table extends sql_table {
 
     /** @var int stores the total number of found tags */
     public $totalcount = null;

@@ -26,11 +26,10 @@ namespace tool_usertours\local\table;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_table\flexible_table;
 use tool_usertours\helper;
 use tool_usertours\tour;
 use tool_usertours\step;
-
-require_once($CFG->libdir . '/tablelib.php');
 
 /**
  * Table to show the list of steps in a tour.
@@ -38,7 +37,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class step_list extends \flexible_table {
+class step_list extends flexible_table {
 
     /**
      * @var     int     $tourid     The id of the tour.

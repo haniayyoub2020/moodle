@@ -217,7 +217,7 @@ class report extends \mod_scorm\report {
             $emptycell = ''; // Used when an empty cell is being printed - in html we add a space.
             if (!$download) {
                 $emptycell = '&nbsp;';
-                $table = new \flexible_table('mod-scorm-report');
+                $table = new \core_table\flexible_table('mod-scorm-report');
 
                 $table->define_columns($columns);
                 $table->define_headers($headers);

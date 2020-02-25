@@ -26,9 +26,7 @@ namespace enrol_lti;
 
 defined('MOODLE_INTERNAL') || die;
 
-global $CFG;
-
-require_once($CFG->libdir . '/tablelib.php');
+use core_table\sql_table;
 
 /**
  * Handles displaying enrolment LTI instances.
@@ -37,7 +35,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2016 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class manage_table extends \table_sql {
+class manage_table extends sql_table {
 
     /**
      * @var \enrol_plugin $ltiplugin

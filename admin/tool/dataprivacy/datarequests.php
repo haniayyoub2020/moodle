@@ -83,7 +83,7 @@ if (\tool_dataprivacy\api::is_site_dpo($USER->id)) {
         $perpage = ($prefperpage) ? $prefperpage : $table->get_requests_per_page_options()[0];
     }
     $table->set_requests_per_page($perpage);
-    $table->baseurl = $url;
+    $table->define_baseurl($url);
 
     $requestlist = new tool_dataprivacy\output\data_requests_page($table, $filtersapplied);
     $requestlistoutput = $PAGE->get_renderer('tool_dataprivacy');

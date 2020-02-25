@@ -26,7 +26,6 @@
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 admin_externalpage_setup('manageavailability');
 
@@ -68,7 +67,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('manageplugins', 'availability'));
 
 // Show a table of installed availability conditions.
-$table = new flexible_table('availabilityconditions_administration_table');
+$table = new \core_table\flexible_table('availabilityconditions_administration_table');
 $table->define_columns(array('name', 'version', 'enable'));
 $table->define_headers(array(get_string('plugin'),
         get_string('version'), get_string('hide') . '/' . get_string('show')));

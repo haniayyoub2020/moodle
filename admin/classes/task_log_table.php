@@ -24,9 +24,9 @@
 
 namespace core_admin;
 
-defined('MOODLE_INTERNAL') || die();
+use core_table\sql_table;
 
-require_once($CFG->libdir . '/tablelib.php');
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Table to display list of task logs.
@@ -34,7 +34,7 @@ require_once($CFG->libdir . '/tablelib.php');
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class task_log_table extends \table_sql {
+class task_log_table extends sql_table {
 
     /**
      * Constructor for the task_log table.

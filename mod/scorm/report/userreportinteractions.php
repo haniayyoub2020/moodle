@@ -25,7 +25,6 @@
 require_once("../../../config.php");
 require_once($CFG->dirroot.'/mod/scorm/locallib.php');
 require_once($CFG->dirroot.'/mod/scorm/report/reportlib.php');
-require_once($CFG->libdir . '/tablelib.php');
 
 $id = required_param('id', PARAM_INT); // Course Module ID.
 $userid = required_param('user', PARAM_INT); // User ID.
@@ -79,7 +78,7 @@ $exportfilename = $courseshortname . '-' . format_string($scorm->name, true) . '
 
 
 // Set up the table.
-$table = new flexible_table('mod-scorm-userreport-interactions');
+$table = new \core_table\flexible_table('mod-scorm-userreport-interactions');
 if (!$table->is_downloading($download, $exportfilename)) {
 
     // Print the page header.
@@ -110,7 +109,7 @@ $table->define_headers(array(get_string('trackid', 'scorm'), get_string('respons
     get_string('calculatedweight', 'scorm')));
 $table->set_attribute('class', 'generaltable generalbox boxaligncenter boxwidthwide');
 
-$table->show_download_buttons_at(array(TABLE_P_BOTTOM));
+$table->show_download_buttons_at(array(\core_table\flexible_table::TABLE_P_BOTTOM));
 $table->setup();
 
 for ($i = 0; $i < $questioncount; $i++) {

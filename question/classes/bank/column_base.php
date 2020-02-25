@@ -102,7 +102,7 @@ abstract class column_base {
     }
 
     /**
-     * Title for this column. Not used if is_sortable returns an array.
+     * Title for this column. Not used if is_sortable() returns an array.
      */
     protected abstract function get_title();
 
@@ -325,7 +325,7 @@ abstract class column_base {
 
     /**
      * @param bool $reverse Whether to sort in the reverse of the default sort order.
-     * @param string $subsort if is_sortable returns an array of subnames, then this will be
+     * @param string $subsort if is_sortable() returns an array of subnames, then this will be
      *      one of those. Otherwise will be empty.
      * @return string some SQL to go in the order by clause.
      */

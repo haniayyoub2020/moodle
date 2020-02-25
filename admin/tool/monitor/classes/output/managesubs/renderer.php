@@ -86,7 +86,7 @@ class renderer extends \plugin_renderer_base {
     protected function render_table($renderable) {
         $o = '';
         ob_start();
-        $renderable->out($renderable->pagesize, true);
+        $renderable->out($renderable->get_page_size(), true);
         $o = ob_get_contents();
         ob_end_clean();
 

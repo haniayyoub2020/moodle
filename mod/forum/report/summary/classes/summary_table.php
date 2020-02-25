@@ -25,10 +25,8 @@
 namespace forumreport_summary;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
-
 use coding_exception;
-use table_sql;
+use core_table\sql_table;
 
 /**
  * The class for displaying the forum report table.
@@ -36,7 +34,7 @@ use table_sql;
  * @copyright  2019 Michael Hawkins <michaelh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class summary_table extends table_sql {
+class summary_table extends sql_table {
 
     /** Forum filter type */
     const FILTER_FORUM = 1;

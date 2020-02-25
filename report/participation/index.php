@@ -24,9 +24,10 @@
  */
 
 require('../../config.php');
-require_once($CFG->dirroot.'/lib/tablelib.php');
 require_once($CFG->dirroot.'/notes/lib.php');
 require_once($CFG->dirroot.'/report/participation/locallib.php');
+
+use core_table\flexible_table;
 
 define('DEFAULT_PAGE_SIZE', 20);
 define('SHOW_ALL_PAGE_SIZE', 5000);
@@ -142,7 +143,7 @@ if (!empty($instanceid) && !empty($roleid)) {
         exit;
     }
 
-    $table = new flexible_table('course-participation-'.$course->id.'-'.$cm->id.'-'.$roleid);
+    $table = new \core_table\flexible_table('course-participation-'.$course->id.'-'.$cm->id.'-'.$roleid);
     $table->course = $course;
 
     $actionheader = !empty($action) ? get_string($action) : get_string('allactions');
@@ -170,13 +171,13 @@ if (!empty($instanceid) && !empty($roleid)) {
     $table->no_sorting('select');
 
     $table->set_control_variables(array(
-                                        TABLE_VAR_SORT    => 'ssort',
-                                        TABLE_VAR_HIDE    => 'shide',
-                                        TABLE_VAR_SHOW    => 'sshow',
-                                        TABLE_VAR_IFIRST  => 'sifirst',
-                                        TABLE_VAR_ILAST   => 'silast',
-                                        TABLE_VAR_PAGE    => 'spage'
-                                        ));
+        flexible_table::TABLE_VAR_SORT    => 'ssort',
+        flexible_table::TABLE_VAR_HIDE    => 'shide',
+        flexible_table::TABLE_VAR_SHOW    => 'sshow',
+        flexible_table::TABLE_VAR_IFIRST  => 'sifirst',
+        flexible_table::TABLE_VAR_ILAST   => 'silast',
+        flexible_table::TABLE_VAR_PAGE    => 'spage',
+    ));
     $table->setup();
 
     // We want to query both the current context and parent contexts.

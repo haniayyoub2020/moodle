@@ -22,11 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/tablelib.php');
-
+use core_table\sql_table;
 
 /**
  * Base class for the table used by a {@link quiz_attempts_report}.
@@ -34,7 +32,7 @@ require_once($CFG->libdir.'/tablelib.php');
  * @copyright 2010 The Open University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class quiz_attempts_report_table extends table_sql {
+abstract class quiz_attempts_report_table extends sql_table {
     public $useridfield = 'userid';
 
     /** @var moodle_url the URL of this report. */

@@ -29,7 +29,6 @@
 
 require_once(__DIR__ . '/../config.php');
 require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/tablelib.php');
 
 admin_externalpage_setup('managetools');
 
@@ -40,7 +39,7 @@ echo $OUTPUT->heading(get_string('tools', 'admin'));
 
 $struninstall = get_string('uninstallplugin', 'core_admin');
 
-$table = new flexible_table('toolplugins_administration_table');
+$table = new \core_table\flexible_table('toolplugins_administration_table');
 $table->define_columns(array('name', 'version', 'uninstall'));
 $table->define_headers(array(get_string('plugin'), get_string('version'), $struninstall));
 $table->define_baseurl($PAGE->url);

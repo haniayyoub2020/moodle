@@ -26,7 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 
-use \mod_assign\output\grading_app;
+use core_table\flexible_table;
+use mod_assign\output\grading_app;
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and is used by the assign module.

@@ -174,7 +174,7 @@ class assign_plugin_manager {
 
         // Set up the table.
         $this->view_header();
-        $table = new flexible_table($this->subtype . 'pluginsadminttable');
+        $table = new \core_table\flexible_table($this->subtype . 'pluginsadminttable');
         $table->define_baseurl($this->pageurl);
         $table->define_columns(array('pluginname', 'version', 'hideshow', 'order',
                 'settings', 'uninstall'));

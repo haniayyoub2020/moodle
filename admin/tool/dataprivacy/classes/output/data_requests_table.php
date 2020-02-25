@@ -24,16 +24,14 @@
 namespace tool_dataprivacy\output;
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/tablelib.php');
-
 use action_menu;
 use action_menu_link_secondary;
 use coding_exception;
+use core_table\sql_table;
 use dml_exception;
 use html_writer;
 use moodle_url;
 use stdClass;
-use table_sql;
 use tool_dataprivacy\api;
 use tool_dataprivacy\external\data_request_exporter;
 
@@ -45,7 +43,7 @@ defined('MOODLE_INTERNAL') || die;
  * @copyright  2018 Jun Pataleta <jun@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class data_requests_table extends table_sql {
+class data_requests_table extends sql_table {
 
     /** @var int The user ID. */
     protected $userid = 0;
