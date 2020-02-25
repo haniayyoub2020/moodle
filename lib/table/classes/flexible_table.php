@@ -182,7 +182,7 @@ class flexible_table {
     /**
      * Get, and optionally set, the export class.
      * @param $exportclass (optional) if passed, set the table to use this export class.
-     * @return table_default_export_format_parent the export class in use (after any set).
+     * @return \core_table\local\dataformat the export class in use (after any set).
      */
     function export_class_instance($exportclass = null) {
         if (!is_null($exportclass)) {
