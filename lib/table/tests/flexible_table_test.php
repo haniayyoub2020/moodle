@@ -23,11 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace core_table;
 
-global $CFG;
-require_once($CFG->libdir . '/tablelib.php');
-require_once($CFG->libdir . '/tests/fixtures/testable_flexible_table.php');
+use advanced_testcase;
+use ReflectionClass;
+use context_system;
 
 /**
  * Test some of tablelib.
@@ -576,7 +576,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $columns = array('column0', 'column1', 'column2');
         $headers = $this->generate_headers(3);
 
-        $table = new testable_flexible_table($tableid);
+        $table = new flexible_table($tableid);
         $table->define_baseurl('/invalid.php');
         $table->define_columns($columns);
         $table->define_headers($headers);
@@ -587,16 +587,20 @@ class core_tablelib_testcase extends advanced_testcase {
     }
 
     public function test_can_be_reset() {
+        $rc = new ReflectionClass(flexible_table::class);
+        $rcm = $rc->getMethod('can_be_reset');
+        $rcm->setAccessible(true);
+
         // Table in its default state (as if seen for the first time), nothing to reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
         $table->setup();
-        $this->assertFalse($table->can_be_reset());
+        $this->assertFalse($rcm->invoke($table));
 
         // Table in its default state with default sorting defined, nothing to reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
         $table->sortable(true, 'column1', SORT_DESC);
         $table->setup();
-        $this->assertFalse($table->can_be_reset());
+        $this->assertFalse($rcm->invoke($table));
 
         // Table explicitly sorted by the default column & direction, nothing to reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
@@ -606,7 +610,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $table->setup();
         unset($_GET['tsort']);
         unset($_GET['tdir']);
-        $this->assertFalse($table->can_be_reset());
+        $this->assertFalse($rcm->invoke($table));
 
         // Table explicitly sorted twice by the default column & direction, nothing to reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
@@ -617,7 +621,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $table->setup(); // Set up again to simulate the second page request.
         unset($_GET['tsort']);
         unset($_GET['tdir']);
-        $this->assertFalse($table->can_be_reset());
+        $this->assertFalse($rcm->invoke($table));
 
         // Table sorted by other than default column, can be reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
@@ -625,7 +629,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $_GET['tsort'] = 'column2';
         $table->setup();
         unset($_GET['tsort']);
-        $this->assertTrue($table->can_be_reset());
+        $this->assertTrue($rcm->invoke($table));
 
         // Table sorted by other than default direction, can be reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
@@ -635,7 +639,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $table->setup();
         unset($_GET['tsort']);
         unset($_GET['tdir']);
-        $this->assertTrue($table->can_be_reset());
+        $this->assertTrue($rcm->invoke($table));
 
         // Table sorted by the default column after another sorting previously selected.
         // This leads to different ORDER BY than just having a single sort defined, can be reset.
@@ -646,21 +650,21 @@ class core_tablelib_testcase extends advanced_testcase {
         $_GET['tsort'] = 'column1';
         $table->setup();
         unset($_GET['tsort']);
-        $this->assertTrue($table->can_be_reset());
+        $this->assertTrue($rcm->invoke($table));
 
         // Table having some column collapsed, can be reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
         $_GET['thide'] = 'column2';
         $table->setup();
         unset($_GET['thide']);
-        $this->assertTrue($table->can_be_reset());
+        $this->assertTrue($rcm->invoke($table));
 
         // Table having some column explicitly expanded, nothing to reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
         $_GET['tshow'] = 'column2';
         $table->setup();
         unset($_GET['tshow']);
-        $this->assertFalse($table->can_be_reset());
+        $this->assertFalse($rcm->invoke($table));
 
         // Table after expanding a collapsed column, nothing to reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
@@ -670,14 +674,14 @@ class core_tablelib_testcase extends advanced_testcase {
         $table->setup();
         unset($_GET['thide']);
         unset($_GET['tshow']);
-        $this->assertFalse($table->can_be_reset());
+        $this->assertFalse($rcm->invoke($table));
 
         // Table with some name filtering enabled, can be reset.
         $table = $this->prepare_table_for_reset_test(uniqid('tablelib_test_'));
         $_GET['tifirst'] = 'A';
         $table->setup();
         unset($_GET['tifirst']);
-        $this->assertTrue($table->can_be_reset());
+        $this->assertTrue($rcm->invoke($table));
     }
 
     /**
@@ -700,5 +704,4 @@ class core_tablelib_testcase extends advanced_testcase {
 
         $this->assertEquals("Col1,Col2,Col3\na,b,c\n", substr($output, 3));
     }
-
 }
