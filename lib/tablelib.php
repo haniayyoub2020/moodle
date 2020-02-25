@@ -63,6 +63,29 @@ class flexible_table extends \core_table\flexible_table {
 }
 
 /**
+ * A table offering the same functionality as the flexible_table but which uses data retrieved via SQL.
+ *
+ * @package     core_table
+ * @copyright   1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class table_sql extends \core_table\sql_table {
+    /**
+     * Constructor for table_sql.
+     */
+    public function __construct() {
+        call_user_func_array(['parent', '__construct'], func_get_args());
+
+        debugging(
+            'The table_sql class has been deprecated in favour of \core_table\sql_table. ' .
+            'Please update your code to use the new class. ' .
+            'Please note that many of the properties have been renamed.',
+            DEBUG_DEVELOPER
+        );
+    }
+}
+
+/**
  * @package   moodlecore
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
