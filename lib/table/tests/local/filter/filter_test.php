@@ -33,6 +33,7 @@ use InvalidArgumentException;
 /**
  * Unit tests for core_table\local\filter\filter.
  *
+ * @coversDefaultClass \core_table\local\filter\filter
  * @package   core_table
  * @category  test
  * @copyright 2020 Andrew Nicols <andrew@nicols.co.uk>
@@ -254,6 +255,9 @@ class filter_test extends advanced_testcase {
         $this->assertEquals('examplename', $filter->get_name());
     }
 
+    /**
+     * Data provider for the countable tests.
+     */
     public function filter_value_provider(): array {
         return [
             'Empty' => [[], 0],
@@ -271,7 +275,7 @@ class filter_test extends advanced_testcase {
      * @param   array   $values List of context IDs
      * @param   int     $count Expected count
      */
-    public function test_countable($values, $count) {
+    public function test_countable($values, $count): void {
         $filter = new filter('example', null, $values);
 
         $this->assertCount($count, $filter);
@@ -280,7 +284,7 @@ class filter_test extends advanced_testcase {
     /**
      * Ensure that the contextlist_base iterates over the set of contexts.
      */
-    public function test_filter_iteration() {
+    public function test_filter_iteration(): void {
         $filter = new filter('example');
 
         // The iterator position should be at the start.
@@ -331,5 +335,13 @@ class filter_test extends advanced_testcase {
 
         // The iterator position should now be at position 6.
         $this->assertEquals(6, $filter->key());
+    }
+
+    /**
+     * Tests for the count function of a filter.
+     */
+    public function test_filter_current(): void {
+        $filter = new filter('example', null, [42]);
+        $this->assertEquals(42, $filter->current());
     }
 }

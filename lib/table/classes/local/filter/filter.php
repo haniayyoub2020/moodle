@@ -104,6 +104,10 @@ class filter implements Countable, Iterator {
      * Return the current filter value.
      */
     public function current() {
+        if ($this->iteratorposition === null) {
+            $this->rewind();
+        }
+
         return $this->filtervalues[$this->iteratorposition];
     }
 
