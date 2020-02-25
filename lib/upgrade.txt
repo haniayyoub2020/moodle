@@ -35,6 +35,7 @@ information provided here is intended especially for developers.
 * A number of changes to tablelib have been made:
   - flexible_table:
     The `flexible_table` class has been moved to the `core_table` API. It is now possible to autoload the class from `core_table\flexible_table`.
+  - The TABLE_VAR_*, and TABLE_P_* constants have been moved to new constants on the `core_table\flexible_table` class.
 
 === 3.8 ===
 * Add CLI option to notify all cron tasks to stop: admin/cli/cron.php --stop

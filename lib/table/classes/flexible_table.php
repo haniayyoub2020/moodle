@@ -39,6 +39,20 @@ use table_dataformat_export_format;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class flexible_table {
+    // The following are used for URL parameters.
+    const TABLE_VAR_SORT = 1;
+    const TABLE_VAR_HIDE = 2;
+    const TABLE_VAR_SHOW = 3;
+    const TABLE_VAR_IFIRST = 4;
+    const TABLE_VAR_ILAST = 5;
+    const TABLE_VAR_PAGE = 6;
+    const TABLE_VAR_RESET = 7;
+    const TABLE_VAR_DIR = 8;
+
+    // Constants that indicate whether the paging bar for the table appears above or below the table.
+    const TABLE_P_TOP = 1;
+    const TABLE_P_BOTTOM = 2;
+
     var $uniqueid        = NULL;
     var $attributes      = array();
     var $headers         = array();
@@ -83,7 +97,7 @@ class flexible_table {
     /**
      * Array of positions in which to display download controls.
      */
-    var $showdownloadbuttonsat= array(TABLE_P_TOP);
+    var $showdownloadbuttonsat= array(self::TABLE_P_TOP);
 
     /**
      * @var string Key of field returned by db query that is the id field of the
@@ -130,14 +144,14 @@ class flexible_table {
     function __construct($uniqueid) {
         $this->uniqueid = $uniqueid;
         $this->request  = array(
-            TABLE_VAR_SORT   => 'tsort',
-            TABLE_VAR_HIDE   => 'thide',
-            TABLE_VAR_SHOW   => 'tshow',
-            TABLE_VAR_IFIRST => 'tifirst',
-            TABLE_VAR_ILAST  => 'tilast',
-            TABLE_VAR_PAGE   => 'page',
-            TABLE_VAR_RESET  => 'treset',
-            TABLE_VAR_DIR    => 'tdir',
+            self::TABLE_VAR_SORT   => 'tsort',
+            self::TABLE_VAR_HIDE   => 'thide',
+            self::TABLE_VAR_SHOW   => 'tshow',
+            self::TABLE_VAR_IFIRST => 'tifirst',
+            self::TABLE_VAR_ILAST  => 'tilast',
+            self::TABLE_VAR_PAGE   => 'page',
+            self::TABLE_VAR_RESET  => 'treset',
+            self::TABLE_VAR_DIR    => 'tdir',
         );
     }
 
@@ -465,7 +479,7 @@ class flexible_table {
         }
 
         // Set up default preferences if needed.
-        if (!$this->prefs or optional_param($this->request[TABLE_VAR_RESET], false, PARAM_BOOL)) {
+        if (!$this->prefs or optional_param($this->request[self::TABLE_VAR_RESET], false, PARAM_BOOL)) {
             $this->prefs = array(
                 'collapse' => array(),
                 'sortby'   => array(),
@@ -479,11 +493,11 @@ class flexible_table {
             $oldprefs = $this->prefs;
         }
 
-        if (($showcol = optional_param($this->request[TABLE_VAR_SHOW], '', PARAM_ALPHANUMEXT)) &&
+        if (($showcol = optional_param($this->request[self::TABLE_VAR_SHOW], '', PARAM_ALPHANUMEXT)) &&
                 isset($this->columns[$showcol])) {
             $this->prefs['collapse'][$showcol] = false;
 
-        } else if (($hidecol = optional_param($this->request[TABLE_VAR_HIDE], '', PARAM_ALPHANUMEXT)) &&
+        } else if (($hidecol = optional_param($this->request[self::TABLE_VAR_HIDE], '', PARAM_ALPHANUMEXT)) &&
                 isset($this->columns[$hidecol])) {
             $this->prefs['collapse'][$hidecol] = true;
             if (array_key_exists($hidecol, $this->prefs['sortby'])) {
@@ -498,12 +512,12 @@ class flexible_table {
             }
         }
 
-        if (($sortcol = optional_param($this->request[TABLE_VAR_SORT], '', PARAM_ALPHANUMEXT)) &&
+        if (($sortcol = optional_param($this->request[self::TABLE_VAR_SORT], '', PARAM_ALPHANUMEXT)) &&
                 $this->is_sortable($sortcol) && empty($this->prefs['collapse'][$sortcol]) &&
                 (isset($this->columns[$sortcol]) || in_array($sortcol, get_all_user_name_fields())
                 && isset($this->columns['fullname']))) {
 
-            $sortdir = optional_param($this->request[TABLE_VAR_DIR], $this->sort_default_order, PARAM_INT);
+            $sortdir = optional_param($this->request[self::TABLE_VAR_DIR], $this->sort_default_order, PARAM_INT);
 
             if (array_key_exists($sortcol, $this->prefs['sortby'])) {
                 // This key already exists somewhere. Change its sortorder and bring it to the top.
@@ -528,12 +542,12 @@ class flexible_table {
             }
         }
 
-        $ilast = optional_param($this->request[TABLE_VAR_ILAST], null, PARAM_RAW);
+        $ilast = optional_param($this->request[self::TABLE_VAR_ILAST], null, PARAM_RAW);
         if (!is_null($ilast) && ($ilast ==='' || strpos(get_string('alphabet', 'langconfig'), $ilast) !== false)) {
             $this->prefs['i_last'] = $ilast;
         }
 
-        $ifirst = optional_param($this->request[TABLE_VAR_IFIRST], null, PARAM_RAW);
+        $ifirst = optional_param($this->request[self::TABLE_VAR_IFIRST], null, PARAM_RAW);
         if (!is_null($ifirst) && ($ifirst === '' || strpos(get_string('alphabet', 'langconfig'), $ifirst) !== false)) {
             $this->prefs['i_first'] = $ifirst;
         }
@@ -554,7 +568,7 @@ class flexible_table {
             $this->baseurl = $PAGE->url;
         }
 
-        $this->currpage = optional_param($this->request[TABLE_VAR_PAGE], 0, PARAM_INT);
+        $this->currpage = optional_param($this->request[self::TABLE_VAR_PAGE], 0, PARAM_INT);
         $this->setup = true;
 
         // Always introduce the "flexible" class for the table if not specified
@@ -990,8 +1004,8 @@ class flexible_table {
 
         if ((!empty($ifirst) || !empty($ilast) ||$this->use_initials)
                 && isset($this->columns['fullname'])) {
-            $prefixfirst = $this->request[TABLE_VAR_IFIRST];
-            $prefixlast = $this->request[TABLE_VAR_ILAST];
+            $prefixfirst = $this->request[self::TABLE_VAR_IFIRST];
+            $prefixlast = $this->request[self::TABLE_VAR_ILAST];
             echo $OUTPUT->initials_bar($ifirst, 'firstinitial', get_string('firstname'), $prefixfirst, $this->baseurl);
             echo $OUTPUT->initials_bar($ilast, 'lastinitial', get_string('lastname'), $prefixlast, $this->baseurl);
         }
@@ -1163,13 +1177,13 @@ class flexible_table {
             $this->wrap_html_finish();
 
             // Paging bar
-            if(in_array(TABLE_P_BOTTOM, $this->showdownloadbuttonsat)) {
+            if(in_array(self::TABLE_P_BOTTOM, $this->showdownloadbuttonsat)) {
                 echo $this->download_buttons();
             }
 
             if($this->use_pages) {
                 $pagingbar = new paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
-                $pagingbar->pagevar = $this->request[TABLE_VAR_PAGE];
+                $pagingbar->pagevar = $this->request[self::TABLE_VAR_PAGE];
                 echo $OUTPUT->render($pagingbar);
             }
         }
@@ -1198,14 +1212,14 @@ class flexible_table {
             $linkattributes = array('title' => get_string('show') . ' ' . strip_tags($this->headers[$index]),
                                     'aria-expanded' => 'false',
                                     'aria-controls' => $ariacontrols);
-            return html_writer::link($this->baseurl->out(false, array($this->request[TABLE_VAR_SHOW] => $column)),
+            return html_writer::link($this->baseurl->out(false, array($this->request[self::TABLE_VAR_SHOW] => $column)),
                     $OUTPUT->pix_icon('t/switch_plus', get_string('show')), $linkattributes);
 
         } else if ($this->headers[$index] !== NULL) {
             $linkattributes = array('title' => get_string('hide') . ' ' . strip_tags($this->headers[$index]),
                                     'aria-expanded' => 'true',
                                     'aria-controls' => $ariacontrols);
-            return html_writer::link($this->baseurl->out(false, array($this->request[TABLE_VAR_HIDE] => $column)),
+            return html_writer::link($this->baseurl->out(false, array($this->request[self::TABLE_VAR_HIDE] => $column)),
                     $OUTPUT->pix_icon('t/switch_minus', get_string('hide')), $linkattributes);
         }
     }
@@ -1359,8 +1373,8 @@ class flexible_table {
         }
 
         $params = [
-            $this->request[TABLE_VAR_SORT] => $column,
-            $this->request[TABLE_VAR_DIR] => $sortorder,
+            $this->request[self::TABLE_VAR_SORT] => $column,
+            $this->request[self::TABLE_VAR_DIR] => $sortorder,
         ];
 
         return html_writer::link($this->baseurl->out(false, $params),
@@ -1384,11 +1398,11 @@ class flexible_table {
         // Paging bar
         if ($this->use_pages) {
             $pagingbar = new paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
-            $pagingbar->pagevar = $this->request[TABLE_VAR_PAGE];
+            $pagingbar->pagevar = $this->request[self::TABLE_VAR_PAGE];
             echo $OUTPUT->render($pagingbar);
         }
 
-        if (in_array(TABLE_P_TOP, $this->showdownloadbuttonsat)) {
+        if (in_array(self::TABLE_P_TOP, $this->showdownloadbuttonsat)) {
             echo $this->download_buttons();
         }
 
@@ -1428,7 +1442,7 @@ class flexible_table {
             return '';
         }
 
-        $url = $this->baseurl->out(false, array($this->request[TABLE_VAR_RESET] => 1));
+        $url = $this->baseurl->out(false, array($this->request[self::TABLE_VAR_RESET] => 1));
 
         $html  = html_writer::start_div('resettable mdl-right');
         $html .= html_writer::link($url, get_string('resettable'));

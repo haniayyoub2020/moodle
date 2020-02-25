@@ -24,9 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/**#@+
- * These constants relate to the table's handling of URL parameters.
- */
+// Note: These contants will be deprecated in Moodle 4.0.
+// Please use the new constants on core_table\flexible_table by the same name.
 define('TABLE_VAR_SORT',   1);
 define('TABLE_VAR_HIDE',   2);
 define('TABLE_VAR_SHOW',   3);
@@ -35,15 +34,8 @@ define('TABLE_VAR_ILAST',  5);
 define('TABLE_VAR_PAGE',   6);
 define('TABLE_VAR_RESET',  7);
 define('TABLE_VAR_DIR',    8);
-/**#@-*/
-
-/**#@+
- * Constants that indicate whether the paging bar for the table
- * appears above or below the table.
- */
 define('TABLE_P_TOP',    1);
 define('TABLE_P_BOTTOM', 2);
-/**#@-*/
 
 /**
  * A basic flexible table which uses static data, and supports sort, export, and basic column control.
