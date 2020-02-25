@@ -27,7 +27,9 @@ declare(strict_types = 1);
 
 namespace core_table\local\filter;
 
+use Countable;
 use InvalidArgumentException;
+use Iterator;
 
 /**
  * Class representing a generic filter of any type.
@@ -36,7 +38,8 @@ use InvalidArgumentException;
  * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class filter {
+class filter implements Countable, Iterator {
+
     /** @var in The default filter type (ANY) */
     const JOINTYPE_DEFAULT = 1;
 
@@ -65,6 +68,9 @@ class filter {
         self::JOINTYPE_ALL,
     ];
 
+    /** @var int The current iterator position */
+    protected $iteratorposition = null;
+
     /**
      * Constructor for the generic filter class.
      *
@@ -85,6 +91,66 @@ class filter {
                 $this->add_filter_value($value);
             }
         }
+    }
+
+    /**
+     * Reset the iterator position.
+     */
+    public function reset_iterator(): void {
+        $this->iteratorposition = null;
+    }
+
+    /**
+     * Return the current filter value.
+     */
+    public function current() {
+        return $this->filtervalues[$this->iteratorposition];
+    }
+
+    /**
+     * Returns the current position of the iterator.
+     *
+     * @return int
+     */
+    public function key() {
+        if ($this->iteratorposition === null) {
+            $this->rewind();
+        }
+
+        return $this->iteratorposition;
+    }
+
+    /**
+     * Rewind the Iterator position to the start.
+     */
+    public function rewind() {
+        if ($this->iteratorposition === null) {
+            $this->sort_filter_values();
+        }
+        $this->iteratorposition = 0;
+    }
+
+    /**
+     * Move to the next value in the list.
+     */
+    public function next() {
+        ++$this->iteratorposition;
+    }
+
+    /**
+     * Check if the current position is valid.
+     *
+     * @return  bool
+     */
+    public function valid() {
+        return isset($this->filtervalues[$this->iteratorposition]);
+    }
+
+    /**
+     * Return the number of contexts.
+     */
+    public function count() {
+        return count($this->filtervalues);
     }
 
     /**
@@ -145,7 +211,22 @@ class filter {
 
         $this->filtervalues[] = $value;
 
+        // Reset the iterator position.
+        $this->reset_iterator();
+
         return $this;
+    }
+
+    /**
+     * Sort the filter values to ensure reliable, and consistent output.
+     */
+    protected function sort_filter_values(): void {
+        // Sort the filter values to ensure consistent output.
+        // Note: This is not a locale-aware sort, but we don't need this.
+        // It's primarily for consistency, not for actual sorting.
+        sort($this->filtervalues);
+
+        $this->reset_iterator();
     }
 
     /**
@@ -154,11 +235,7 @@ class filter {
      * @return mixed[]
      */
     public function get_filter_values(): array {
-        // Sort the filter values to ensure consistent output.
-        // Note: This is not a locale-aware sort, but we don't need this.
-        // It's primarily for consistency, not for actual sorting.
-        sort($this->filtervalues);
-
+        $this->sort_filter_values();
         return $this->filtervalues;
     }
 }

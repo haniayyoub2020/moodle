@@ -253,4 +253,83 @@ class filter_test extends advanced_testcase {
 
         $this->assertEquals('examplename', $filter->get_name());
     }
+
+    public function filter_value_provider(): array {
+        return [
+            'Empty' => [[], 0],
+            'Single value' => [[10], 1],
+            'Single repeated value' => [[10, 10, 10, 10], 1],
+            'Multiple values, no repeats' => [[1, 2, 3, 4, 5], 5],
+            'Multiple values, including repeats' => [[1, 2, 1, 3, 1, 3, 4, 1, 5], 5],
+        ];
+    }
+
+    /**
+     * Ensure that the filter is countable.
+     *
+     * @dataProvider    filter_value_provider
+     * @param   array   $values List of context IDs
+     * @param   int     $count Expected count
+     */
+    public function test_countable($values, $count) {
+        $filter = new filter('example', null, $values);
+
+        $this->assertCount($count, $filter);
+    }
+
+    /**
+     * Ensure that the contextlist_base iterates over the set of contexts.
+     */
+    public function test_filter_iteration() {
+        $filter = new filter('example');
+
+        // The iterator position should be at the start.
+        $this->assertEquals(0, $filter->key());
+
+        foreach ($filter as $filtervalue) {
+            // This should not be called.
+            $this->assertFalse(true);
+        }
+
+        // The iterator position should still be at the start.
+        $this->assertEquals(0, $filter->key());
+
+        // Adding filter values should cause the values in the Iterator to be sorted.
+        $filter = new filter('example');
+        $filter->add_filter_value(6);
+        $filter->add_filter_value(5);
+        $filter->add_filter_value(4);
+        $filter->add_filter_value(3);
+        $filter->add_filter_value(2);
+
+        // The iterator position should be at the start after adding values.
+        $this->assertEquals(0, $filter->key());
+
+        $foundvalues = [];
+        foreach ($filter as $filtervalue) {
+            $foundvalues[] = $filtervalue;
+        }
+
+        $this->assertEquals([2, 3, 4, 5, 6], $foundvalues);
+
+        // The iterator position should now be at position 5.
+        // The position is automatically updated prior to moving.
+        $this->assertEquals(5, $filter->key());
+
+        // Adding another value shoudl cause the Iterator to be re-sorted.
+        $filter->add_filter_value(1);
+
+        // The iterator position should be at the start after adding values.
+        $this->assertEquals(0, $filter->key());
+
+        $foundvalues = [];
+        foreach ($filter as $filtervalue) {
+            $foundvalues[] = $filtervalue;
+        }
+
+        $this->assertEquals([1, 2, 3, 4, 5, 6], $foundvalues);
+
+        // The iterator position should now be at position 6.
+        $this->assertEquals(6, $filter->key());
+    }
 }
