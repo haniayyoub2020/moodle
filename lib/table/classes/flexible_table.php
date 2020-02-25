@@ -954,40 +954,6 @@ class flexible_table {
     }
 
     /**
-     * Helper function, used by {@link print_initials_bar()} to output one initial bar.
-     * @param array $alpha of letters in the alphabet.
-     * @param string $current the currently selected letter.
-     * @param string $class class name to add to this initial bar.
-     * @param string $title the name to put in front of this initial bar.
-     * @param string $urlvar URL parameter name for this initial.
-     *
-     * @deprecated since Moodle 3.3
-     */
-    protected function print_one_initials_bar($alpha, $current, $class, $title, $urlvar) {
-
-        debugging('Method print_one_initials_bar() is no longer used and has been deprecated, ' .
-            'to print initials bar call print_initials_bar()', DEBUG_DEVELOPER);
-
-        echo html_writer::start_tag('div', array('class' => 'initialbar ' . $class)) .
-            $title . ' : ';
-        if ($current) {
-            echo html_writer::link($this->baseurl->out(false, array($urlvar => '')), get_string('all'));
-        } else {
-            echo html_writer::tag('strong', get_string('all'));
-        }
-
-        foreach ($alpha as $letter) {
-            if ($letter === $current) {
-                echo html_writer::tag('strong', $letter);
-            } else {
-                echo html_writer::link($this->baseurl->out(false, array($urlvar => $letter)), $letter);
-            }
-        }
-
-        echo html_writer::end_tag('div');
-    }
-
-    /**
      * This function is not part of the public api.
      */
     function print_initials_bar() {
