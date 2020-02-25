@@ -120,109 +120,20 @@ class table_default_export_format_parent extends \core_table\local\dataformat {
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_dataformat_export_format extends \core_table\local\dataformat {
-
-    /** @var $dataformat */
-    protected $dataformat;
-
-    /** @var $rownum */
-    protected $rownum = 0;
-
-    /** @var $columns */
-    protected $columns;
-
     /**
-     * Constructor
-     *
-     * @param string $table An sql table
-     * @param string $dataformat type of dataformat for export
+     * Constructor for the table_default_export_format class.
      */
-    public function __construct(&$table, $dataformat) {
-        parent::__construct($table);
+    public function __construct() {
+        call_user_func_array([parent, '__construct'], func_get_args());
 
-        if (ob_get_length()) {
-            throw new coding_exception("Output can not be buffered before instantiating table_dataformat_export_format");
+        if (!is_a($this, table_default_export_format::class)) {
+            debugging(
+                'The table_default_export_format class has been deprecated in favour of ' .
+                '\core_table\local\dataformat\export. ' .
+                'Please update your code to use the new class. ' .
+                'Please note that many of the properties have been renamed.',
+                DEBUG_DEVELOPER
+            );
         }
-
-        $classname = 'dataformat_' . $dataformat . '\writer';
-        if (!class_exists($classname)) {
-            throw new coding_exception("Unable to locate dataformat/$dataformat/classes/writer.php");
-        }
-        $this->dataformat = new $classname;
-
-        // The dataformat export time to first byte could take a while to generate...
-        set_time_limit(0);
-
-        // Close the session so that the users other tabs in the same session are not blocked.
-        \core\session\manager::write_close();
-    }
-
-    /**
-     * Start document
-     *
-     * @param string $filename
-     * @param string $sheettitle
-     */
-    public function start_document($filename, $sheettitle) {
-        $this->documentstarted = true;
-        $this->dataformat->set_filename($filename);
-        $this->dataformat->send_http_headers();
-        $this->dataformat->set_sheettitle($sheettitle);
-        $this->dataformat->start_output();
-    }
-
-    /**
-     * Start export
-     *
-     * @param string $sheettitle optional spreadsheet worksheet title
-     */
-    public function start_table($sheettitle) {
-        $this->dataformat->set_sheettitle($sheettitle);
-    }
-
-    /**
-     * Output headers
-     *
-     * @param array $headers
-     */
-    public function output_headers($headers) {
-        $this->columns = $headers;
-        if (method_exists($this->dataformat, 'write_header')) {
-            error_log('The function write_header() does not support multiple sheets. In order to support multiple sheets you ' .
-                'must implement start_output() and start_sheet() and remove write_header() in your dataformat.');
-            $this->dataformat->write_header($headers);
-        } else {
-            $this->dataformat->start_sheet($headers);
-        }
-    }
-
-    /**
-     * Add a row of data
-     *
-     * @param array $row One record of data
-     */
-    public function add_data($row) {
-        $this->dataformat->write_record($row, $this->rownum++);
-        return true;
-    }
-
-    /**
-     * Finish export
-     */
-    public function finish_table() {
-        if (method_exists($this->dataformat, 'write_footer')) {
-            error_log('The function write_footer() does not support multiple sheets. In order to support multiple sheets you ' .
-                'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.');
-            $this->dataformat->write_footer($this->columns);
-        } else {
-            $this->dataformat->close_sheet($this->columns);
-        }
-    }
-
-    /**
-     * Finish download
-     */
-    public function finish_document() {
-        $this->dataformat->close_output();
-        exit();
     }
 }

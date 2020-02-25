@@ -29,7 +29,7 @@ use html_writer;
 use moodle_url;
 use paging_bar;
 use stdClass;
-use table_dataformat_export_format;
+use core_table\local\dataformat\export as export_format;
 
 /**
  * A basic flexible table which uses static data and supports sort, export, and basic column control.
@@ -190,7 +190,7 @@ class flexible_table {
             $this->exportclass = $exportclass;
             $this->exportclass->table = $this;
         } else if (is_null($this->exportclass) && !empty($this->download)) {
-            $this->exportclass = new table_dataformat_export_format($this, $this->download);
+            $this->exportclass = new export_format($this, $this->download);
             if (!$this->exportclass->document_started()) {
                 $this->exportclass->start_document($this->filename, $this->sheettitle);
             }
