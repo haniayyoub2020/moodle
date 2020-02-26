@@ -24,6 +24,8 @@
 
 namespace core_table;
 
+defined('MOODLE_INTERNAL') || die();
+
 use Traversable;
 use stdClass;
 use core\dml\recordset_walk;
@@ -37,33 +39,33 @@ use moodle_recordset;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class sql_table extends flexible_table {
+    /** @var string|null The SQL query used to obtain a count of all records (for pagination) */
+    protected $countsql = null;
 
-    public $countsql = NULL;
-    public $countparams = NULL;
-    /**
-     * @var object sql for querying db. Has fields 'fields', 'from', 'where', 'params'.
-     */
-    public $sql = NULL;
-    /**
-     * @var array|Traversable Data fetched from the db.
-     */
-    public $rawdata = NULL;
+    /** @var mixed[] The SQL parameters used by the countsql query */
+    protected $countparams = null;
 
-    /**
-     * @var bool Overriding default for this.
-     */
-    public $sortable    = true;
+    /** @var stdClass|null The SQL for querying the db. Has fields 'fields', 'from', 'where', 'params' */
+    protected $sql = null;
+
+    /** @var array|Traversable Data fetched from the db */
+    public $rawdata = null;
 
     /** @var bool Overriding default for this */
-    public $collapsible = true;
+    protected $sortable = true;
+
+    /** @var bool Overriding default for this */
+    protected $collapsible = true;
 
     /**
-     * @param string $uniqueid a string identifying this table.Used as a key in
-     *                          session  vars.
+     * Constructor.
+     *
+     * @param string $uniqueid The unique id for the table.
      */
-    function __construct($uniqueid) {
+    public function __construct($uniqueid) {
         parent::__construct($uniqueid);
-        // some sensible defaults
+
+        // Sensible defaults for an sql table.
         $this->set_attribute('cellspacing', '0');
         $this->set_attribute('class', 'generaltable generalbox');
     }
@@ -77,7 +79,6 @@ class sql_table extends flexible_table {
      * After calling this function, don't forget to call close_recordset.
      */
     public function build_table() {
-
         if ($this->rawdata instanceof Traversable && !$this->rawdata->valid()) {
             return;
         }
@@ -108,7 +109,7 @@ class sql_table extends flexible_table {
      * @param $row array the data for this row.
      * @return string added to the class="" attribute of the tr.
      */
-    function get_row_class($row) {
+    public function get_row_class($row) {
         return '';
     }
 
@@ -121,7 +122,7 @@ class sql_table extends flexible_table {
      * We need to count rows returned by the db seperately to the query itself
      * as we need to know how many pages of data we have to display.
      */
-    function set_count_sql($sql, array $params = NULL) {
+    public function set_count_sql($sql, array $params = null) {
         $this->countsql = $sql;
         $this->countparams = $params;
     }
@@ -132,12 +133,22 @@ class sql_table extends flexible_table {
      * Of course you can use sub-queries, JOINS etc. by putting them in the
      * appropriate clause of the query.
      */
-    function set_sql($fields, $from, $where, array $params = array()) {
-        $this->sql = new stdClass();
-        $this->sql->fields = $fields;
-        $this->sql->from = $from;
-        $this->sql->where = $where;
-        $this->sql->params = $params;
+    public function set_sql($fields, $from, $where, array $params = array()) {
+        $this->sql = (object) [
+            'fields' => $fields,
+            'from' => $from,
+            'where' => $where,
+            'params' => $params,
+        ];
+    }
+
+    /**
+     * Get the SQL configuration for this table.
+     *
+     * @return stdClass|null
+     */
+    public function get_sql(): ?stdClass {
+        return $this->sql;
     }
 
     /**
@@ -147,10 +158,11 @@ class sql_table extends flexible_table {
      * @param bool $useinitialsbar do you want to use the initials bar. Bar
      * will only be used if there is a fullname column defined for the table.
      */
-    function query_db($pagesize, $useinitialsbar=true) {
+    public function query_db($pagesize, $useinitialsbar=true) {
         global $DB;
+
         if (!$this->is_downloading()) {
-            if ($this->countsql === NULL) {
+            if ($this->countsql === null) {
                 $this->countsql = 'SELECT COUNT(1) FROM '.$this->sql->from.' WHERE '.$this->sql->where;
                 $this->countparams = $this->sql->params;
             }
@@ -167,7 +179,7 @@ class sql_table extends flexible_table {
                 $this->sql->where .= ' AND '.$wsql;
                 $this->sql->params = array_merge($this->sql->params, $wparams);
 
-                $total  = $DB->count_records_sql($this->countsql, $this->countparams);
+                $total = $DB->count_records_sql($this->countsql, $this->countparams);
             } else {
                 $total = $grandtotal;
             }
@@ -175,7 +187,7 @@ class sql_table extends flexible_table {
             $this->pagesize($pagesize, $total);
         }
 
-        // Fetch the attempts
+        // Fetch the attempts.
         $sort = $this->get_sql_sort();
         if ($sort) {
             $sort = "ORDER BY $sort";
@@ -197,13 +209,16 @@ class sql_table extends flexible_table {
      * Convenience method to call a number of methods for you to display the
      * table.
      */
-    function out($pagesize, $useinitialsbar, $downloadhelpbutton='') {
+    public function out($pagesize, $useinitialsbar, $downloadhelpbutton='') {
         global $DB;
+
         if (!$this->columns) {
-            $onerow = $DB->get_record_sql("SELECT {$this->sql->fields} FROM {$this->sql->from} WHERE {$this->sql->where}",
-                $this->sql->params, IGNORE_MULTIPLE);
-            //if columns is not set then define columns as the keys of the rows returned
-            //from the db.
+            $onerow = $DB->get_record_sql(
+                "SELECT {$this->sql->fields} FROM {$this->sql->from} WHERE {$this->sql->where}",
+                $this->sql->params,
+                IGNORE_MULTIPLE
+            );
+            // If columns is not set then define columns as the keys of the rows returned from the db.
             $this->define_columns(array_keys((array)$onerow));
             $this->define_headers(array_keys((array)$onerow));
         }

@@ -86,7 +86,15 @@ information provided here is intended especially for developers.
       - 'use_initials' is now protected. Please use the `initialbars()` function to set this property.
       - 'use_pages' is now protected. Please use the `pageable()` and `is_paginated()` functions to set and fetch this property.
   - table_sql:
-    - The `table_sql` class has been moved to the `core_table` API. It is now possible to autoload the class from `core_table\sql_table`.
+    The `table_sql` class has been moved to the `core_table` API. It is now possible to autoload the class from `core_table\sql_table`.
+    A backwards compatability layer has been placed in the old `\table_sql` class-space. The following architectural changes have additionally been made:
+    - Coding violations have been addressed.
+    - Visibility of the following properties has been changed:
+      - `sql` - From public to protected. In the unlikely event that you need to access the sql from outside of the
+        table class, you will need to write appropriate functionality in your table
+      - `countsql` - From public to protected. In the unlikely event that you need to access the countsql from outside
+        of the table class, you will need to write appropriate functionality in your table
+      - `countparams` - From public to protected. See notes for `countsql`.
   - The TABLE_VAR_*, and TABLE_P_* constants have been moved to new constants on the `core_table\flexible_table` class.
 
 === 3.8 ===

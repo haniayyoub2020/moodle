@@ -261,10 +261,20 @@ class flexible_table extends \core_table\flexible_table {
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_sql extends \core_table\sql_table {
+    use \deprecated_tablelib_class;
+
     /**
      * Constructor for table_sql.
      */
     public function __construct() {
+        // There are some additional parameters whose visibility has changed.
+        $additionalpropertyvisibilitychanges = [
+            'countsql',
+            'countparams',
+            'sql',
+        ];
+        $this->propertyvisibilitychanges = array_merge($this->propertyvisibilitychanges, $additionalpropertyvisibilitychanges);
+
         call_user_func_array(['parent', '__construct'], func_get_args());
 
         debugging(
