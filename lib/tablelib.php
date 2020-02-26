@@ -227,6 +227,111 @@ trait deprecated_tablelib_class {
 }
 
 /**
+ * Trait to assist in the deprecation of dataformats.
+ *
+ * @package     core
+ * @copyright   2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+trait deprecated_tablelib_dataformat_class {
+    /** @var string[] A list of properties whose visibility has been reduced as part of the class move procedure. */
+    protected $propertyvisibilitychanges = [
+        'table',
+        'documentstarted',
+    ];
+
+    /**
+     * Set a property.
+     *
+     * Note: This is only called for inaccessible properties.
+     * That is, properties which are either protected, private, or have not been defined on the class.
+     *
+     * @param string $name The name of the property being set
+     * @param mixed $value The value to set
+     */
+    public function __set(string $name, $value): void {
+        if (!property_exists($this, $name)) {
+            // This property has not been defined on the object.
+            // PHP just allows this to be set and it becomes an implicitly-defined public property.
+            $this->{$name} = $value;
+        } else if (array_key_exists($name, $this->propertyvisibilitychanges)) {
+            // The property visibility was changed.
+            // For now we allow the set of the property to preserve b/c.
+
+            $this->{$name} = $value;
+        } else {
+            throw new \Error("Cannot access protected or private property for " . __CLASS__ . '::$' . $name, E_USER_ERROR);
+        }
+    }
+
+    /**
+     * Get the value of a property.
+     *
+     * Note: This is only called for inaccessible properties.
+     * That is, properties which are either protected, private, or have not been defined on the class.
+     *
+     * @param string $name The name of the property being set
+     * @return mixed
+     */
+    public function __get(string $name) {
+        if (array_key_exists($name, $this->propertyvisibilitychanges)) {
+            // The property visibility was changed.
+            // For now we are fetching the property to preserve b/c.
+
+            return $this->{$name};
+        }
+
+        trigger_error('Undefined property: ' . __CLASS__ . '::$' . $name, E_USER_NOTICE);
+    }
+
+    /**
+     * Check whether the property is set.
+     *
+     * Note: This is only called for inaccessible properties.
+     * That is, properties which are either protected, private, or have not been defined on the class.
+     *
+     * @param string $name The name of the property being checked
+     * @return bool
+     */
+    public function __isset(string $name): bool {
+        // If the property visibility has changed, then set the property anyway for b/c.
+        if (array_key_exists($name, $this->propertyvisibilitychanges)) {
+            // The property visibility was changed.
+            // For now we are updating the property to preserve b/c.
+
+            return isset($this->{$name});
+        }
+
+        // Fall back on default.
+        return false;
+    }
+
+    /**
+     * Unset the property.
+     *
+     * Note: This is only called for inaccessible properties.
+     * That is, properties which are either protected, private, or have not been defined on the class.
+     *
+     * @param string $name The name of the property to unset
+     */
+    public function __unset(string $name): void {
+        if (!property_exists($this, $name)) {
+            // This property has not been defined on the object.
+            // PHP just allows this to be unset.
+            unset($this->{$name});
+        } else if (array_key_exists($name, $this->propertyvisibilitychanges)) {
+            // The property visibility was changed.
+            // For now we allow the unset of the property to preserve b/c.
+
+            unset($this->{$name});
+        } else {
+            // Mimic the default behaviour.
+            throw new \Error("Cannot access protected or private property for " . __CLASS__ . '::$' . $name, E_USER_ERROR);
+        }
+    }
+}
+
+/**
  * A basic flexible table which uses static data, and supports sort, export, and basic column control.
  *
  * @package     core
@@ -294,6 +399,8 @@ class table_sql extends \core_table\sql_table {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_default_export_format_parent extends \core_table\local\dataformat {
+    use \deprecated_tablelib_dataformat_class;
+
     /**
      * Constructor for the table_default_export_format_parent class.
      */

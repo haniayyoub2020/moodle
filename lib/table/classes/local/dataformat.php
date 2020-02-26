@@ -24,6 +24,8 @@
 
 namespace core_table\local;
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * A data format for use in formatting of table data.
  *
@@ -32,60 +34,69 @@ namespace core_table\local;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class dataformat {
-    /**
-     * @var flexible_table or child class reference pointing to table class
-     * object from which to export data.
-     */
-    var $table;
+    /** @var flexible_table The table class object from which to export data */
+    protected $table;
 
-    /**
-     * @var bool output started. Keeps track of whether any output has been
-     * started yet.
-     */
-    var $documentstarted = false;
+    /** @var bool Whether output has started yet */
+    protected $documentstarted = false;
 
     /**
      * Constructor
      *
      * @param flexible_table $table
      */
-    public function __construct(&$table) {
-        $this->table =& $table;
+    public function __construct($table) {
+        $this->table = $table;
     }
 
     /**
-     * Old syntax of class constructor. Deprecated in PHP7.
+     * Set the table that this dataformat relates to.
      *
-     * @deprecated since Moodle 3.1
+     * @param flexible_table $table
      */
-    public function table_default_export_format_parent(&$table) {
-        debugging('Use of class name as constructor is deprecated', DEBUG_DEVELOPER);
-        self::__construct($table);
+    public function set_table($table) {
+        $this->table = $table;
     }
 
-    function set_table(&$table) {
-        $this->table =& $table;
-    }
-
-    function add_data($row) {
+    /**
+     * Add a row of data to be exported.
+     *
+     * @param array $row
+     */
+    public function add_data($row) {
         return false;
     }
 
-    function add_seperator() {
+    /**
+     * Add a row separator.
+     */
+    public function add_seperator() {
         return false;
     }
 
-    function document_started() {
+    /**
+     * Whether the docuemnted has started.
+     *
+     * @return bool
+     */
+    public function document_started() {
         return $this->documentstarted;
     }
+
     /**
      * Given text in a variety of format codings, this function returns
      * the text as safe HTML or as plain text dependent on what is appropriate
      * for the download format. The default removes all tags.
+     *
+     * @param string $text
+     * @param int $format
+     * @param array $options
+     * @param int $courseid
      */
-    function format_text($text, $format=FORMAT_MOODLE, $options=NULL, $courseid=NULL) {
-        //use some whitespace to indicate where there was some line spacing.
+    public function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseid = null) {
+        // Use some whitespace to indicate where there was some line spacing.
         $text = str_replace(array('</p>', "\n", "\r"), '   ', $text);
+
         return strip_tags($text);
     }
 }
