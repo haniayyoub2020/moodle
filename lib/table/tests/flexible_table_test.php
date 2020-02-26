@@ -25,9 +25,10 @@
 
 namespace core_table;
 
-use advanced_testcase;
 use ReflectionClass;
+use advanced_testcase;
 use context_system;
+use core_table\local\dataformat;
 
 /**
  * Test some of tablelib.
@@ -121,7 +122,7 @@ class core_tablelib_testcase extends advanced_testcase {
         return $table;
     }
 
-    public function test_empty_table() {
+    public function test_empty_table(): void {
         $this->expectOutputRegex('/' . get_string('nothingtodisplay') . '/');
         $this->run_table_test(
             array('column1', 'column2'),       // Columns.
@@ -135,7 +136,7 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_has_next_pagination() {
+    public function test_has_next_pagination(): void {
 
         $data = $this->generate_data(11, 2);
         $columns = $this->generate_columns(2);
@@ -156,7 +157,7 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_has_hide() {
+    public function test_has_hide(): void {
 
         $data = $this->generate_data(11, 2);
         $columns = $this->generate_columns(2);
@@ -177,8 +178,7 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_has_not_hide() {
-
+    public function test_has_not_hide(): void {
         $data = $this->generate_data(11, 2);
         $columns = $this->generate_columns(2);
         $headers = $this->generate_headers(2);
@@ -201,7 +201,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $this->assertNotContains(get_string('hide'), $output);
     }
 
-    public function test_has_sort() {
+    public function test_has_sort(): void {
 
         $data = $this->generate_data(11, 2);
         $columns = $this->generate_columns(2);
@@ -222,14 +222,12 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_has_not_sort() {
-
+    public function test_has_not_sort(): void {
         $data = $this->generate_data(11, 2);
         $columns = $this->generate_columns(2);
         $headers = $this->generate_headers(2);
 
         // Make sure there are no 'Sort by' links in the headers.
-
         ob_start();
         $this->run_table_test(
             $columns,
@@ -246,7 +244,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $this->assertNotContains(get_string('sortby'), $output);
     }
 
-    public function test_has_not_next_pagination() {
+    public function test_has_not_next_pagination(): void {
 
         $data = $this->generate_data(10, 2);
         $columns = $this->generate_columns(2);
@@ -271,7 +269,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $this->assertNotContains(get_string('next'), $output);
     }
 
-    public function test_1_col() {
+    public function test_1_col(): void {
 
         $data = $this->generate_data(100, 1);
         $columns = $this->generate_columns(1);
@@ -291,7 +289,7 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_empty_rows() {
+    public function test_empty_rows(): void {
 
         $data = $this->generate_data(1, 5);
         $columns = $this->generate_columns(5);
@@ -312,7 +310,7 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_5_cols() {
+    public function test_5_cols(): void {
 
         $data = $this->generate_data(100, 5);
         $columns = $this->generate_columns(5);
@@ -332,7 +330,7 @@ class core_tablelib_testcase extends advanced_testcase {
         );
     }
 
-    public function test_50_cols() {
+    public function test_50_cols(): void {
 
         $data = $this->generate_data(100, 50);
         $columns = $this->generate_columns(50);
@@ -357,7 +355,7 @@ class core_tablelib_testcase extends advanced_testcase {
      *
      * @return array
      */
-    public function fullname_column_provider() {
+    public function fullname_column_provider(): array {
         return [
             ['language'],
             ['alternatename lastname'],
@@ -413,7 +411,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $this->assertContains(fullname($user, false), $table->format_row($user)['fullname']);
     }
 
-    public function test_get_row_html() {
+    public function test_get_row_html(): void {
         $data = $this->generate_data(1, 5);
         $columns = $this->generate_columns(5);
         $headers = $this->generate_headers(5);
@@ -430,7 +428,7 @@ class core_tablelib_testcase extends advanced_testcase {
         $this->assertRegExp('/<td class="cell c0"/', $row);
     }
 
-    public function test_persistent_table() {
+    public function test_persistent_table(): void {
         global $SESSION;
 
         $data = $this->generate_data(5, 5);
@@ -586,7 +584,7 @@ class core_tablelib_testcase extends advanced_testcase {
         return $table;
     }
 
-    public function test_can_be_reset() {
+    public function test_can_be_reset(): void {
         $rc = new ReflectionClass(flexible_table::class);
         $rcm = $rc->getMethod('can_be_reset');
         $rcm->setAccessible(true);
@@ -687,7 +685,7 @@ class core_tablelib_testcase extends advanced_testcase {
     /**
      * Test export in CSV format
      */
-    public function test_table_export() {
+    public function test_table_export(): void {
         $table = new flexible_table('tablelib_test_export');
         $table->define_baseurl('/invalid.php');
         $table->define_columns(['c1', 'c2', 'c3']);
@@ -703,5 +701,162 @@ class core_tablelib_testcase extends advanced_testcase {
         ob_end_clean();
 
         $this->assertEquals("Col1,Col2,Col3\na,b,c\n", substr($output, 3));
+    }
+
+    /**
+     * Test export of data using an export class.
+     */
+    public function test_export_with_class(): void {
+        $table = new flexible_table('tablelib_test_export');
+        $table->define_baseurl('/invalid.php');
+        $table->define_columns(['c1', 'c2', 'c3']);
+        $table->define_headers(['Col1', 'Col2', 'Col3']);
+
+        // Define the export class.
+        $exporter = $this->getMockBuilder(dataformat::class)
+            ->setConstructorArgs([$table])
+            ->setMethods([
+                'add_data',
+                'add_seperator',
+            ])
+            ->getMock();
+
+        $data = [
+            ['column0' => 'a', 'column1' => 'b', 'column2' => 'c'],
+            ['column0' => 'A', 'column1' => 'B', 'column2' => 'C'],
+        ];
+
+        $exporter->expects($this->exactly(2))
+            ->method('add_data')
+            ->withConsecutive(
+                [$data[0]],
+                [$data[1]]
+            );
+
+        $exporter->expects($this->exactly(2))
+            ->method('add_seperator')
+            ->with();
+
+        $table->export_class_instance($exporter);
+        $table->setup();
+        $table->add_data($data[0]);
+        $table->add_data(null);
+        $table->add_data($data[1]);
+        $table->add_separator();
+    }
+
+    /**
+     * Ensure that the is_sortable function works as expected.
+     *
+     * @dataProvider is_sortable_provider
+     * @param array $columndata
+     * @param array|null $sortable
+     * @param array $unsortablecolumns
+     * @param string|null $column
+     * @param bool $expected
+     */
+    public function test_is_sortable(array $columndata, ?array $sortable, array $unsortablecolumns, ?string $column, bool $expected): void {
+        $table = new flexible_table('unittest');
+
+        $table->define_columns($columndata);
+
+        if ($sortable !== null) {
+            call_user_func_array([$table, 'sortable'], $sortable);
+        }
+
+        foreach (array_values($unsortablecolumns) as $columnname) {
+            $table->no_sorting($columnname);
+        }
+
+        $this->assertEquals($expected, $table->is_sortable($column));
+    }
+
+    /**
+     * Data provider for the is_sortable tests.
+     *
+     * @return array
+     */
+    public function is_sortable_provider(): array {
+        // Note: By default, columns are not sortable in a flexible_table.
+        return [
+            // When no column is specified return the default/defined sortable value.
+            [[], null, [], null, false],
+            [[], null, [], '', false],
+            [[], [false], [], '', false],
+            [[], [true], [], '', true],
+            [['foo'], null, [], null, false],
+            [['foo'], null, [], '', false],
+            [['foo'], [false], [], '', false],
+            [['foo'], [true], [], '', true],
+
+            // When a column is specified, a falsy value for 'sortable' should override any column defaults.
+            'Column defined and sortable, default false' => [['foo'], [false], [], 'foo', false],
+            'Column defined and not sortable, default false' => [['foo'], [false], ['foo'], 'foo', false],
+
+            'Column defined and sortable, default true' => [['foo'], [true], [], 'foo', true],
+            'Column defined and not sortable, default true' => [['foo'], [true], ['foo'], 'foo', false],
+
+            'Column not defined and not sortable, default true' => [['foo'], [true], ['foo'], 'bar', true],
+        ];
+    }
+
+    /**
+     * Tests for the `collapsible` and `is_collapsible` functions.
+     */
+    public function test_collapsible(): void {
+        $table = new flexible_table('unittest');
+
+        // Initial value is false.
+        $this->assertFalse($table->is_collapsible());
+
+        // Set it to true.
+        $table->collapsible(true);
+        $this->assertTrue($table->is_collapsible());
+
+        // Set it to false once more.
+        $table->collapsible(false);
+        $this->assertFalse($table->is_collapsible());
+    }
+
+    /**
+     * Tests for the `has_output_started` function.
+     */
+    public function test_has_output_started(): void {
+        // Initial value is false.
+        $table = new flexible_table('unittest');
+        $this->assertFalse($table->has_output_started());
+
+        // Test data.
+        $columns = $this->generate_columns(2);
+        $headers = $this->generate_headers(2);
+        $data = $this->generate_data(1, 2);
+
+        // Adding data causes output to be started.
+        $table = new flexible_table('unittest');
+        $table->define_columns($columns);
+        $table->define_headers($headers);
+        $table->define_baseurl('/invalid.php');
+        $table->setup();
+        $this->assertFalse($table->has_output_started());
+
+        ob_start();
+        $table->add_data_keyed($data[0]);
+        ob_end_clean();
+        $this->assertTrue($table->has_output_started());
+
+        // Specifying an export class causes output to be started.
+        $table = new flexible_table('unittest');
+        $table->define_columns($columns);
+        $table->define_headers($headers);
+        $table->define_baseurl('/invalid.php');
+        $this->assertFalse($table->has_output_started());
+
+        $exporter = $this->getMockBuilder(dataformat::class)
+            ->setConstructorArgs([$table])
+            ->setMethods(null)
+            ->getMock();
+
+        $table->export_class_instance($exporter);
+        $this->assertTrue($table->has_output_started());
     }
 }
