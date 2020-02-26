@@ -24,6 +24,8 @@
 
 namespace core_table\local\dataformat;
 
+defined('MOODLE_INTERNAL') || die();
+
 use coding_exception;
 use core_table\local\dataformat;
 
@@ -35,17 +37,17 @@ use core_table\local\dataformat;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class export extends dataformat {
-    /** @var $dataformat */
+    /** @var string The type of dataformat to use  */
     protected $dataformat;
 
-    /** @var $rownum */
+    /** @var int The current row number */
     protected $rownum = 0;
 
-    /** @var $columns */
+    /** @var array The list of columns */
     protected $columns;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param string $table An sql table
      * @param string $dataformat type of dataformat for export
@@ -71,7 +73,7 @@ class export extends dataformat {
     }
 
     /**
-     * Start document
+     * Start document.
      *
      * @param string $filename
      * @param string $sheettitle
@@ -85,7 +87,7 @@ class export extends dataformat {
     }
 
     /**
-     * Start export
+     * Start export.
      *
      * @param string $sheettitle optional spreadsheet worksheet title
      */
@@ -94,15 +96,17 @@ class export extends dataformat {
     }
 
     /**
-     * Output headers
+     * Output headers.
      *
      * @param array $headers
      */
     public function output_headers($headers) {
         $this->columns = $headers;
         if (method_exists($this->dataformat, 'write_header')) {
+            // @codingStandardsIgnoreStart
             error_log('The function write_header() does not support multiple sheets. In order to support multiple sheets you ' .
                 'must implement start_output() and start_sheet() and remove write_header() in your dataformat.');
+            // @codingStandardsIgnoreEnd
             $this->dataformat->write_header($headers);
         } else {
             $this->dataformat->start_sheet($headers);
@@ -110,7 +114,7 @@ class export extends dataformat {
     }
 
     /**
-     * Add a row of data
+     * Add a row of data.
      *
      * @param array $row One record of data
      */
@@ -120,12 +124,14 @@ class export extends dataformat {
     }
 
     /**
-     * Finish export
+     * Finish export.
      */
     public function finish_table() {
         if (method_exists($this->dataformat, 'write_footer')) {
+            // @codingStandardsIgnoreStart
             error_log('The function write_footer() does not support multiple sheets. In order to support multiple sheets you ' .
                 'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.');
+            // @codingStandardsIgnoreEnd
             $this->dataformat->write_footer($this->columns);
         } else {
             $this->dataformat->close_sheet($this->columns);
@@ -133,7 +139,7 @@ class export extends dataformat {
     }
 
     /**
-     * Finish download
+     * Finish download.
      */
     public function finish_document() {
         $this->dataformat->close_output();

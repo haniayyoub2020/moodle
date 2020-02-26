@@ -428,6 +428,8 @@ class table_default_export_format_parent extends \core_table\local\dataformat {
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class table_dataformat_export_format extends \core_table\local\dataformat {
+    use \deprecated_tablelib_dataformat_class;
+
     /**
      * Constructor for the table_default_export_format class.
      */

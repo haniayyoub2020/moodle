@@ -101,6 +101,8 @@ information provided here is intended especially for developers.
     - Visibility of the following properties has been changed:
       - `table` - From public to protected. It is not expected that this property should be read in normal circumstances.
       - `documentstarted` - From public to protected. Please use the `document_started()` function to retrieve this property.
+  - table_default_export_format:
+    - The `table_default_export_format` class has been moved to the `core_table` API. It is now possible to autoload the class from `core_table\local\dataformat\export`.
   - The TABLE_VAR_*, and TABLE_P_* constants have been moved to new constants on the `core_table\flexible_table` class.
 
 === 3.8 ===
