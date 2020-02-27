@@ -1380,8 +1380,9 @@ class flexible_table {
 
         return html_writer::link($this->baseurl->out(false, $params),
                 $text . get_accesshide(get_string('sortby') . ' ' .
-                $text . ' ' . $this->sort_order_name($isprimary, $order))) . ' ' .
-                $this->sort_icon($isprimary, $order);
+                $text . ' ' . $this->sort_order_name($isprimary, $order)),
+                ['data-sortable' => 1, 'data-sortby' => $column, 'data-sortorder' => $sortorder])
+                . ' ' . $this->sort_icon($isprimary, $order);
     }
 
     /**

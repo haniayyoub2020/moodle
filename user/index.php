@@ -242,7 +242,7 @@ $baseurl = new moodle_url('/user/index.php', array(
 $renderer = $PAGE->get_renderer('core_user');
 echo $renderer->unified_filter($course, $context, $filtersapplied, $baseurl);
 
-echo '<div class="userlist">';
+echo '<div class="userlist" id="userlist">';
 
 // Add filters to the baseurl after creating unified_filter to avoid losing them.
 foreach (array_unique($filtersapplied) as $filterix => $filter) {

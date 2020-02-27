@@ -151,6 +151,10 @@ class participants_table extends \table_sql implements dynamic_table {
             $params = ['contextid' => $this->context->id, 'courseid' => $this->course->id];
             $PAGE->requires->js_call_amd('core_user/status_field', 'init', [$params]);
         }
+        if (is_subclass_of($this, dynamic_table::class)) {
+            $PAGE->requires->js_call_amd('core_table/dynamic', 'init',
+                ['handler' => \core_user\participants_table::class, 'uniqueid' => $this->course->id]);
+        }
     }
 
     /**
