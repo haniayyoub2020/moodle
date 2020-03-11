@@ -408,7 +408,7 @@ class behat_util extends testing_util {
 
         // Make sure this step is only used with interactive terminal (if detected).
         if ($posixexists && !@posix_isatty(STDOUT)) {
-            throw new ExpectationException('Break point should only be used with interactive terminal.', $session);
+            //throw new ExpectationException('Break point should only be used with interactive terminal.', $session);
         }
 
         // Save the cursor position, ring the bell, and add a new line.
