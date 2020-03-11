@@ -519,6 +519,11 @@ function(
      * @return {Object} jQuery promise
      */
     var createNewConversationFromEvent = function(root, conversation, userId) {
+        if (!conversation.messages.length) {
+            window.console.log("Do not create a new conversation for an empty conversation you numskull");
+            return $.Deferred().resolve();
+        }
+
         var existingConversations = root.find(SELECTORS.CONVERSATION);
 
         if (!existingConversations.length) {
