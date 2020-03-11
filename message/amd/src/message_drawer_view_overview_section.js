@@ -535,6 +535,7 @@ function(
         return render([conversation], userId)
             .then(function(html) {
                 var contentContainer = LazyLoadList.getContentContainer(root);
+                window.console.log(`Prepending the new conversation`);
                 return contentContainer.prepend(html);
             })
             .then(function() {
@@ -662,6 +663,8 @@ function(
                 return;
             }
 
+            window.console.log(conversation);
+
             var pendingPromise = new Pending('core_message/message_drawer_view_overview_section:new');
             var loggedInUserId = conversation.loggedInUserId;
             var conversationId = conversation.id;
@@ -686,6 +689,8 @@ function(
                     .then(pendingPromise.resolve)
                     .catch(Notification.exception);
             } else {
+                window.console.log(`Creating new conversation`);
+                window.console.log(conversation);
                 createNewConversationFromEvent(root, conversation, loggedInUserId)
                 .then(pendingPromise.resolve)
                 .catch();

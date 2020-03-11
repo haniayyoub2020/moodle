@@ -1,8 +1,8 @@
-@core @core_message @javascript
-Feature: Delete messages from conversations
-  In order to manage a course group in a course
+@core @core_message @javascript @arn
+Feature: 66607-2
+  In order to communicate with fellow users
   As a user
-  I need to be able to delete messages from conversations
+  I need to be able to delete conversations
 
   Scenario: Check an empty favourite conversation is still favourite
     Given the following "courses" exist:
@@ -7869,5 +7869,4 @@ Feature: Delete messages from conversations
     Then I should see "Delete"
     When I click on "//button[@data-action='confirm-delete-selected-messages']" "xpath_element"
     And I go back in "view-conversation" message drawer
-    Then I should not see "Student 2" in the "//*[@data-region='message-drawer']//div[@data-region='view-overview-favourites']" "xpath_element"
     Then I should not see "Student 2" in the "//*[@data-region='message-drawer']//div[@data-region='view-overview-favourites']" "xpath_element"
