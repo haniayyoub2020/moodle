@@ -80,7 +80,7 @@ if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
     die('Theme was not found, sorry.');
 }
 
-$candidatedir = "$CFG->localcachedir/theme/$rev/$themename/css";
+$candidatedir = "$CFG->localcachedir/cache/theme/$rev/$themename/css";
 $candidatesheet = "{$candidatedir}/" . theme_styles_get_filename($type, $themesubrev, $usesvg);
 $etag = theme_styles_get_etag($themename, $rev, $type, $themesubrev, $usesvg);
 
@@ -118,7 +118,7 @@ if ($themerev <= 0 or $themerev != $rev or $themesubrev != $currentthemesubrev) 
     $themesubrev = $currentthemesubrev;
     $cache = false;
 
-    $candidatedir = "$CFG->localcachedir/theme/$rev/$themename/css";
+    $candidatedir = "$CFG->localcachedir/cache/theme/$rev/$themename/css";
     $candidatesheet = "{$candidatedir}/" . theme_styles_get_filename($type, $themesubrev, $usesvg);
     $etag = theme_styles_get_etag($themename, $rev, $type, $themesubrev, $usesvg);
 }
@@ -226,7 +226,7 @@ function theme_styles_generate_and_store($theme, $rev, $themesubrev, $candidated
     css_store_css($theme, $fallbacksheet, $csscontent);
 
     // Delete older revisions from localcache.
-    $themecachedirs = glob("{$CFG->localcachedir}/theme/*", GLOB_ONLYDIR);
+    $themecachedirs = glob("{$CFG->localcachedir}/cache/theme/*", GLOB_ONLYDIR);
     foreach ($themecachedirs as $localcachedir) {
         $cachedrev = [];
         preg_match("/\/theme\/([0-9]+)$/", $localcachedir, $cachedrev);
@@ -237,7 +237,7 @@ function theme_styles_generate_and_store($theme, $rev, $themesubrev, $candidated
     }
 
     // Delete older theme subrevision CSS from localcache.
-    $subrevfiles = glob("{$CFG->localcachedir}/theme/{$rev}/{$theme->name}/css/*.css");
+    $subrevfiles = glob("{$CFG->localcachedir}/cache/theme/{$rev}/{$theme->name}/css/*.css");
     foreach ($subrevfiles as $subrevfile) {
         $cachedsubrev = [];
         preg_match("/_([0-9]+)\.([0-9]+\.)?css$/", $subrevfile, $cachedsubrev);

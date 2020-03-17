@@ -87,10 +87,11 @@ class renderer_base {
             $themerev = theme_get_revision();
 
             // Create new localcache directory.
+            $mustachecacheroot = make_localcache_directory('mustache');
             $cachedir = make_localcache_directory("mustache/$themerev/$themename");
 
             // Remove old localcache directories.
-            $mustachecachedirs = glob("{$CFG->localcachedir}/mustache/*", GLOB_ONLYDIR);
+            $mustachecachedirs = glob("{$mustachecacheroot}/*", GLOB_ONLYDIR);
             foreach ($mustachecachedirs as $localcachedir) {
                 $cachedrev = [];
                 preg_match("/\/mustache\/([0-9]+)$/", $localcachedir, $cachedrev);

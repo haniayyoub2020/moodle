@@ -74,7 +74,7 @@ if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
     image_not_found();
 }
 
-$candidatelocation = "$CFG->localcachedir/theme/$rev/$themename/pix/$component";
+$candidatelocation = "$CFG->localcachedir/cache/theme/$rev/$themename/pix/$component";
 $etag = sha1("$rev/$themename/$component/$image");
 
 if ($rev > 0) {

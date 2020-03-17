@@ -98,7 +98,7 @@ if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
     font_not_found();
 }
 
-$candidatelocation = "$CFG->localcachedir/theme/$rev/$themename/fonts/$component";
+$candidatelocation = "$CFG->localcachedir/cache/theme/$rev/$themename/fonts/$component";
 $etag = sha1("$rev/$themename/$component/$font");
 
 if ($rev > 0) {

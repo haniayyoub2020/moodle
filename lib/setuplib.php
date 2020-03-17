@@ -1640,7 +1640,10 @@ function get_request_storage_directory($exceptiononerror = true, bool $forcecrea
             protect_directory($CFG->dataroot);
         }
 
-        if ($dir = make_unique_writable_directory($CFG->localcachedir, $exceptiononerror)) {
+        $requestroot = $CFG->localcachedir . DIRECTORY_SEPARATOR . 'request';
+        check_dir_exists($requestroot, true, true);
+
+        if ($dir = make_unique_writable_directory($requestroot, $exceptiononerror)) {
             // Register a shutdown handler to remove the directory.
             \core_shutdown_manager::register_function('remove_dir', [$dir]);
         }
@@ -1771,7 +1774,10 @@ function make_cache_directory($directory, $exceptiononerror = true) {
 function make_localcache_directory($directory, $exceptiononerror = true) {
     global $CFG;
 
-    make_writable_directory($CFG->localcachedir, $exceptiononerror);
+    // Everything is stored in a subdirectory of the localcachedir.
+    // The request directory is a sister directory to the cache directory.
+    $localcachedir = $CFG->localcachedir . DIRECTORY_SEPARATOR . 'cache';
+    make_writable_directory($localcachedir, $exceptiononerror);
 
     if ($CFG->localcachedir !== "$CFG->dataroot/localcache") {
         protect_directory($CFG->localcachedir);
@@ -1779,31 +1785,40 @@ function make_localcache_directory($directory, $exceptiononerror = true) {
         protect_directory($CFG->dataroot);
     }
 
+    $ensurecachedir = function(string $dirroot, int $timestamp) use ($CFG): void {
+        $timestampfile = $dirroot . DIRECTORY_SEPARATOR . ".lastpurged";
+
+        if (!file_exists($timestampfile)) {
+            touch($timestampfile);
+            @chmod($timestampfile, $CFG->filepermissions);
+
+        } else if (filemtime($timestampfile) < $timestamp) {
+            // This nodes directory is out of date. Purge it.
+            remove_dir($dirroot, true);
+            protect_directory($dirroot);
+
+            touch($timestampfile);
+            @chmod($timestampfile, $CFG->filepermissions);
+            clearstatcache();
+        }
+    };
+
+
     if (!isset($CFG->localcachedirpurged)) {
         $CFG->localcachedirpurged = 0;
     }
-    $timestampfile = "$CFG->localcachedir/.lastpurged";
+    $ensurecachedir($CFG->localcachedir, $CFG->localcachedirpurged);
 
-    if (!file_exists($timestampfile)) {
-        touch($timestampfile);
-        @chmod($timestampfile, $CFG->filepermissions);
-
-    } else if (filemtime($timestampfile) <  $CFG->localcachedirpurged) {
-        // This means our local cached dir was not purged yet.
-        remove_dir($CFG->localcachedir, true);
-        if ($CFG->localcachedir !== "$CFG->dataroot/localcache") {
-            protect_directory($CFG->localcachedir);
-        }
-        touch($timestampfile);
-        @chmod($timestampfile, $CFG->filepermissions);
-        clearstatcache();
+    if (!isset($CFG->localcachedircachepurged)) {
+        $CFG->localcachedircachepurged = 0;
     }
+    $ensurecachedir($localcachedir, $CFG->localcachedircachepurged);
 
     if ($directory === '') {
-        return $CFG->localcachedir;
+        return $localcachedir;
     }
 
-    return make_writable_directory("$CFG->localcachedir/$directory", $exceptiononerror);
+    return make_writable_directory("$localcachedir/$directory", $exceptiononerror);
 }
 
 /**

@@ -1708,9 +1708,11 @@ function purge_other_caches() {
     make_cache_directory('');
 
     // This is the only place where we purge local caches, we are only adding files there.
-    // The $CFG->localcachedirpurged flag forces local directories to be purged on cluster nodes.
-    remove_dir($CFG->localcachedir, true);
-    set_config('localcachedirpurged', time());
+    // The $CFG->localcachedircachepurged flag forces local cache directories to be purged on cluster nodes.
+    if ($localcachedir = make_localcache_directory('')) {
+        remove_dir($localcachedir, true);
+        set_config('localcachedircachepurged', time());
+    }
     make_localcache_directory('', true);
     \core\task\manager::clear_static_caches();
 }

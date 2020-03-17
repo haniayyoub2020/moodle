@@ -1833,6 +1833,9 @@ function upgrade_core($version, $verbose) {
         cache_helper::purge_all(true);
         purge_all_caches();
 
+        // Purge the full localcache.
+        set_config('localcachedirpurged', time());
+
         // Upgrade current language pack if we can
         upgrade_language_pack();
 
@@ -1873,6 +1876,9 @@ function upgrade_core($version, $verbose) {
         cache_helper::purge_all(true);
         purge_all_caches();
 
+        // Purge the full localcache.
+        set_config('localcachedirpurged', time());
+
         // Clean up contexts - more and more stuff depends on existence of paths and contexts
         context_helper::cleanup_instances();
         context_helper::create_instances(null, false);
@@ -1905,6 +1911,9 @@ function upgrade_noncore($verbose) {
         cache_helper::purge_all(true);
         purge_all_caches();
 
+        // Purge the full localcache.
+        set_config('localcachedirpurged', time());
+
         $plugintypes = core_component::get_plugin_types();
         foreach ($plugintypes as $type=>$location) {
             upgrade_plugins($type, 'print_upgrade_part_start', 'print_upgrade_part_end', $verbose);
@@ -1921,6 +1930,9 @@ function upgrade_noncore($verbose) {
         // Purge caches again, just to be sure we arn't holding onto old stuff now.
         cache_helper::purge_all(true);
         purge_all_caches();
+
+        // Purge the full localcache.
+        set_config('localcachedirpurged', time());
 
     } catch (Exception $ex) {
         upgrade_handle_exception($ex);

@@ -1783,7 +1783,7 @@ function purify_html($text, $options = array()) {
 
     // Purifier code can change only during major version upgrade.
     $version = empty($CFG->version) ? 0 : $CFG->version;
-    $cachedir = "$CFG->localcachedir/htmlpurifier/$version";
+    $cachedir = make_localcache_directory("htmlpurifier/{$version}");
     if (!file_exists($cachedir)) {
         // Purging of caches may remove the cache dir at any time,
         // luckily file_exists() results should be cached for all existing directories.

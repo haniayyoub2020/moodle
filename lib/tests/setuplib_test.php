@@ -106,67 +106,92 @@ class core_setuplib_testcase extends advanced_testcase {
 
         $this->setCurrentTimeStart();
         $timestampfile = "$CFG->localcachedir/.lastpurged";
+        $cachetimestampfile = "$CFG->localcachedir/cache/.lastpurged";
 
         // Delete existing localcache directory, as this is testing first call
         // to make_localcache_directory.
         remove_dir($CFG->localcachedir, true);
         $dir = make_localcache_directory('', false);
-        $this->assertSame($CFG->localcachedir, $dir);
+        $this->assertSame($CFG->localcachedir . DIRECTORY_SEPARATOR . "cache", $dir);
         $this->assertFileNotExists("$CFG->localcachedir/.htaccess");
+        $this->assertFileNotExists("$CFG->localcachedir/cache/.htaccess");
         $this->assertFileExists($timestampfile);
         $this->assertTimeCurrent(filemtime($timestampfile));
+        $this->assertFileExists($cachetimestampfile);
+        $this->assertTimeCurrent(filemtime($cachetimestampfile));
 
         $dir = make_localcache_directory('test/test', false);
-        $this->assertSame("$CFG->localcachedir/test/test", $dir);
+        $this->assertSame("$CFG->localcachedir/cache/test/test", $dir);
 
         // Test custom location.
         $CFG->localcachedir = "$CFG->dataroot/testlocalcache";
         $this->setCurrentTimeStart();
         $timestampfile = "$CFG->localcachedir/.lastpurged";
         $this->assertFileNotExists($timestampfile);
+        $cachetimestampfile = "$CFG->localcachedir/cache/.lastpurged";
+        $this->assertFileNotExists($cachetimestampfile);
 
         $dir = make_localcache_directory('', false);
-        $this->assertSame($CFG->localcachedir, $dir);
+        $this->assertSame($CFG->localcachedir . '/cache', $dir);
         $this->assertFileExists("$CFG->localcachedir/.htaccess");
+        $this->assertFileNotExists("$CFG->localcachedir/cache/.htaccess");
         $this->assertFileExists($timestampfile);
         $this->assertTimeCurrent(filemtime($timestampfile));
+        $this->assertFileExists($cachetimestampfile);
+        $this->assertTimeCurrent(filemtime($cachetimestampfile));
 
         $dir = make_localcache_directory('test', false);
-        $this->assertSame("$CFG->localcachedir/test", $dir);
+        $this->assertSame("$CFG->localcachedir/cache/test", $dir);
 
         $prevtime = filemtime($timestampfile);
+        $prevcachetime = filemtime($cachetimestampfile);
         $dir = make_localcache_directory('pokus', false);
-        $this->assertSame("$CFG->localcachedir/pokus", $dir);
+        $this->assertSame("$CFG->localcachedir/cache/pokus", $dir);
         $this->assertSame($prevtime, filemtime($timestampfile));
+        $this->assertSame($prevcachetime, filemtime($cachetimestampfile));
 
         // Test purging.
-        $testfile = "$CFG->localcachedir/test/test.txt";
+        $testfile = "$CFG->localcachedir/cache/test/test.txt";
         $this->assertTrue(touch($testfile));
 
         $now = $this->setCurrentTimeStart();
-        set_config('localcachedirpurged', $now - 2);
+        set_config('localcachedirpurged', $now - 4);
+        set_config('localcachedircachepurged', $now - 2);
         purge_all_caches();
         $this->assertFileNotExists($testfile);
         $this->assertFileNotExists(dirname($testfile));
         $this->assertFileExists($timestampfile);
         $this->assertTimeCurrent(filemtime($timestampfile));
-        $this->assertTimeCurrent($CFG->localcachedirpurged);
+        $this->assertEquals($now - 4, $CFG->localcachedirpurged);
+        $this->assertFileExists($cachetimestampfile);
+        $this->assertTimeCurrent(filemtime($cachetimestampfile));
+        $this->assertTimeCurrent($CFG->localcachedircachepurged);
 
         // Simulates purge_all_caches() on another server node.
         make_localcache_directory('test', false);
         $this->assertTrue(touch($testfile));
-        set_config('localcachedirpurged', $now - 1);
-        $this->assertTrue(touch($timestampfile, $now - 2));
+        set_config('localcachedircachepurged', $now - 1);
+        $this->assertTrue(touch($cachetimestampfile, $now - 2));
         clearstatcache();
-        $this->assertSame($now - 2, filemtime($timestampfile));
+        $this->assertSame($now - 2, filemtime($cachetimestampfile));
 
         $this->setCurrentTimeStart();
         $dir = make_localcache_directory('', false);
-        $this->assertSame("$CFG->localcachedir", $dir);
+        $this->assertSame("{$CFG->localcachedir}/cache", $dir);
         $this->assertFileNotExists($testfile);
         $this->assertFileNotExists(dirname($testfile));
+        $this->assertFileExists($cachetimestampfile);
+        $this->assertTimeCurrent(filemtime($cachetimestampfile));
+
+        // Simulates the full reset from an upgrade.
+        set_config('localcachedircachepurged', time() - 1);
+
+        $dir = make_localcache_directory('', false);
+        $this->assertSame("{$CFG->localcachedir}/cache", $dir);
         $this->assertFileExists($timestampfile);
         $this->assertTimeCurrent(filemtime($timestampfile));
+        $this->assertFileExists($cachetimestampfile);
+        $this->assertTimeCurrent(filemtime($cachetimestampfile));
     }
 
     public function test_make_unique_directory_basedir_is_file() {

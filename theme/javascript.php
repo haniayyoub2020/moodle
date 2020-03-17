@@ -64,7 +64,7 @@ if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
     die('Theme was not found, sorry.');
 }
 
-$candidate = "$CFG->localcachedir/theme/$rev/$themename/javascript_$type.js";
+$candidate = "$CFG->localcachedir/cache/theme/$rev/$themename/javascript_$type.js";
 $etag = sha1("$rev/$themename/$type");
 
 if ($rev > 0 and file_exists($candidate)) {

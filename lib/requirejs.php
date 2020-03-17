@@ -130,6 +130,10 @@ if ($rev > 0 and $rev < (time() + 60 * 60)) {
 // So all files will be served one at a time.
 $jsfiles = core_requirejs::find_one_amd_module($component, $module, false);
 
+if ($components === 'theme_boost' && $module === 'pending.js') {
+    sleep(2);
+}
+
 if (!empty($jsfiles)) {
     $modulename = array_keys($jsfiles)[0];
     $jsfile = $jsfiles[$modulename];

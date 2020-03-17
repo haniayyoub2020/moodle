@@ -168,7 +168,7 @@ function theme_get_config_file_path($themename) {
 function theme_get_css_filename($themename, $globalrevision, $themerevision, $direction) {
     global $CFG;
 
-    $path = "{$CFG->localcachedir}/theme/{$globalrevision}/{$themename}/css";
+    $path = make_localcache_directory("theme/{$globalrevision}/{$themename}/css");
     $filename = $direction == 'rtl' ? "all-rtl_{$themerevision}" : "all_{$themerevision}";
     return "{$path}/{$filename}.css";
 }
@@ -259,7 +259,8 @@ function theme_reset_all_caches() {
     cache::make('core', 'postprocessedcss')->purge();
 
     // Delete all old theme localcaches.
-    $themecachedirs = glob("{$CFG->localcachedir}/theme/*", GLOB_ONLYDIR);
+    $themecacheroot = make_localcache_directory("theme");
+    $themecachedirs = glob("{$themecacheroot}/*", GLOB_ONLYDIR);
     foreach ($themecachedirs as $localcachedir) {
         fulldelete($localcachedir);
     }
