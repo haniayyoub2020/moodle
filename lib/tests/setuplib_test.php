@@ -233,15 +233,18 @@ class core_setuplib_testcase extends advanced_testcase {
         $firstdir = get_request_storage_directory();
         $seconddir = get_request_storage_directory();
         $this->assertTrue(is_dir($firstdir));
+        $this->assertTrue(is_file("{$firstdir}/.created"));
         $this->assertEquals($firstdir, $seconddir);
 
         // Removing the directory and calling get_request_storage_directory() again should cause a new directory to be created.
         remove_dir($firstdir);
         $this->assertFalse(file_exists($firstdir));
+        $this->assertFalse(file_exists("{$firstdir}/.created"));
         $this->assertFalse(is_dir($firstdir));
 
         $thirddir = get_request_storage_directory();
         $this->assertTrue(is_dir($thirddir));
+        $this->assertTrue(is_file("{$thirddir}/.created"));
         $this->assertNotEquals($firstdir, $thirddir);
 
         // Removing it and replacing it with a file should cause it to be regenerated again.

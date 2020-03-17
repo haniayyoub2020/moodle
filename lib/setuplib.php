@@ -1648,6 +1648,10 @@ function get_request_storage_directory($exceptiononerror = true, bool $forcecrea
             \core_shutdown_manager::register_function('remove_dir', [$dir]);
         }
 
+        $timestampfile = "{$dir}/.created";
+        touch($timestampfile);
+        @chmod($timestampfile, $CFG->filepermissions);
+
         $requestdir = $dir;
     }
 
