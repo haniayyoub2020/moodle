@@ -76,7 +76,7 @@ class fetch extends external_api {
             'filters' => new external_multiple_structure(
                 new external_single_structure([
                     'name' => new external_value(PARAM_ALPHANUM, 'Name of the filter', VALUE_REQUIRED),
-                    'jointype' => new external_value(PARAM_INT, 'Type of join', VALUE_REQUIRED),
+                    'jointype' => new external_value(PARAM_INT, 'Type of join for filter values', VALUE_REQUIRED),
                     'values' => new external_multiple_structure(
                         new external_value(PARAM_RAW, 'Filter value'),
                         'The value to filter on',
@@ -86,6 +86,7 @@ class fetch extends external_api {
                 'The filters that will be applied in the request',
                 VALUE_OPTIONAL
             ),
+            'jointype' => new external_value(PARAM_INT, 'Type of join to join all filters together', VALUE_REQUIRED),
         ]);
     }
 
@@ -99,14 +100,17 @@ class fetch extends external_api {
      * @param array $filters The filters that will be applied in the request.
      * @return array
      */
-    public static function execute(string $handler, string $uniqueid, string $sortby, string $sortorder, array $filters = []) {
+    public static function execute(string $handler, string $uniqueid, string $sortby, string $sortorder, array $filters = [], string $jointype = null) {
         global $PAGE;
+
         if (!class_exists($handler)) {
             throw new \UnexpectedValueException('Unknown table handler.');
         }
+
         if (!class_exists($handler) || !is_subclass_of($handler, \core_table\dynamic::class)) {
             throw new \UnexpectedValueException('Unknown table handler, or table handler does not support dynamic updating.');
         }
+
         $filterset = new \core_user\table\participants_filterset();
         foreach ($filters as $rawfilter) {
             $filterset->add_filter_from_params(
@@ -116,9 +120,9 @@ class fetch extends external_api {
             );
         }
 
-        $PAGE->set_context(\context_course::instance($uniqueid));
-        $instance = new $handler($handler::get_unique_id_from_argument($uniqueid));
+        $instance = new $handler($uniqueid);
         $instance->set_filterset($filterset);
+        $PAGE->set_context($instance->get_context());
 
         // Should use this variable so that we don't break stuff every time a variable is added or changed.
         $baseurl = new moodle_url('/user/index.php', array(

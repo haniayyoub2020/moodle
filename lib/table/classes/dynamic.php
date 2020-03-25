@@ -27,10 +27,9 @@ declare(strict_types=1);
 
 namespace core_table;
 
-defined('MOODLE_INTERNAL') || die();
-
-use moodle_url;
+use context;
 use core_table\local\filter\filterset;
+use moodle_url;
 
 /**
  * Interface dynamic.
@@ -66,4 +65,20 @@ interface dynamic {
      * @return void
      */
     public function set_filterset(filterset $filterset): void;
+
+    /**
+     * Get the currently defined filterset.
+     *
+     * @return filterset
+     */
+    public function get_filterset(): ?filterset;
+
+    /**
+     * Get the context of the current table.
+     *
+     * Note: This function should not be called until after the filterset has been provided.
+     *
+     * @return context
+     */
+    public function get_context(): ?context;
 }

@@ -1158,7 +1158,8 @@ class flexible_table {
      * This function is not part of the public api.
      */
     function finish_html() {
-        global $OUTPUT;
+        global $OUTPUT, $PAGE;
+
         if (!$this->started_output) {
             //no data has been added to the table.
             $this->print_nothing_to_display();
@@ -1186,6 +1187,14 @@ class flexible_table {
                 $pagingbar = new paging_bar($this->totalrows, $this->currpage, $this->pagesize, $this->baseurl);
                 $pagingbar->pagevar = $this->request[TABLE_VAR_PAGE];
                 echo $OUTPUT->render($pagingbar);
+            }
+
+            // Dynamic Table content.
+            if (is_a($this, \core_table\dynamic::class)) {
+                echo html_writer::end_tag('div');
+
+                // TODO Only print this during initial?
+                $PAGE->requires->js_call_amd('core_table/dynamic', 'init');
             }
         }
     }
@@ -1385,11 +1394,33 @@ class flexible_table {
                 . ' ' . $this->sort_icon($isprimary, $order);
     }
 
+    protected function get_sort_order(): array {
+        $sortbys = $this->prefs['sortby'];
+        $sortby = key($sortbys);
+
+        return [
+            'sortby' => $sortby,
+            'sortorder' => $sortbys[$sortby],
+        ];
+    }
+
     /**
      * This function is not part of the public api.
      */
     function start_html() {
         global $OUTPUT;
+
+        if (is_a($this, \core_table\dynamic::class)) {
+            $sortdata = $this->get_sort_order();
+            echo html_writer::start_tag('div', [
+                'data-region' => 'core_table/dynamic',
+                'data-table-handler' => get_class($this),
+                'data-table-uniqueid' => $this->uniqueid,
+                'data-table-filters' => json_encode($this->get_filterset()),
+                'data-table-sortby' => $sortdata['sortby'],
+                'data-table-sortorder' => $sortdata['sortorder'],
+            ]);
+        }
 
         // Render button to allow user to reset table preferences.
         echo $this->render_reset_button();
