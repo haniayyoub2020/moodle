@@ -267,6 +267,24 @@ abstract class base_task implements checksumable, executable, loggable {
         }
         $this->settings[] = $setting;
     }
+
+    /**
+     * Whether this task is a backup task.
+     *
+     * @return bool
+     */
+    public function is_backup_task(): bool {
+        return is_subclass_of($this->plan, backup_plan::class);
+    }
+
+    /**
+     * Whether this task is a restore task.
+     *
+     * @return bool
+     */
+    public function is_restore_task(): bool {
+        return is_subclass_of($this->plan, restore_plan::class);
+    }
 }
 
 /*

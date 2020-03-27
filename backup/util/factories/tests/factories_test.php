@@ -63,7 +63,7 @@ class backup_factories_testcase extends advanced_testcase {
         // Default instantiate, all levels = backup::LOG_NONE
         // With debugdisplay enabled
         $CFG->debugdisplay = true;
-        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test');
+        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test', backup::OPERATION_BACKUP);
         $this->assertTrue($logger1 instanceof error_log_logger);  // 1st logger is error_log_logger
         $this->assertEquals($logger1->get_level(), backup::LOG_NONE);
         $logger2 = $logger1->get_next();
@@ -80,7 +80,7 @@ class backup_factories_testcase extends advanced_testcase {
 
         // With debugdisplay disabled
         $CFG->debugdisplay = false;
-        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test');
+        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test', backup::OPERATION_BACKUP);
         $this->assertTrue($logger1 instanceof error_log_logger);  // 1st logger is error_log_logger
         $this->assertEquals($logger1->get_level(), backup::LOG_NONE);
         $logger2 = $logger1->get_next();
@@ -95,24 +95,24 @@ class backup_factories_testcase extends advanced_testcase {
         // Instantiate with debugging enabled and $CFG->backup_error_log_logger_level not set
         $CFG->debugdisplay = true;
         unset($CFG->backup_error_log_logger_level);
-        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test');
+        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test', backup::OPERATION_BACKUP);
         $this->assertTrue($logger1 instanceof error_log_logger);  // 1st logger is error_log_logger
         $this->assertEquals($logger1->get_level(), backup::LOG_DEBUG); // and must have backup::LOG_DEBUG level
         // Set $CFG->backup_error_log_logger_level to backup::LOG_WARNING and test again
         $CFG->backup_error_log_logger_level = backup::LOG_WARNING;
-        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test');
+        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test', backup::OPERATION_BACKUP);
         $this->assertTrue($logger1 instanceof error_log_logger);  // 1st logger is error_log_logger
         $this->assertEquals($logger1->get_level(), backup::LOG_WARNING); // and must have backup::LOG_WARNING level
 
         // Instantiate in non-interactive mode, output_indented_logger must be out
-        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_NO, backup::EXECUTION_INMEDIATE, 'test');
+        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_NO, backup::EXECUTION_INMEDIATE, 'test', backup::OPERATION_BACKUP);
         $logger2 = $logger1->get_next();
         $this->assertTrue($logger2 instanceof file_logger);  // 2nd logger is file_logger (output_indented_logger skiped)
 
         // Define extra file logger and instantiate, should be 5th and last logger
         $CFG->backup_file_logger_extra = $CFG->tempdir.'/test.html';
         $CFG->backup_file_logger_level_extra = backup::LOG_NONE;
-        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test');
+        $logger1 = backup_factory::get_logger_chain(backup::INTERACTIVE_YES, backup::EXECUTION_INMEDIATE, 'test', backup::OPERATION_BACKUP);
         $logger2 = $logger1->get_next();
         $logger3 = $logger2->get_next();
         $logger4 = $logger3->get_next();

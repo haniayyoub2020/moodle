@@ -35,8 +35,11 @@ class create_and_clean_temp_stuff extends backup_execution_step {
     protected function define_execution() {
         $progress = $this->task->get_progress();
         $progress->start_progress('Deleting backup directories');
-        backup_helper::check_and_create_backup_dir($this->get_backupid());// Create backup temp dir
-        backup_helper::clear_backup_dir($this->get_backupid(), $progress);           // Empty temp dir, just in case
+
+        // Create and ensure that the backup target dir is empty.
+        $dir = backup_helper::check_and_create_backup_dir($this->get_backupid());
+        backup_helper::clear_dir($dir, $progress);
+
         backup_controller_dbops::drop_backup_ids_temp_table($this->get_backupid()); // Drop ids temp table
         backup_controller_dbops::create_backup_ids_temp_table($this->get_backupid()); // Create ids temp table
         $progress->end_progress();
@@ -65,7 +68,8 @@ class drop_and_clean_temp_stuff extends backup_execution_step {
         if (empty($CFG->keeptempdirectoriesonbackup) && !$this->skipcleaningtempdir) {
             $progress = $this->task->get_progress();
             $progress->start_progress('Deleting backup dir');
-            backup_helper::delete_backup_dir($this->get_backupid(), $progress); // Empty backup dir
+            $dir = backup_helper::check_and_create_backup_dir($this->get_backupid());
+            backup_helper::delete_dir($dir, $progress);
             $progress->end_progress();
         }
     }
@@ -1968,10 +1972,10 @@ class backup_zip_contents extends backup_execution_step implements file_progress
             $files[$file] = $basepath . '/' . $file;
         }
 
-        // Add the log file if exists
-        $logfilepath = $basepath . '.log';
+        // Add the log file if exists.
+        $logfilepath = backup_helper::get_backup_logfile_path($this->get_backupid());
         if (file_exists($logfilepath)) {
-             $files['moodle_backup.log'] = $logfilepath;
+            $files['moodle_backup.log'] = $logfilepath;
         }
 
         // Calculate the zip fullpath (in OS temp area it's always backup.mbz)

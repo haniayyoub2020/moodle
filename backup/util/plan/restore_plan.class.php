@@ -49,7 +49,7 @@ class restore_plan extends base_plan implements loggable {
         if (! $controller instanceof restore_controller) {
             throw new restore_plan_exception('wrong_restore_controller_specified');
         }
-        $backuptempdir    = make_backup_temp_directory('');
+        $backuptempdir    = backup_helper::get_restore_storage_path();
         $this->controller = $controller;
         $this->basepath   = $backuptempdir . '/' . $controller->get_tempdir();
         $this->preloaded  = false;

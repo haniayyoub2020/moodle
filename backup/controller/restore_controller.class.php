@@ -113,7 +113,7 @@ class restore_controller extends base_controller {
         $this->calculate_restoreid();
 
         // Default logger chain (based on interactive/execution)
-        $this->logger = backup_factory::get_logger_chain($this->interactive, $this->execution, $this->restoreid);
+        $this->logger = backup_factory::get_logger_chain($this->interactive, $this->execution, $this->restoreid, backup::OPERATION_RESTORE);
 
         // Set execution based on backup mode.
         if ($mode == backup::MODE_ASYNC) {
@@ -237,7 +237,7 @@ class restore_controller extends base_controller {
         $this->executiontime = $executiontime;
 
         // Default logger chain (based on interactive/execution)
-        $this->logger = backup_factory::get_logger_chain($this->interactive, $this->execution, $this->restoreid);
+        $this->logger = backup_factory::get_logger_chain($this->interactive, $this->execution, $this->restoreid, backup::OPERATION_RESTORE);
     }
 
 // checksumable interface methods

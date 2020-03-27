@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\progress\base as progress_bar;
+
 /**
  * Base abstract class for all the helper classes providing various operations
  *
@@ -30,13 +32,87 @@
 abstract class backup_helper {
 
     /**
-     * Given one backupid, create all the needed dirs to have one backup temp dir available
+     * Get the current storage path for backups.
+     *
+     * @param string $backupid
+     * @return string
      */
-    static public function check_and_create_backup_dir($backupid) {
-        $backupiddir = make_backup_temp_directory($backupid, false);
-        if (empty($backupiddir)) {
+    final public static function get_backup_storage_path(?string $backupid = null): string {
+        global $CFG;
+
+        if (!empty($CFG->keeptempdirectoriesonbackup)) {
+            // Conditionally
+            return self::get_restore_storage_path($backupid);
+        }
+
+        $path = get_request_storage_directory(false) . '/backups';;
+
+        if ($backupid) {
+            $path .= "/{$backupid}";
+        }
+
+        return $path;
+    }
+
+    /**
+     * Get the current storage path for restores.
+     *
+     * @param string $restoreid
+     * @return string
+     */
+    final public static function get_restore_storage_path(?string $restoreid = null): string {
+        $path = rtrim(make_backup_temp_directory('', false), '/');
+
+        if ($restoreid) {
+            $path .= "/{$restoreid}";
+        }
+
+        return $path;
+    }
+
+    /**
+     * Get the path to the logfile for the specified backup/restore id.
+     *
+     * @param string $id
+     * @return string
+     */
+    public static function get_backup_logfile_path(string $id): string {
+        return self::get_restore_storage_path() . "/{$id}.log";
+    }
+
+    /**
+     * Given a backupid, get the backup storage directory for this backup.
+     *
+     * This directory is located in local storage and removed after the request.
+     *
+     * @param string $backupid
+     * @return string
+     */
+    final public static function check_and_create_backup_dir(?string $backupid = null): string {
+        $backupdir = self::get_backup_storage_path($backupid);
+
+        if (!make_writable_directory($backupdir, false)) {
             throw new backup_helper_exception('cannot_create_backup_temp_dir');
         }
+
+        return $backupdir;
+    }
+
+    /**
+     * Given a backupid, get the restore directory for this backup.
+     *
+     * This directory is located in shared storage.
+     *
+     * @param string $backupid
+     * @return string
+     */
+    final public static function check_and_create_restore_dir(?string $restoreid = null): string {
+        $restoredir = self::get_restore_storage_path($restoreid);
+        if (empty($restoredir)) {
+            throw new backup_helper_exception('cannot_create_backup_temp_dir');
+        }
+
+        return $restoredir;
     }
 
     /**
@@ -48,12 +124,30 @@ abstract class backup_helper {
      * @param string $backupid Backup id
      * @param \core\progress\base $progress Optional progress reporting object
      */
-    static public function clear_backup_dir($backupid, \core\progress\base $progress = null) {
-        $backupiddir = make_backup_temp_directory($backupid, false);
-        if (!self::delete_dir_contents($backupiddir, '', $progress)) {
+    public static function clear_backup_dir($backupid, \core\progress\base $progress = null) {
+        debugging('The clear_backup_dir function has been. Uses should be replaced with clear_dir', DEBUG_DEVELOPER);
+
+        $backupdir = self::get_backup_storage_path($backupid);
+        self::clear_dir($backupdir);
+
+        $restoredir = self::get_restore_storage_path($backupid);
+        self::clear_dir($restoredir);
+
+        return true;
+    }
+
+    /**
+     * Given a backup directory, ensure its temp dir is completely empty.
+     *
+     * If supplied, progress object should be ready to receive indeterminate * progress reports.
+     *
+     * @param string $backupid Backup id
+     * @param progress_bar $progress Optional progress reporting object
+     */
+    public static function clear_dir(string $dir, ?progress_bar $progress = null): void {
+        if (!self::delete_dir_contents($dir, '', $progress)) {
             throw new backup_helper_exception('cannot_empty_backup_temp_dir');
         }
-        return true;
     }
 
     /**
@@ -65,25 +159,31 @@ abstract class backup_helper {
      * @param string $backupid Backup id
      * @param \core\progress\base $progress Optional progress reporting object
      */
-     static public function delete_backup_dir($backupid, \core\progress\base $progress = null) {
-         $backupiddir = make_backup_temp_directory($backupid, false);
-         self::clear_backup_dir($backupid, $progress);
-         return rmdir($backupiddir);
-     }
+    public static function delete_backup_dir($backupid, \core\progress\base $progress = null) {
+        debugging('The delete_backup_dir function has been. Uses should be replaced with delete_dir', DEBUG_DEVELOPER);
+
+        $backupdir = self::get_backup_storage_path($backupid);
+        self::delete_dir($backupdir, $progress);
+
+        $restoredir = self::get_restore_storage_path($backupid);
+        self::delete_dir($restoredir, $progress);
+
+        return true;
+    }
 
      /**
-     * Given one fullpath to directory, delete its contents recursively
-     * Copied originally from somewhere in the net.
-     * TODO: Modernise this
-     *
-     * If supplied, progress object should be ready to receive indeterminate
-     * progress reports.
-     *
-     * @param string $dir Directory to delete
-     * @param string $excludedir Exclude this directory
-     * @param \core\progress\base $progress Optional progress reporting object
-     */
-    static public function delete_dir_contents($dir, $excludeddir='', \core\progress\base $progress = null) {
+      * Given one fullpath to directory, delete its contents recursively
+      * Copied originally from somewhere in the net.
+      * TODO: Modernise this
+      *
+      * If supplied, progress object should be ready to receive indeterminate
+      * progress reports.
+      *
+      * @param string $dir Directory to delete
+      * @param string $excludedir Exclude this directory
+      * @param \core\progress\base $progress Optional progress reporting object
+      */
+    public static function delete_dir_contents($dir, $excludeddir='', \core\progress\base $progress = null) {
         global $CFG;
 
         if ($progress) {
@@ -148,6 +248,20 @@ abstract class backup_helper {
     }
 
     /**
+     * Empty and remove the specified backup directory.
+     *
+     * @param string $dir
+     * @param progress_bar $progress
+     */
+    public static function delete_dir(string $dir, progress_bar $progress = null): bool {
+        if (!self::delete_dir_contents($dir, '', $progress)) {
+            throw new backup_helper_exception('cannot_empty_backup_temp_dir');
+        }
+
+        return @rmdir($dir);
+    }
+
+    /**
      * Delete all the temp dirs older than the time specified.
      *
      * If supplied, progress object should be ready to receive indeterminate
@@ -156,25 +270,42 @@ abstract class backup_helper {
      * @param int $deletefrom Time to delete from
      * @param \core\progress\base $progress Optional progress reporting object
      */
-    static public function delete_old_backup_dirs($deletefrom, \core\progress\base $progress = null) {
-        $status = true;
+    public static function delete_old_backup_dirs($deletefrom, ?progress_bar $progress = null) {
+        // Delete from the backup directory location first.
+        self::delete_old_directory_by_time(self::get_backup_storage_path(), $deletefrom, $progress);
+
+        // Now do restore directories.
+        self::delete_old_directory_by_time(self::get_restore_storage_path(), $deletefrom, $progress);
+    }
+
+    /**
+     * Delete all the temp dirs older than the time specified which are children of the path provided.
+     *
+     * If supplied, progress object should be ready to receive indeterminate progress reports.
+     *
+     * @param string $path The path to start deleting from
+     * @param int $deletefrom Time to delete from
+     * @param progress_bar $progress Optional progress reporting object
+     */
+    protected static function delete_old_directory_by_time(string $path, int $deletefrom, ?progress_bar $progress = null): void {
         // Get files and directories in the backup temp dir without descend.
-        $backuptempdir = make_backup_temp_directory('');
-        $list = get_directory_list($backuptempdir, '', false, true, true);
+        $status = true;
+
+        $list = get_directory_list($path, '', false, true, true);
         foreach ($list as $file) {
-            $file_path = $backuptempdir . '/' . $file;
-            $moddate = filemtime($file_path);
+            $filepath = $path . '/' . $file;
+            $moddate = filemtime($filepath);
             if ($status && $moddate < $deletefrom) {
-                //If directory, recurse
-                if (is_dir($file_path)) {
-                    // $file is really the backupid
-                    $status = self::delete_backup_dir($file, $progress);
-                //If file
+                if (is_dir($filepath)) {
+                    // If directory, recurse.
+                    $status = self::delete_dir($filepath, $progress);
                 } else {
-                    unlink($file_path);
+                    // If file.
+                    unlink($filepath);
                 }
             }
         }
+
         if (!$status) {
             throw new backup_helper_exception('problem_deleting_old_backup_temp_dirs');
         }
@@ -186,7 +317,7 @@ abstract class backup_helper {
      * parameter is true, supporting translation via get_string() and sending to
      * standard output.
      */
-    static public function log($message, $level, $a, $depth, $display, $logger) {
+    public static function log($message, $level, $a, $depth, $display, $logger) {
         // Send to standard loggers
         $logmessage = $message;
         $options = empty($depth) ? array() : array('depth' => $depth);
@@ -217,7 +348,7 @@ abstract class backup_helper {
      *
      * @throws moodle_exception in case of any problems
      */
-    static public function store_backup_file($backupid, $filepath, \core\progress\base $progress = null) {
+    public static function store_backup_file($backupid, $filepath, \core\progress\base $progress = null) {
         global $CFG;
 
         // First of all, get some information from the backup_controller to help us decide

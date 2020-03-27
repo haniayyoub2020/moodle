@@ -235,7 +235,7 @@ class tool_uploadcourse_helper {
                 // Extracting the backup file.
                 $packer = get_file_packer('application/vnd.moodle.backup');
                 $backupid = restore_controller::get_tempdir_name(SITEID, $USER->id);
-                $path = make_backup_temp_directory($backupid, false);
+                $path = backup_helper::get_restore_storage_path($backupid);
                 $result = $packer->extract_to_pathname($backupfile, $path);
                 if (!$result) {
                     $errors['invalidbackupfile'] = new lang_string('invalidbackupfile', 'tool_uploadcourse');

@@ -288,7 +288,7 @@ class restore_ui_stage_confirm extends restore_ui_independent_stage implements f
      * @throws restore_ui_exception
      */
     public function process() {
-        $backuptempdir = make_backup_temp_directory('');
+        $backuptempdir = backup_helper::get_restore_storage_path();
         if ($this->filename) {
             $archivepath = $backuptempdir . '/' . $this->filename;
             if (!file_exists($archivepath)) {
@@ -319,7 +319,7 @@ class restore_ui_stage_confirm extends restore_ui_independent_stage implements f
         global $USER;
 
         $this->filepath = restore_controller::get_tempdir_name($this->contextid, $USER->id);
-        $backuptempdir = make_backup_temp_directory('', false);
+        $backuptempdir = backup_helper::get_restore_storage_path();
 
         $fb = get_file_packer('application/vnd.moodle.backup');
         $result = $fb->extract_to_pathname($source,
@@ -475,7 +475,7 @@ class restore_ui_stage_destination extends restore_ui_independent_stage {
      */
     public function process() {
         global $DB;
-        $filepathdir = make_backup_temp_directory($this->filepath, false);
+        $filepathdir = backup_helper::get_restore_storage_path($this->filepath);
         if (!file_exists($filepathdir) || !is_dir($filepathdir)) {
             throw new restore_ui_exception('invalidrestorepath');
         }

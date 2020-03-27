@@ -68,8 +68,9 @@ class restore_drop_and_clean_temp_stuff extends restore_execution_step {
         $progress = $this->task->get_progress();
         $progress->start_progress('Deleting backup dir');
         backup_helper::delete_old_backup_dirs(strtotime('-1 week'), $progress);      // Delete > 1 week old temp dirs.
-        if (empty($CFG->keeptempdirectoriesonbackup)) { // Conditionally
-            backup_helper::delete_backup_dir($this->task->get_tempdir(), $progress); // Empty restore dir
+        if (empty($CFG->keeptempdirectoriesonbackup)) {
+            // Conditionally
+            backup_helper::delete_dir($this->task->get_tempdir(), $progress); // Empty restore dir
         }
         $progress->end_progress();
     }

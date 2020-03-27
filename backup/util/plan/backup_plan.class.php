@@ -37,14 +37,38 @@ class backup_plan extends base_plan implements loggable {
      * Constructor - instantiates one object of this class
      */
     public function __construct($controller) {
-        if (! $controller instanceof backup_controller) {
+        if (!$controller instanceof backup_controller) {
             throw new backup_plan_exception('wrong_backup_controller_specified');
         }
-        $backuptempdir    = make_backup_temp_directory('');
         $this->controller = $controller;
-        $this->basepath   = $backuptempdir . '/' . $controller->get_backupid();
+
+        $this->ensure_basepath_is_configured();
+
         $this->excludingdactivities = false;
+
         parent::__construct('backup_plan');
+    }
+
+    /**
+     * Reset the basepath for this plan on unserialize.
+     */
+    public function __wakeup(): void {
+        $this->ensure_basepath_is_configured();
+    }
+
+    /**
+     * Ensure that the basepath is correctly configured.
+     */
+    protected function ensure_basepath_is_configured(): void {
+        if ($this->basepath && file_exists($this->basepath)) {
+            return;
+        }
+
+        if ($this->controller->get_mode() == backup::MODE_IMPORT) {
+            $this->basepath = backup_helper::check_and_create_restore_dir($this->get_backupid());
+        } else {
+            $this->basepath = backup_helper::check_and_create_backup_dir($this->get_backupid());
+        }
     }
 
     /**

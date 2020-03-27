@@ -37,7 +37,7 @@ class imscc1_converter extends base_converter {
      * @return null|string backup::FORMAT_IMSCC1 if the Common Cartridge 1.0 is detected, null otherwise
      */
     public static function detect_format($tempdir) {
-        $filepath = make_backup_temp_directory($tempdir, false);
+        $filepath = backup_helper::get_restore_storage_path($tempdir);
         if (!is_dir($filepath)) {
             throw new convert_helper_exception('tmp_backup_directory_not_found', $filepath);
         }

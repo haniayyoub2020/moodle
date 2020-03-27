@@ -72,7 +72,7 @@ if (is_null($course)) {
 $browser = get_file_browser();
 
 // check if tmp dir exists
-$tmpdir = make_backup_temp_directory('', false);
+$tmpdir = backup_helper::get_restore_storage_path();
 if (!check_dir_exists($tmpdir, true, true)) {
     throw new restore_controller_exception('cannot_create_backup_temp_dir');
 }

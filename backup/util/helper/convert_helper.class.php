@@ -131,7 +131,7 @@ abstract class convert_helper {
      * @return boolean true if moodle2 format detected, false otherwise
      */
     public static function detect_moodle2_format($tempdir) {
-        $dirpath = make_backup_temp_directory($tempdir, false);
+        $dirpath = backup_helper::get_restore_storage_path($tempdir);
         if (!is_dir($dirpath)) {
             throw new convert_helper_exception('tmp_backup_directory_not_found', $dirpath);
         }

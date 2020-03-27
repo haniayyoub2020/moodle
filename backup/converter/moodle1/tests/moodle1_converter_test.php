@@ -45,7 +45,7 @@ class core_backup_moodle1_converter_testcase extends advanced_testcase {
         global $CFG;
 
         $this->tempdir = convert_helper::generate_id('unittest');
-        $this->tempdirpath = make_backup_temp_directory($this->tempdir);
+        $this->tempdirpath = backup_helper::get_restore_storage_path($this->tempdir);
         check_dir_exists("$this->tempdirpath/course_files/sub1");
         check_dir_exists("$this->tempdirpath/moddata/unittest/4/7");
         copy(

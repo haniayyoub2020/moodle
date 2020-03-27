@@ -89,7 +89,7 @@ class moodle1_converter extends base_converter {
     public static function detect_format($tempdir) {
         global $CFG;
 
-        $tempdirpath = make_backup_temp_directory($tempdir, false);
+        $filepath = backup_helper::get_restore_storage_path($tempdir);
         $filepath = $tempdirpath . '/moodle.xml';
         if (file_exists($filepath)) {
             // looks promising, lets load some information

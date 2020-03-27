@@ -121,8 +121,8 @@ abstract class backup_general_helper extends backup_helper {
 
         $info = new stdclass(); // Final information goes here
 
-        $backuptempdir = make_backup_temp_directory('', false);
-        $moodlefile = $backuptempdir . '/' . $tempdir . '/moodle_backup.xml';
+        $backuptempdir = backup_helper::get_restore_storage_path($tempdir);
+        $moodlefile = $backuptempdir . '/moodle_backup.xml';
         if (!file_exists($moodlefile)) { // Shouldn't happen ever, but...
             throw new backup_helper_exception('missing_moodle_backup_xml_file', $moodlefile);
         }

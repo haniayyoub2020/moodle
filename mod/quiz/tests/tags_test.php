@@ -42,7 +42,7 @@ class mod_quiz_tags_testcase extends advanced_testcase {
         $this->setAdminUser();
 
         $backupid = 'abc';
-        $backuppath = make_backup_temp_directory($backupid);
+        $backuppath = backup_helper::get_restore_storage_path($backupid);
         get_file_packer('application/vnd.moodle.backup')->extract_to_pathname(
                 __DIR__ . "/fixtures/random_by_tag_quiz.mbz", $backuppath);
 

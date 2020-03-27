@@ -36,6 +36,14 @@ abstract class backup_factory {
         return null;
     }
 
+    /**
+     * Get the logger chain.
+     *
+     * @param int $interactive
+     * @param int $execution
+     * @param string $backupid
+     * @return array
+     */
     public static function get_logger_chain($interactive, $execution, $backupid) {
         global $CFG;
 
@@ -60,9 +68,8 @@ abstract class backup_factory {
 
         // Create file_logger, observing $CFG->backup_file_logger_level
         // defaulting to $dfltloglevel
-        $backuptempdir = make_backup_temp_directory(''); // Need to ensure that $CFG->backuptempdir already exists.
         $fllevel = isset($CFG->backup_file_logger_level) ? $CFG->backup_file_logger_level : $dfltloglevel;
-        $enabledloggers[] = new file_logger($fllevel, true, true, $backuptempdir . '/' . $backupid . '.log');
+        $enabledloggers[] = new file_logger($fllevel, true, true, backup_helper::get_backup_logfile_path($backupid));
 
         // Create database_logger, observing $CFG->backup_database_logger_level and defaulting to LOG_WARNING
         // and pointing to the backup_logs table

@@ -93,7 +93,7 @@ class core_course_customfield_testcase extends advanced_testcase {
      * @return string
      */
     protected function backup_course($courseid, $userid = 2) {
-        $backuptempdir = make_backup_temp_directory('');
+        $backuptempdir = backup_helper::get_backup_storage_path();
         $packer = get_file_packer('application/vnd.moodle.backup');
 
         $bc = new backup_controller(backup::TYPE_1COURSE, $courseid, backup::FORMAT_MOODLE, backup::INTERACTIVE_NO,
