@@ -15,6 +15,7 @@
         "phpunit/dbunit": "4.0.*",
         "moodlehq/behat-extension": "3.39.1",
         "mikey179/vfsstream": "^1.6",
-        "instaclick/php-webdriver": "dev-local as 1.x-dev"
+        "instaclick/php-webdriver": "dev-local as 1.x-dev",
+        "pcov/clobber": "^2.0"
     }
 }
