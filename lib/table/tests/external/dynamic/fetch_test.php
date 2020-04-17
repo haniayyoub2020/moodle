@@ -109,7 +109,8 @@ class fetch_test extends advanced_testcase {
         ];
 
         $participantstable = fetch::execute("core_user\participants_table",
-            "user-index-participants-{$course->id}", "firstname", "4", $filter, (string)filter::JOINTYPE_ANY);
+            "user-index-participants-{$course->id}", "firstname", "4", $filter,
+            (string)filter::JOINTYPE_ANY, null, null, null, null, []);
         $html = $participantstable['html'];
 
         $this->assertStringContainsString($user1->email, $html);

@@ -110,6 +110,14 @@ class fetch extends external_api {
                 VALUE_REQUIRED,
                 null
             ),
+            'hiddencolumns' => new external_multiple_structure(
+                new external_value(
+                    PARAM_ALPHANUMEXT,
+                    'Name of column',
+                    VALUE_REQUIRED,
+                    null
+                )
+            ),
         ]);
     }
 
@@ -140,7 +148,8 @@ class fetch extends external_api {
         ?string $firstinitial = null,
         ?string $lastinitial = null,
         ?int $pagenumber = null,
-        ?int $pagesize = null
+        ?int $pagesize = null,
+        ?array $hiddencolumns = null
     ) {
 
         global $PAGE;
@@ -160,6 +169,7 @@ class fetch extends external_api {
             'lastinitial' => $lastinitial,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
+            'hiddencolumns' => $hiddencolumns,
         ] = self::validate_parameters(self::execute_parameters(), [
             'handler' => $handler,
             'uniqueid' => $uniqueid,
@@ -171,6 +181,7 @@ class fetch extends external_api {
             'lastinitial' => $lastinitial,
             'pagenumber' => $pagenumber,
             'pagesize' => $pagesize,
+            'hiddencolumns' => $hiddencolumns,
         ]);
 
         $filterset = new \core_user\table\participants_filterset();
@@ -200,6 +211,10 @@ class fetch extends external_api {
 
         if ($pagesize === null) {
             $pagesize = 20;
+        }
+
+        if ($hiddencolumns !== null) {
+            $instance->set_hidden_columns($hiddencolumns);
         }
 
         $context = $instance->get_context();
