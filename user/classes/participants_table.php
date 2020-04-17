@@ -238,8 +238,10 @@ class participants_table extends \table_sql implements dynamic_table {
         parent::out($pagesize, $useinitialsbar, $downloadhelpbutton);
 
         if (has_capability('moodle/course:enrolreview', $this->context)) {
-            $params = ['contextid' => $this->context->id, 'courseid' => $this->course->id];
-            $PAGE->requires->js_call_amd('core_user/status_field', 'init', [$params]);
+            $PAGE->requires->js_call_amd('core_user/status_field', 'init', [[
+                'uniqueid' => $this->uniqueid,
+                'contextid' => $this->context->id,
+            ]]);
         }
     }
 
