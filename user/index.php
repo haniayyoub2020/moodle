@@ -44,7 +44,6 @@ $contextid    = optional_param('contextid', 0, PARAM_INT); // One of this or.
 $courseid     = optional_param('id', 0, PARAM_INT); // This are required.
 $newcourse    = optional_param('newcourse', false, PARAM_BOOL);
 $selectall    = optional_param('selectall', false, PARAM_BOOL); // When rendering checkboxes against users mark them all checked.
-$roleid       = optional_param('roleid', 0, PARAM_INT);
 $groupparam   = optional_param('group', 0, PARAM_INT);
 
 $PAGE->set_url('/user/index.php', array(
@@ -108,18 +107,6 @@ echo $OUTPUT->heading(get_string('participants'));
 $filtersapplied = optional_param_array('unified-filters', [], PARAM_NOTAGS);
 $filterwassubmitted = optional_param('unified-filter-submitted', 0, PARAM_BOOL);
 
-// If they passed a role make sure they can view that role.
-if ($roleid) {
-    $viewableroles = get_profile_roles($context);
-
-    // Check if the user can view this role.
-    if (array_key_exists($roleid, $viewableroles)) {
-        $filtersapplied[] = USER_FILTER_ROLE . ':' . $roleid;
-    } else {
-        $roleid = 0;
-    }
-}
-
 // Default group ID.
 $groupid = false;
 $canaccessallgroups = has_capability('moodle/site:accessallgroups', $context);
@@ -141,9 +128,7 @@ if ($course->groupmode != NOGROUPS) {
     }
 }
 $hasgroupfilter = false;
-$lastaccess = 0;
 $searchkeywords = [];
-$enrolid = 0;
 
 $filterset = new \core_user\table\participants_filterset();
 $filterset->add_filter(new integer_filter('courseid', filter::JOINTYPE_DEFAULT, [(int)$course->id]));
@@ -168,7 +153,6 @@ foreach ($filtersapplied as $filter) {
 
     switch ($key) {
         case USER_FILTER_ENROLMENT:
-            $enrolid = $value;
             $enrolfilter->add_filter_value($value);
             break;
         case USER_FILTER_GROUP:
@@ -177,17 +161,14 @@ foreach ($filtersapplied as $filter) {
             $hasgroupfilter = true;
             break;
         case USER_FILTER_LAST_ACCESS:
-            $lastaccess = $value;
             $lastaccessfilter->add_filter_value($value);
             break;
         case USER_FILTER_ROLE:
-            $roleid = $value;
             $rolefilter->add_filter_value($value);
             break;
         case USER_FILTER_STATUS:
             // We only accept active/suspended statuses.
             if ($value == ENROL_USER_ACTIVE || $value == ENROL_USER_SUSPENDED) {
-                $status = $value;
                 $statusfilter->add_filter_value($value);
             }
             break;
@@ -202,17 +183,14 @@ foreach ($filtersapplied as $filter) {
 if (!empty($groupid)) {
     if ($canaccessallgroups) {
         // User can access all groups, let them filter by whatever was selected.
-        $filtersapplied[] = USER_FILTER_GROUP . ':' . $groupid;
         $groupfilter->add_filter_value((int)$groupid);
     } else if (!$filterwassubmitted && $course->groupmode == VISIBLEGROUPS) {
         // If we are in a course with visible groups and the user has not submitted anything and does not have
         // access to all groups, then set a default group.
-        $filtersapplied[] = USER_FILTER_GROUP . ':' . $groupid;
         $groupfilter->add_filter_value((int)$groupid);
     } else if (!$hasgroupfilter && $course->groupmode != VISIBLEGROUPS) {
         // The user can't access all groups and has not set a group filter in a course where the groups are not visible
         // then apply a default group filter.
-        $filtersapplied[] = USER_FILTER_GROUP . ':' . $groupid;
         $groupfilter->add_filter_value((int)$groupid);
     } else if (!$hasgroupfilter) { // No need for the group id to be set.
         $groupid = false;
@@ -241,20 +219,11 @@ $baseurl = new moodle_url('/user/index.php', array(
         'id' => $course->id,
         'perpage' => $perpage));
 
-// Render the unified filter.
-$renderer = $PAGE->get_renderer('core_user');
-echo $renderer->unified_filter($course, $context, $filtersapplied, $baseurl);
-
 // Render the user filters.
 $userrenderer = $PAGE->get_renderer('core_user');
 echo $userrenderer->participants_filter($context, participants_table::get_unique_id_from_argument($course->id));
 
 echo '<div class="userlist">';
-
-// Add filters to the baseurl after creating unified_filter to avoid losing them.
-foreach (array_unique($filtersapplied) as $filterix => $filter) {
-    $baseurl->param('unified-filters[' . $filterix . ']', $filter);
-}
 
 if (count($groupfilter)) {
     $filterset->add_filter($groupfilter);
