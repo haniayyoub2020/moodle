@@ -199,7 +199,12 @@ class participants_filter implements renderable, templatable {
         $seeallgroups = has_capability('moodle/site:accessallgroups', $this->context);
         $seeallgroups = $seeallgroups || ($this->course->groupmode != SEPARATEGROUPS);
         if ($seeallgroups) {
-            $groups = groups_get_all_groups($this->course->id);
+            $groups = [];
+            $groups += [USERSWITHOUTGROUP => (object) [
+                    'id' => USERSWITHOUTGROUP,
+                    'name' => get_string('nogroup', 'group'),
+                ]];
+            $groups += groups_get_all_groups($this->course->id);
         } else {
             // Otherwise, just list the groups the user belongs to.
             $groups = groups_get_all_groups($this->course->id, $USER->id);
