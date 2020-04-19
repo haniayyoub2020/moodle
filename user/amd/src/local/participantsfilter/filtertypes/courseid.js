@@ -14,32 +14,34 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dynamic table selectors.
+ * Course ID filter.
  *
- * @module     core_table/selectors
- * @package    core_table
- * @copyright  2020 Simey Lameze <simey@moodle.com>
+ * @module     core_user/local/participantsfilter/filtertypes/courseid
+ * @package    core_user
+ * @copyright  2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-export default {
-    main: {
-        region: '[data-region="core_table/dynamic"]',
-        fromRegionId: regionId => `[data-region="core_table/dynamic"][data-table-uniqueid="${regionId}"]`,
-    },
-    table: {
-        links: {
-            sortableColumn: 'a[data-sortable="1"]',
-        },
-    },
-    initialsBar: {
-        links: {
-            firstInitial: '.firstinitial [data-initial]',
-            lastInitial: '.lastinitial [data-initial]',
-        },
-    },
-    paginationBar: {
-        links: {
-            pageItem: '.pagination [data-page-number]'
-        }
-    },
-};
+import Filter from '../filter';
+
+export default class extends Filter {
+    constructor(filterType, filterSet) {
+        super(filterType, filterSet);
+    }
+
+    async addValueSelector() {
+        // eslint-disable-line no-empty-function
+    }
+
+    /**
+     * Get the composed value for this filter.
+     *
+     * @returns {Object}
+     */
+    get filterValue() {
+        return {
+            name: this.name,
+            jointype: 1,
+            values: [parseInt(this.rootNode.dataset.tableCourseId, 10)],
+        };
+    }
+}
