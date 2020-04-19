@@ -127,7 +127,13 @@ class participants_filter implements renderable, templatable {
      * @return stdClass|null
      */
     protected function get_roles_filter(): ?stdClass {
-        $roles = get_viewable_roles($this->context);
+        $roles = [];
+        $roles += [-1 => get_string('noroles', 'role')];
+        $roles += get_viewable_roles($this->context);
+
+        if (has_capability('moodle/role:assign', $this->context)) {
+            $roles += get_assignable_roles($this->context, ROLENAME_ALIAS);
+        }
 
         return $this->get_filter_object(
             'roles',
