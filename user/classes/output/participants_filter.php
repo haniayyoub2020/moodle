@@ -43,6 +43,9 @@ class participants_filter implements renderable, templatable {
     /** @var string $tableregionid The table to be updated by this filter */
     protected $tableregionid;
 
+    /** @var stdClass $course The course shown */
+    protected $course;
+
     /**
      * Participants filter constructor.
      *
@@ -52,6 +55,8 @@ class participants_filter implements renderable, templatable {
     public function __construct(context_course $context, string $tableregionid) {
         $this->context = $context;
         $this->tableregionid = $tableregionid;
+
+        $this->course = get_course($context->instanceid);
     }
 
     /**
@@ -62,7 +67,25 @@ class participants_filter implements renderable, templatable {
     protected function get_filtertypes(): array {
         $filtertypes = [];
 
+        $filtertypes[] = $this->get_keyword_filter();
+
         if ($filtertype = $this->get_enrolmentstatus_filter()) {
+            $filtertypes[] = $filtertype;
+        }
+
+        if ($filtertype = $this->get_roles_filter()) {
+            $filtertypes[] = $filtertype;
+        }
+
+        if ($filtertype = $this->get_enrolments_filter()) {
+            $filtertypes[] = $filtertype;
+        }
+
+        if ($filtertype = $this->get_groups_filter()) {
+            $filtertypes[] = $filtertype;
+        }
+
+        if ($filtertype = $this->get_accesssince_filter()) {
             $filtertypes[] = $filtertype;
         }
 
@@ -99,6 +122,223 @@ class participants_filter implements renderable, templatable {
     }
 
     /**
+     * Get data for the roles filter.
+     *
+     * @return stdClass|null
+     */
+    protected function get_roles_filter(): ?stdClass {
+        $roles = [];
+        $roles += [-1 => get_string('noroles', 'role')];
+        $roles += get_viewable_roles($this->context);
+
+        if (has_capability('moodle/role:assign', $this->context)) {
+            $roles += get_assignable_roles($this->context, ROLENAME_ALIAS);
+        }
+
+        return $this->get_filter_object(
+            'roles',
+            get_string('roles', 'core_role'),
+            false,
+            true,
+            null,
+            array_map(function($id, $title) {
+                return (object) [
+                    'value' => $id,
+                    'title' => $title,
+                ];
+            }, array_keys($roles), array_values($roles))
+        );
+    }
+
+    /**
+     * Get data for the roles filter.
+     *
+     * @return stdClass|null
+     */
+    protected function get_enrolments_filter(): ?stdClass {
+        if (!has_capability('moodle/course:enrolreview', $this->context)) {
+            return null;
+        }
+
+        if ($this->course->id == SITEID) {
+            // No enrolment methods for the site.
+            return null;
+        }
+
+        $instances = enrol_get_instances($this->course->id, true);
+        $plugins = enrol_get_plugins(false);
+
+        return $this->get_filter_object(
+            'enrolments',
+            get_string('enrolmentinstances', 'core_enrol'),
+            false,
+            true,
+            null,
+            array_filter(array_map(function($instance) use ($plugins): ?stdClass {
+                if (!array_key_exists($instance->enrol, $plugins)) {
+                    return null;
+                }
+
+                return (object) [
+                    'value' => $instance->id,
+                    'title' => $plugins[$instance->enrol]->get_instance_name($instance),
+                ];
+            }, array_values($instances)))
+        );
+    }
+
+    /**
+     * Get data for the groups filter.
+     *
+     * @return stdClass|null
+     */
+    protected function get_groups_filter(): ?stdClass {
+        global $USER;
+
+        // Filter options for groups, if available.
+        $seeallgroups = has_capability('moodle/site:accessallgroups', $this->context);
+        $seeallgroups = $seeallgroups || ($this->course->groupmode != SEPARATEGROUPS);
+        if ($seeallgroups) {
+            $groups = [];
+            $groups += [USERSWITHOUTGROUP => (object) [
+                    'id' => USERSWITHOUTGROUP,
+                    'name' => get_string('nogroup', 'group'),
+                ]];
+            $groups += groups_get_all_groups($this->course->id);
+        } else {
+            // Otherwise, just list the groups the user belongs to.
+            $groups = groups_get_all_groups($this->course->id, $USER->id);
+        }
+
+        if (empty($groups)) {
+            return null;
+        }
+
+        return $this->get_filter_object(
+            'groups',
+            get_string('groups', 'core_group'),
+            false,
+            true,
+            null,
+            array_map(function($group) {
+                return (object) [
+                    'value' => $group->id,
+                    'title' => $group->name,
+                ];
+            }, array_values($groups))
+        );
+    }
+
+    /**
+     * Get data for the accesssince filter.
+     *
+     * @return stdClass|null
+     */
+    protected function get_accesssince_filter(): ?stdClass {
+        global $DB;
+
+        $hiddenfields = [];
+        if (!has_capability('moodle/course:viewhiddenuserfields', $this->context)) {
+            $hiddenfields = array_flip(explode(',', $CFG->hiddenuserfields));
+        }
+
+        if (array_key_exists('lastaccess', $hiddenfields)) {
+            return null;
+        }
+
+        // Get minimum lastaccess for this course and display a dropbox to filter by lastaccess going back this far.
+        // We need to make it diferently for normal courses and site course.
+        if (!$this->course->id == SITEID) {
+            // Regular course.
+            $params = [
+                'courseid' => $this->course->id,
+                'timeaccess' => 0,
+            ];
+            $select = 'courseid = :courseid AND timeaccess != :timeaccess';
+            $minlastaccess = $DB->get_field_select('user_lastaccess', 'MIN(timeaccess)', $select, $params);
+            $lastaccess0exists = $DB->record_exists('user_lastaccess', $params);
+        } else {
+            // Front page.
+            $params = ['lastaccess' => 0];
+            $select = 'lastaccess != :lastaccess';
+            $minlastaccess = $DB->get_field_select('user', 'MIN(lastaccess)', $select, $params);
+            $lastaccess0exists = $DB->record_exists('user', $params);
+        }
+
+        $now = usergetmidnight(time());
+        $timeoptions = [];
+        $criteria = get_string('usersnoaccesssince');
+
+        $getoptions = function(int $count, string $singletype, string $type) use ($now, $minlastaccess): array {
+            $values = [];
+            for ($i = 1; $i <= $count; $i++) {
+                $timestamp = strtotime("-{$i} {$type}", $now);
+                if ($timestamp < $minlastaccess) {
+                    break;
+                }
+
+                if ($i === 1) {
+                    $title = get_string("num{$singletype}", 'moodle', $i);
+                } else {
+                    $title = get_string("num{$type}", 'moodle', $i);
+                }
+
+                $values[] = [
+                    'value' => $timestamp,
+                    'title' => $title,
+                ];
+            }
+
+            return $values;
+        };
+
+        $values = array_merge(
+            $getoptions(7, 'day', 'days'),
+            $getoptions(10, 'week', 'weeks'),
+            $getoptions(12, 'month', 'months'),
+            $getoptions(1, 'year', 'years')
+        );
+
+        if ($lastaccess0exists) {
+            $values[] = [
+                'value' => time(),
+                'title' => get_string('never', 'moodle'),
+            ];
+        }
+
+        if (count($values) <= 1) {
+            // Nothing to show.
+            return null;
+        }
+
+        return $this->get_filter_object(
+            'accesssince',
+            get_string('usersnoaccesssince'),
+            false,
+            false,
+            null,
+            $values
+        );
+    }
+
+    /**
+     * Get data for the keywords filter.
+     *
+     * @return stdClass|null
+     */
+    protected function get_keyword_filter(): ?stdClass {
+        return $this->get_filter_object(
+            'keywords',
+            get_string('filterbykeyword', 'core_user'),
+            true,
+            true,
+            'core_user/local/participantsfilter/filtertypes/keyword',
+            [],
+            true
+        );
+    }
+
+    /**
      * Export the renderer data in a mustache template friendly format.
      *
      * @param renderer_base $output Unused.
@@ -123,6 +363,7 @@ class participants_filter implements renderable, templatable {
      * @param bool $multiple
      * @param string|null $filterclass
      * @param array $values
+     * @param bool $allowempty
      * @return stdClass|null
      */
     protected function get_filter_object(
@@ -131,9 +372,11 @@ class participants_filter implements renderable, templatable {
         bool $custom,
         bool $multiple,
         ?string $filterclass,
-        array $values
+        array $values,
+        bool $allowempty = false
     ): ?stdClass {
-        if (empty($values)) {
+
+        if (!$allowempty && empty($values)) {
             // Do not show empty filters.
             return null;
         }
