@@ -165,8 +165,8 @@ class participants_filter implements renderable, templatable {
             return null;
         }
 
-        $instances = enrol_get_instances($this->course->id, false);
-        $plugins = enrol_get_plugins(true);
+        $instances = enrol_get_instances($this->course->id, true);
+        $plugins = enrol_get_plugins(false);
 
         return $this->get_filter_object(
             'enrolments',
