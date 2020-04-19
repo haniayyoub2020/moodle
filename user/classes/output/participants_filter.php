@@ -269,16 +269,23 @@ class participants_filter implements renderable, templatable {
         $timeoptions = [];
         $criteria = get_string('usersnoaccesssince');
 
-        $getoptions = function(int $count, string $type) use ($now, $minlastaccess): array {
+        $getoptions = function(int $count, string $singletype, string $type) use ($now, $minlastaccess): array {
             $values = [];
-            for ($i = 1; $i < $count; $i++) {
+            for ($i = 1; $i <= $count; $i++) {
                 $timestamp = strtotime("-{$i} {$type}", $now);
                 if ($timestamp < $minlastaccess) {
                     break;
                 }
+
+                if ($i === 1) {
+                    $title = get_string("num{$singletype}", 'moodle', $i);
+                } else {
+                    $title = get_string("num{$type}", 'moodle', $i);
+                }
+
                 $values[] = [
                     'value' => $timestamp,
-                    'title' => get_string("num{$type}", 'moodle', $i),
+                    'title' => $title,
                 ];
             }
 
@@ -286,10 +293,10 @@ class participants_filter implements renderable, templatable {
         };
 
         $values = array_merge(
-            $getoptions(7, 'days'),
-            $getoptions(10, 'weeks'),
-            $getoptions(12, 'months'),
-            $getoptions(1, 'year')
+            $getoptions(7, 'day', 'days'),
+            $getoptions(10, 'week', 'weeks'),
+            $getoptions(12, 'month', 'months'),
+            $getoptions(1, 'year', 'years')
         );
 
         if ($lastaccess0exists) {
