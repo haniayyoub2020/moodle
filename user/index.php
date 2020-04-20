@@ -211,7 +211,10 @@ $enrolbuttonsout = '';
 foreach ($enrolbuttons as $enrolbutton) {
     $enrolbuttonsout .= $enrolrenderer->render($enrolbutton);
 }
-echo html_writer::div($enrolbuttonsout, 'float-right');
+echo html_writer::div($enrolbuttonsout, 'float-right', [
+    'data-region' => 'wrapper',
+    'data-table-uniqueid' => participants_table::get_unique_id_from_argument($course->id),
+]);
 
 // Should use this variable so that we don't break stuff every time a variable is added or changed.
 $baseurl = new moodle_url('/user/index.php', array(
