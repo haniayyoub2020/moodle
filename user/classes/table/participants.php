@@ -566,7 +566,7 @@ class participants extends \table_sql implements dynamic_table {
      *
      * @return context
      */
-    public function get_context(): ?context {
+    public function get_context(): context {
         return $this->context;
     }
 
