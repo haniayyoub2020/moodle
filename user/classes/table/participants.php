@@ -140,6 +140,15 @@ class participants extends \table_sql implements dynamic_table {
     public $baseurl;
 
     /**
+     * Constructor for the participants table.
+     *
+     * @param string $uniqueid Unique ID for this table
+     */
+    public function __construct(string $uniqueid) {
+        parent::__construct("user-index-participants-{$uniqueid}");
+    }
+
+    /**
      * Render the participants table.
      *
      * @param int $pagesize Size of page for paginated displayed table.
@@ -535,15 +544,6 @@ class participants extends \table_sql implements dynamic_table {
         }
 
         $this->define_baseurl($this->get_base_url());
-    }
-
-    /**
-     * Get an unique id for the participants table.
-     * @param string $argument An argument for the unique id, can be course id.
-     * @return string
-     */
-    public static function get_unique_id_from_argument(string $argument): string {
-        return "user-index-participants-{$argument}";
     }
 
     /**
