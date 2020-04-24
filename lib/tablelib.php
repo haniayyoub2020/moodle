@@ -1540,6 +1540,7 @@ class flexible_table {
                 'data-table-last-initial' => $this->prefs['i_last'],
                 'data-table-page-number' => $this->currpage + 1,
                 'data-table-page-size' => $this->pagesize,
+                'data-table-total-rows' => $this->totalrows,
             ]);
         }
 
