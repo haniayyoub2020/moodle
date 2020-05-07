@@ -84,7 +84,17 @@ class filter_emoticon extends moodle_text_filter {
         global $CFG, $OUTPUT, $PAGE;
 
         $lang = current_language();
-        $theme = $PAGE->theme->name;
+
+        if ($PAGE->state) {
+            $theme = $PAGE->theme->name;
+        } else {
+            // The page has not yet been setup.
+            // Create a fake moodle_page and get the theme from it.
+            // We must do this to solve issues where the filter is called before headers are output.
+            // The fetching of the theme causes the page output to begin.
+            $page = new moodle_page();
+            $theme = $page->theme->name;
+        }
 
         if (!isset(self::$emoticontexts[$lang][$theme]) or !isset(self::$emoticonimgs[$lang][$theme])) {
             // prepare internal caches
