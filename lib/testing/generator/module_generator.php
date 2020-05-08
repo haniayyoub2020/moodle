@@ -222,8 +222,14 @@ abstract class testing_module_generator extends component_generator_base {
      *     cmid (corresponding id in course_modules table)
      */
     public function create_instance($record = null, array $options = null) {
-        global $CFG, $DB;
+        global $CFG, $DB, $PAGE;
         require_once($CFG->dirroot.'/course/modlib.php');
+
+        // Store and re-initialise the page globals.
+        // We cannot guarantee that these variables were initialised for the course where  the activity is being
+        // created so the safest approach is to reset them to default values.
+        // We restore the previous values at the end of this function.
+        phpunit_util::store_and_init_page_globals();
 
         $this->instancecount++;
 
@@ -237,6 +243,7 @@ abstract class testing_module_generator extends component_generator_base {
         } else {
             $course = get_course($record->course);
         }
+        $PAGE->set_course($course);
 
         // Fill the name and intro with default values (if missing).
         if (empty($record->name)) {
@@ -269,6 +276,10 @@ abstract class testing_module_generator extends component_generator_base {
         // Prepare object to return with additional field cmid.
         $instance = $DB->get_record($this->get_modulename(), array('id' => $moduleinfo->instance), '*', MUST_EXIST);
         $instance->cmid = $moduleinfo->coursemodule;
+
+        // Restore the global page variables to their previous state.
+        phpunit_util::restore_page_globals();
+
         return $instance;
     }
 

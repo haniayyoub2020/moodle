@@ -89,6 +89,9 @@ abstract class testing_util {
      */
     protected static $sequencenextstartingid = null;
 
+    /** @var array[] List of stored page globals saved during test setup */
+    protected static $pageglobals = [];
+
     /**
      * Return the name of the JSON file containing the init filenames.
      *
@@ -1133,5 +1136,64 @@ abstract class testing_util {
         $env['os'] = $osdetails;
 
         return $env;
+    }
+
+    /**
+     * Store and reinitialise the page globals.
+     *
+     * This resets to initial values for the following globals:
+     * - $OUTPUT (bootstrap_renderer)
+     * - $PAGE (moodle_page)
+     * - $COURSE (Defaults to $SITE)
+     *
+     * As part of the reset, the original state is stored and should be restored using {@see restore_page_globals}.
+     *
+     * This function can be called in recursive functions, as long as the order of restoration is preserved.
+     */
+    public static function store_and_init_page_globals(): void {
+        global $COURSE, $OUTPUT, $PAGE, $SITE;
+
+        self::$pageglobals[] = [
+            'course' => $COURSE,
+            'output' => $OUTPUT,
+            'page' => $PAGE,
+        ];
+
+        $OUTPUT = new bootstrap_renderer();
+        $PAGE = new moodle_page();
+        $COURSE = $SITE;
+    }
+
+    /**
+     *  Restorethe page globals to their previous state.
+     *
+     *  See {@see store_and_init_page_globals} for further information.
+     */
+    public static function restore_page_globals(): void {
+        global $COURSE, $OUTPUT, $PAGE;
+
+        if (self::$pageglobals) {
+            [
+                'course' => $COURSE,
+                'output' => $OUTPUT,
+                'page' => $PAGE,
+            ] = array_pop(self::$pageglobals);
+        } else {
+            self::reset_page_globals();
+        }
+    }
+
+    /**
+     * Reset the stack of page globals and then reset those variables.
+     *
+     * This should be called between tests by the {@see reset_all_data} function.
+     */
+    protected static function reset_page_globals(): void {
+        global $COURSE, $OUTPUT, $PAGE, $SITE;
+        self::$pageglobals = [];
+
+        $COURSE = $SITE;
+        $OUTPUT = new bootstrap_renderer();
+        $PAGE = new moodle_page();
     }
 }
