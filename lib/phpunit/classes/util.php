@@ -184,7 +184,7 @@ class phpunit_util extends testing_util {
             set_time_limit(0);
         }
 
-        // restore original globals
+        // Restore original globals.
         $_SERVER = self::get_global_backup('_SERVER');
         $CFG = self::get_global_backup('CFG');
         $SITE = self::get_global_backup('SITE');
@@ -193,11 +193,11 @@ class phpunit_util extends testing_util {
         $_POST = array();
         $_FILES = array();
         $_REQUEST = array();
-        $COURSE = $SITE;
 
-        // reinitialise following globals
-        $OUTPUT = new bootstrap_renderer();
-        $PAGE = new moodle_page();
+        // Reset $COURSE, $OUTPUT and $PAGE globals.
+        self::reset_page_globals();
+
+        // Reinitialise remaining globals.
         $FULLME = null;
         $ME = null;
         $SCRIPT = null;
@@ -205,7 +205,7 @@ class phpunit_util extends testing_util {
         // Empty sessison and set fresh new not-logged-in user.
         \core\session\manager::init_empty_session();
 
-        // reset all static caches
+        // Reset all static caches.
         \core\event\manager::phpunit_reset();
         accesslib_clear_all_caches(true);
         accesslib_reset_role_cache();
