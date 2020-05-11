@@ -213,6 +213,9 @@ trait moodle_read_slave_trait {
             // it is best to leave it out and avoid master/slave latency.
             $this->readexclude[] = 'lock_db';
 
+            // The 'sessions' table always goes to the master.
+            $this->readexclude[] = 'sessions';
+
             $this->set_dbhwrite();
         }
 
