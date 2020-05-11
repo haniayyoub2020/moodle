@@ -154,7 +154,7 @@ trait moodle_read_slave_trait {
         $this->pdboptions = $dboptions;
 
         if ($dboptions) {
-            if (isset($dboptions['readonly']) && !during_initial_install()) {
+            if (isset($dboptions['readonly'])) {
                 $this->wantreadslave = true;
                 $dboptionsro = $dboptions['readonly'];
 
@@ -299,6 +299,10 @@ trait moodle_read_slave_trait {
      */
     protected function can_use_readonly(int $type, string $sql): bool {
         if ($this->loggingquery) {
+            return false;
+        }
+
+        if (during_initial_install()) {
             return false;
         }
 
