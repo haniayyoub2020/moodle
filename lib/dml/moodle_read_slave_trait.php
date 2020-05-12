@@ -207,7 +207,7 @@ trait moodle_read_slave_trait {
                 }
             }
         }
-        if (!$this->dbhreadonly) {
+        if ($this->dbhreadonly) {
             // ... lock_db queries always go to master.
             // Since it is a lock and as such marshalls concurrent connections,
             // it is best to leave it out and avoid master/slave latency.
