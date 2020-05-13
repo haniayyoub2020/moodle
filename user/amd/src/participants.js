@@ -111,7 +111,7 @@ export const init = ({
             }
         });
 
-        // When the content is refreshed, updat the row counts in various places.
+        // When the content is refreshed, update the row counts in various places.
         root.addEventListener(DynamicTable.Events.tableContentRefreshed, e => {
             const showCountLink = root.querySelector(Selectors.showCountToggle);
             const checkCountButton = root.querySelector(Selectors.checkCountButton);
