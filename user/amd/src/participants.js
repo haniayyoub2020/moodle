@@ -26,18 +26,19 @@
 import * as DynamicTable from 'core_table/dynamic';
 import * as Repository from './repository';
 import * as Str from 'core/str';
+import jQuery from 'jquery';
+import CheckboxToggleAll from 'core/checkbox-toggleall';
+import CustomEvents from 'core/custom_interaction_events';
 import DynamicTableSelectors from 'core_table/local/dynamic/selectors';
 import ModalEvents from 'core/modal_events';
 import ModalFactory from 'core/modal_factory';
 import Notification from 'core/notification';
 import Templates from 'core/templates';
 import {add as notifyUser} from 'core/toast';
-import CustomEvents from 'core/custom_interaction_events';
 
 const Selectors = {
     bulkActionSelect: "#formactionid",
-    bulkUserCheckBoxes: "input.usercheckbox",
-    bulkUserSelectedCheckBoxes: "input.usercheckbox:checked",
+    bulkUserSelectedCheckBoxes: "input[data-togglegroup='participants-table']:checked",
     checkCountButton: "#checkall",
     showCountText: '[data-region="participant-count"]',
     showCountToggle: '[data-action="showcount"]',
@@ -59,7 +60,8 @@ export const init = ({
      * @private
      */
     const registerEventListeners = () => {
-        root.querySelector(Selectors.bulkActionSelect).addEventListener(CustomEvents.events.accessibleChange, e => {
+        CustomEvents.define(Selectors.bulkActionSelect, [CustomEvents.events.accessibleChange]);
+        jQuery(Selectors.bulkActionSelect).on(CustomEvents.events.accessibleChange, e => {
             const action = e.target.value;
 
             if (action.indexOf('#') !== -1) {
@@ -101,11 +103,9 @@ export const init = ({
 
                 DynamicTable.setPageSize(tableRoot, showCountLink.dataset.targetPageSize)
                 .then(tableRoot => {
-                    if (checkCountButtonClicked) {
-                        tableRoot.querySelectorAll(Selectors.bulkUserCheckBoxes).forEach(checkbox => {
-                            checkbox.checked = true;
-                        });
-                    }
+                    // Always update the toggle state.
+                    // This ensures that the bulk actions are disabled after changing the page size.
+                    CheckboxToggleAll.setGroupState(tableRoot, 'participants-table', checkCountButtonClicked);
 
                     return tableRoot;
                 })
@@ -123,6 +123,8 @@ export const init = ({
             const defaultPageSize = parseInt(root.dataset.tableDefaultPerPage, 10);
             const currentPageSize = parseInt(tableRoot.dataset.tablePageSize, 10);
             const totalRowCount = parseInt(tableRoot.dataset.tableTotalRows, 10);
+
+            CheckboxToggleAll.updateSlavesFromMasterState(tableRoot, 'participants-table');
 
             const pageCountStrings = [
                 {
