@@ -63,13 +63,14 @@ export const init = ({
         CustomEvents.define(Selectors.bulkActionSelect, [CustomEvents.events.accessibleChange]);
         jQuery(Selectors.bulkActionSelect).on(CustomEvents.events.accessibleChange, e => {
             const action = e.target.value;
+            const tableRoot = getTableFromUniqueId(uniqueid);
+            const checkboxes = tableRoot.querySelectorAll(Selectors.bulkUserSelectedCheckBoxes);
 
             if (action.indexOf('#') !== -1) {
                 e.preventDefault();
 
-                const tableRoot = getTableFromUniqueId(uniqueid);
                 const ids = [];
-                tableRoot.querySelectorAll(Selectors.bulkUserSelectedCheckBoxes).forEach(checkbox => {
+                checkboxes.forEach(checkbox => {
                     ids.push(checkbox.getAttribute('name').replace('user', ''));
                 });
 
@@ -78,11 +79,8 @@ export const init = ({
                 } else if (action === '#addgroupnote') {
                     showAddNote(ids).catch(Notification.exception);
                 }
-            } else if (action !== '') {
-                const tableRoot = getTableFromUniqueId(uniqueid);
-                if (tableRoot.querySelectorAll(Selectors.bulkUserSelectedCheckBoxes).length) {
-                    e.target.form().submit();
-                }
+            } else if (action !== '' && checkboxes.length) {
+                e.target.form().submit();
             }
 
             resetBulkAction(e.target);
