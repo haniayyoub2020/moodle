@@ -163,18 +163,8 @@ function(
         // Apply parent event listeners.
         Modal.prototype.registerEventListeners.call(this);
 
-        // We have to wait for the modal to finish rendering in order to ensure that
-        // the data-event-title property is available to use as the modal title.
-        this.getRoot().on(ModalEvents.bodyRendered, function() {
-            this.getModal().data({
-                eventTitle: this.getEventTitle(),
-                eventId: this.getEventId(),
-                eventCount: this.getEventCount(),
-            })
-            .attr('data-type', 'event');
-            CalendarCrud.registerRemove(this.getModal());
-
-        }.bind(this));
+        // Apply the remove listeners.
+        CalendarCrud.registerRemove(this);
 
         $('body').on(CalendarEvents.deleted, function() {
             // Close the dialogue on delete.

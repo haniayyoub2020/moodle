@@ -216,16 +216,15 @@ function(
     /**
      * Register the listeners required to remove the event.
      *
-     * @param   {jQuery} root
+     * @param {Object} modal
      */
-    function registerRemove(root) {
-        root.on('click', CalendarSelectors.actions.remove, function(e) {
-            // Fetch the event title, count, and pass them into the new dialogue.
-            var eventSource = $(this).closest(CalendarSelectors.eventItem);
-            var eventId = eventSource.data('eventId'),
-                eventTitle = eventSource.data('eventTitle'),
-                eventCount = eventSource.data('eventCount');
-            confirmDeletion(eventId, eventTitle, eventCount);
+    function registerRemove(modal) {
+        modal.getModal().on('click', CalendarSelectors.actions.remove, function(e) {
+            confirmDeletion(
+                modal.getEventId(),
+                modal.getEventTitle(),
+                modal.getEventCount()
+            );
 
             e.preventDefault();
         });
