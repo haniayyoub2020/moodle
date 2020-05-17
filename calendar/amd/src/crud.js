@@ -238,7 +238,9 @@ function(
      * @returns {Promise}
      */
     function registerEditListeners(root, eventFormModalPromise) {
-        eventFormModalPromise
+        var pendingPromise = new Pending('core_calendar/crud:registerEditListeners');
+
+        return eventFormModalPromise
         .then(function(modal) {
             // When something within the calendar tells us the user wants
             // to edit an event then show the event form modal.
@@ -250,11 +252,14 @@ function(
 
                 e.stopImmediatePropagation();
             });
-            return;
+            return modal;
         })
-        .fail(Notification.exception);
+        .then(function(modal) {
+            pendingPromise.resolve();
 
-        return eventFormModalPromise;
+            return modal;
+        })
+        .catch(Notification.exception);
     }
 
     return {

@@ -372,12 +372,13 @@ const getEventTypeClassFromType = (eventType) => {
  * Render the event summary modal.
  *
  * @param {Number} eventId The calendar event id.
+ * @returns {Promise}
  */
 const renderEventSummaryModal = (eventId) => {
     let typeClass = '';
 
     // Calendar repository promise.
-    CalendarRepository.getEventById(eventId).then((getEventResponse) => {
+    return CalendarRepository.getEventById(eventId).then((getEventResponse) => {
         if (!getEventResponse.event) {
             throw new Error('Error encountered while trying to fetch calendar event with ID: ' + eventId);
         }
