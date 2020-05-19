@@ -42,7 +42,6 @@ $perpage      = optional_param('perpage', DEFAULT_PAGE_SIZE, PARAM_INT); // How 
 $contextid    = optional_param('contextid', 0, PARAM_INT); // One of this or.
 $courseid     = optional_param('id', 0, PARAM_INT); // This are required.
 $newcourse    = optional_param('newcourse', false, PARAM_BOOL);
-$selectall    = optional_param('selectall', false, PARAM_BOOL); // When rendering checkboxes against users mark them all checked.
 $roleid       = optional_param('roleid', 0, PARAM_INT);
 $groupparam   = optional_param('group', 0, PARAM_INT);
 
@@ -231,7 +230,6 @@ $baseurl = new moodle_url('/user/index.php', array(
         'perpage' => $perpage));
 
 $participanttable = new \core_user\table\participants("user-index-participants-{$course->id}");
-$participanttable->set_selectall($selectall);
 $participanttable->define_baseurl($baseurl);
 
 // Manage enrolments.
@@ -319,7 +317,6 @@ if ($bulkoperations) {
         $perpageurl = clone($baseurl);
         $perpageurl->remove_params('perpage');
         $perpageurl->param('perpage', SHOW_ALL_PAGE_SIZE);
-        $perpageurl->param('selectall', true);
         $showalllink = $perpageurl;
     } else {
         $showalllink = false;
@@ -387,7 +384,7 @@ if ($bulkoperations) {
         'data-action' => 'toggle',
         'data-togglegroup' => 'participants-table',
         'data-toggle' => 'action',
-        'disabled' => empty($selectall)
+        'disabled' => 'disabled',
     );
     $label = html_writer::tag('label', get_string("withselectedusers"),
             ['for' => 'formactionid', 'class' => 'col-form-label d-inline']);
