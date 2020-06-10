@@ -68,5 +68,13 @@ function xmldb_tool_usertours_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020031900, 'tool', 'usertours');
     }
 
+
+    if ($oldversion < 2020061100) {
+        // Updating shipped tours will fix broken sortorder records in existing tours.
+        manager::update_shipped_tours();
+
+        upgrade_plugin_savepoint(true, 2020061100, 'tool', 'usertours');
+    }
+
     return true;
 }
