@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-use tool_usertours\manager;
-
 /**
  * Perform the post-install procedures.
  */
@@ -75,5 +73,6 @@ function xmldb_tool_usertours_install() {
     }
 
     // Update the tours shipped with Moodle.
-    manager::update_shipped_tours();
+    require_once(__DIR__ . '/upgradelib.php');
+    tool_usertours_update_shipped_tours();
 }

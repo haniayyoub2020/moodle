@@ -24,8 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-use tool_usertours\manager;
-
 /**
  * Upgrade the user tours plugin.
  *
@@ -33,27 +31,11 @@ use tool_usertours\manager;
  * @return bool
  */
 function xmldb_tool_usertours_upgrade($oldversion) {
-    global $CFG, $DB;
-
     // Automatically generated Moodle v3.5.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2018113002) {
-        // Update the tours shipped with Moodle.
-        manager::update_shipped_tours();
-
-        upgrade_plugin_savepoint(true, 2018113002, 'tool', 'usertours');
-    }
-
     // Automatically generated Moodle v3.6.0 release upgrade line.
     // Put any upgrade step following this.
-
-    if ($oldversion < 2019030600) {
-        // Update the tours shipped with Moodle.
-        manager::update_shipped_tours();
-
-        upgrade_plugin_savepoint(true, 2019030600, 'tool', 'usertours');
-    }
 
     // Automatically generated Moodle v3.7.0 release upgrade line.
     // Put any upgrade step following this.
@@ -61,18 +43,12 @@ function xmldb_tool_usertours_upgrade($oldversion) {
     // Automatically generated Moodle v3.8.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2020031900) {
-        // Updating shipped tours will fix broken sortorder records in existing tours.
-        manager::update_shipped_tours();
-
-        upgrade_plugin_savepoint(true, 2020031900, 'tool', 'usertours');
-    }
-
-
+    // Note: The following step should be updated for new versions rather than duplicated.
     if ($oldversion < 2020061100) {
-        // Updating shipped tours will fix broken sortorder records in existing tours.
-        manager::update_shipped_tours();
+        require_once(__DIR__ . '/upgradelib.php');
+        tool_usertours_update_shipped_tours();
 
+        // Main savepoint reached.
         upgrade_plugin_savepoint(true, 2020061100, 'tool', 'usertours');
     }
 
