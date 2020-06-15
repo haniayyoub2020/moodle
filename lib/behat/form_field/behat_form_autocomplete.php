@@ -63,14 +63,21 @@ class behat_form_autocomplete extends behat_form_text {
                 $this->set_value($value);
             }
         } else {
-            $this->field->setValue($value);
+            $this->field->click();
+            // Remove any existing text.
+            do {
+                behat_base::type_keys($this->session, [behat_keys::BACKSPACE, behat_keys::DELETE]);
+            } while (strlen($this->field->getValue()) > 0);
+
+            // Type in the new value.
+            behat_base::type_keys($this->session, str_split($value));
             $this->wait_for_pending_js();
 
             // If the autocomplete found suggestions, then it will have:
             // 1) marked itself as expanded; and
             // 2) have an aria-selected suggestion in the list.
             $expanded = $this->field->getAttribute('aria-expanded');
-            $suggestion = $this->field->getParent()->find('css', '.form-autocomplete-suggestions > [aria-selected="true"]');
+            $suggestion = $this->field->getParent()->getParent()->find('css', '.form-autocomplete-suggestions > [aria-selected="true"]');
 
             if ($expanded && null !== $suggestion) {
                 // A suggestion was found.
@@ -80,6 +87,7 @@ class behat_form_autocomplete extends behat_form_text {
                 // Press the return key to create a new tag.
                 behat_base::type_keys($this->session, [behat_keys::ENTER]);
             }
+
             $this->wait_for_pending_js();
 
             // Press the escape to close the autocomplete suggestions list.
