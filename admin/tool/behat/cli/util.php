@@ -54,6 +54,7 @@ list($options, $unrecognized) = cli_get_params(
         'torun'       => 0,
         'optimize-runs' => '',
         'add-core-features-to-theme' => false,
+        'buildthemes' => false,
     ),
     array(
         'h' => 'help',
@@ -69,25 +70,52 @@ $help = "
 Behat utilities to manage the test environment
 
 Usage:
-  php util.php [--install|--drop|--enable|--disable|--diag|--updatesteps|--help] [--parallel=value [--maxruns=value]]
+  php util.php [--parallel=value [--maxruns=value]] [command] [options]
+
+Parallel configuration:
+--parallel=[count]
+-j=[count]      The number of parallel behat runs to configure
+
+--maxruns=[count]
+-m=[count]      The number of concurrent processes to execute at any time
+
+Available commands:
+--install       Installs the test environment for acceptance tests
+--drop          Drops the database tables and the dataroot contents
+--enable        Enables test environment and updates tests list
+--disable       Disables test environment
+--diag          Get behat test environment status code
+--updatesteps   Update feature step file
+--buildthemes   Compile all CSS for themes
+--help, -h      Print out this help
 
 Options:
---install      Installs the test environment for acceptance tests
---drop         Drops the database tables and the dataroot contents
---enable       Enables test environment and updates tests list
---disable      Disables test environment
---diag         Get behat test environment status code
---updatesteps  Update feature step file.
+--optimize-runs
+-o              Split features with specified tags in all parallel runs
 
--j, --parallel Number of parallel behat run operation
--m, --maxruns Max parallel processes to be executed at one time.
--o, --optimize-runs Split features with specified tags in all parallel runs.
--a, --add-core-features-to-theme Add all core features to specified theme's
+--add-core-features-to-theme
+-a              Add all core features to all installed themes
 
--h, --help     Print out this help
+--buildthemes   Compile all CSS for all themes
 
-Example from Moodle root directory:
-\$ php admin/tool/behat/cli/util.php --enable --parallel=4
+Examples:
+# Install a new test environment, building all themes, for 2 parallel runs.
+\$ php admin/tool/behat/cli/util.php -j=2 --install
+
+# Refresh an existing test environment, without rebuilding all themes,
+# for 2 parallel runs with both sites configured concurrently.
+\$ php admin/tool/behat/cli/util.php -j=2 -m=1 --enable
+
+# Refresh an existing test environment, without rebuilding all themes,
+# for 2 parallel runs but only executing one at a time.
+\$ php admin/tool/behat/cli/util.php -j=2 -m=1 --enable --buildthemes
+
+# Rebuild all themes for the existing test environments, executing
+# them one at a time.
+\$ php admin/tool/behat/cli/util.php -j=2 -m=1 --buildthemes
+
+# Drop the test site.
+\$ php admin/tool/behat/cli/util.php -j=2 --drop
 
 More info in http://docs.moodle.org/dev/Acceptance_testing#Running_tests
 ";
@@ -212,7 +240,14 @@ if ($options['diag'] || $options['enable'] || $options['disable']) {
             $status = (bool)$status || (bool)$exitcode;
         }
     }
+} else if (isset($options['buildthemes'])) {
+    // Do it sequentially as it's fast and need to be displayed nicely.
+    foreach (array_chunk($cmds, $options['maxruns'], true) as $cmd) {
+        $processes = cli_execute_parallel($cmd, __DIR__);
+        print_sequential_output($processes);
+    }
 
+    exit(0);
 } else if ($options['updatesteps']) {
     // Rewrite config file to ensure we have all the features covered.
     if (empty($options['parallel'])) {
@@ -234,6 +269,7 @@ if ($options['diag'] || $options['enable'] || $options['disable']) {
         $processes = cli_execute_parallel($cmd, __DIR__);
         print_sequential_output($processes);
     }
+
     exit(0);
 
 } else {

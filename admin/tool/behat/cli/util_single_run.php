@@ -49,6 +49,7 @@ list($options, $unrecognized) = cli_get_params(
         'updatesteps' => false,
         'optimize-runs' => '',
         'add-core-features-to-theme' => false,
+        'buildthemes' => false,
     ),
     array(
         'h' => 'help',
@@ -66,23 +67,42 @@ $help = "
 Behat utilities to manage the test environment
 
 Usage:
-  php util_single_run.php [--install|--drop|--enable|--disable|--diag|--updatesteps|--help]
+  php util_single_run.php [command] [options]
+
+Commands:
+--install       Installs the test environment for acceptance tests
+--drop          Drops the database tables and the dataroot contents
+--enable        Enables test environment and updates tests list
+--disable       Disables test environment
+--diag          Get behat test environment status code
+--updatesteps   Update feature step file
+--buildthemes   Compile all CSS for themes
+--help, -h      Print out this help
 
 Options:
---install        Installs the test environment for acceptance tests
---drop           Drops the database tables and the dataroot contents
---enable         Enables test environment and updates tests list
---disable        Disables test environment
---diag           Get behat test environment status code
---updatesteps    Update feature step file.
+--optimize-runs
+-o              Split features with specified tags in all parallel runs
 
--o, --optimize-runs Split features with specified tags in all parallel runs.
--a, --add-core-features-to-theme Add all core features to specified theme's
+--add-core-features-to-theme
+-a              Add all core features to all installed themes
 
--h, --help Print out this help
+--buildthemes   Compile all CSS for all themes
 
-Example from Moodle root directory:
+Examples:
+# Install a new test environment, building all themes.
+\$ php admin/tool/behat/cli/util_single_run.php --install
+
+# Refresh an existing test environment, without rebuilding all themes.
 \$ php admin/tool/behat/cli/util_single_run.php --enable
+
+# Refresh an existing test environment and rebuild all themes.
+\$ php admin/tool/behat/cli/util_single_run.php --enable --buildthemes
+
+# Rebuild all themes for an existing test environment.
+\$ php admin/tool/behat/cli/util_single_run.php --buildthemes
+
+# Drop the test site.
+\$ php admin/tool/behat/cli/util_single_run.php --drop
 
 More info in http://docs.moodle.org/dev/Acceptance_testing#Running_tests
 ";
@@ -164,6 +184,11 @@ if ($options['install']) {
         mtrace("Acceptance tests site installed");
     }
 
+    // Build the themes for this run.
+    // This must be done on install.
+    behat_util::build_themes();
+    mtrace("Testing environment themes built");
+
 } else if ($options['drop']) {
     // Ensure no tests are running.
     test_lock::acquire('behat');
@@ -181,6 +206,13 @@ if ($options['install']) {
 
     // Enable test mode.
     behat_util::start_test_mode($options['add-core-features-to-theme'], $options['optimize-runs'], $parallel, $run);
+
+    if ($options['buildthemes']) {
+        // Only build themes if they were specifically asked for.
+        mtrace("Building themes");
+        behat_util::build_themes();
+        mtrace("Testing environment themes built");
+    }
 
     // This is only displayed once for parallel install.
     if (empty($run)) {
@@ -207,6 +239,11 @@ if ($options['install']) {
     $code = behat_util::get_behat_status();
     exit($code);
 
+} else if ($options['buildthemes']) {
+    mtrace("Compiling CSS for all themes");
+    behat_util::build_themes();
+    mtrace("Done.");
+    exit(0);
 } else if ($options['updatesteps']) {
     if (defined('BEHAT_FEATURE_STEP_FILE') && BEHAT_FEATURE_STEP_FILE) {
         $behatstepfile = BEHAT_FEATURE_STEP_FILE;
