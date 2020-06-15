@@ -76,6 +76,7 @@ class behat_form_select extends behat_form_field {
             if (!$singleselect) {
                 $dialoguexpath = "//div[contains(concat(' ', normalize-space(@class), ' '), ' moodle-dialogue-focused ')]";
                 if (!$node = $this->session->getDriver()->find($dialoguexpath)) {
+                    // TODO Check if we can remove this.
                     $script = "Syn.trigger('change', {}, {{ELEMENT}})";
                     try {
                         $driver = $this->session->getDriver();

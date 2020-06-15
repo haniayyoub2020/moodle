@@ -108,6 +108,7 @@ class behat_form_checkbox extends behat_form_field {
      * Trigger on change event.
      */
     protected function trigger_on_change() {
+        // TODO Check whether we can remove this now.
         $driver = $this->session->getDriver();
         if ($driver instanceof \Moodle\BehatExtension\Driver\MoodleSelenium2Driver) {
             $driver->triggerSynScript(
