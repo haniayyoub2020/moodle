@@ -37,10 +37,10 @@ use Behat\Mink\Session;
 
 require_once(__DIR__ . '/classes/component_named_selector.php');
 require_once(__DIR__ . '/classes/component_named_replacement.php');
+require_once(__DIR__ . '/classes/component_named_replacement.php');
 
-// Alias the WebDriver\Key  class to behat_keys to make future transition to a different WebDriver implementation
-// easier.
-class_alias('WebDriver\\Key', 'behat_keys');
+// Alias the Facebook\WebDriver\WebDriverKeys class to behat_keys to allow for future use.
+class_alias('Facebook\WebDriver\WebDriverKeys', 'behat_keys');
 
 /**
  * Steps definitions base class.
@@ -271,9 +271,7 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @param array $keys
      */
     public static function type_keys(Session $session, array $keys): void {
-        $session->getDriver()->getWebDriverSession()->keys([
-            'value' => $keys,
-        ]);
+        $session->getDriver()->getWebDriver()->getKeyboard()->sendKeys($keys);
     }
 
     /**
@@ -849,7 +847,7 @@ EOF;
                         }
                     })()'));
                 $pending = self::evaluate_script_in_session($session, $jscode);
-            } catch (NoSuchWindow $nsw) {
+            } catch (NoSuchWindowException $nsw) {
                 // We catch an exception here, in case we just closed the window we were interacting with.
                 // No javascript is running if there is no window right?
                 $pending = '';
@@ -989,7 +987,7 @@ EOF;
                 }
             }
 
-        } catch (NoSuchWindow $e) {
+        } catch (NoSuchWindowException $e) {
             // If we were interacting with a popup window it will not exists after closing it.
         } catch (DriverException $e) {
             // Same reason as above.
