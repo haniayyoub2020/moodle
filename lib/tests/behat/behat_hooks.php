@@ -532,13 +532,22 @@ class behat_hooks extends behat_base {
             }
         }
 
-        if ($isfailed && !empty($CFG->behat_pause_on_fail)) {
+        if ($isfailed) {
+            $pause = !empty($CFG->behat_pause_on_fail);
             $exception = $scope->getTestResult()->getException();
-            $message = "<colour:lightRed>Scenario failed. ";
-            $message .= "<colour:lightYellow>Paused for inspection. Press <colour:lightRed>Enter/Return<colour:lightYellow> to continue.<newline>";
-            $message .= "<colour:lightRed>Exception follows:<newline>";
+            $message = "<colour:lightRed>Scenario failed at line ";
+            $message .= $scope->getFeature()->getFile() . ':' . $scope->getStep()->getLine();
+            $message .= "<newline>";
+
+            if ($pause) {
+                $message .= "<colour:lightYellow>Paused for inspection. ";
+                $message .= "Press <colour:lightRed>Enter/Return<colour:lightYellow> to continue.<newline>";
+            }
+            $message .= "<colour:lightRed>Failure detail follows:<newline>";
             $message .= trim($exception->getMessage());
-            behat_util::pause($this->getSession(), $message);
+            $message .= "<newline>";
+
+            behat_util::print_message($this->getSession(), $message, $pause);
         }
 
         // Only run if JS.

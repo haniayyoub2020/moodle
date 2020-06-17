@@ -405,22 +405,39 @@ class behat_util extends testing_util {
      * This will be passed through cli_ansi_format so appropriate ANSI formatting and features are available.
      */
     public static function pause(Session $session, string $message): void {
-        $posixexists = function_exists('posix_isatty');
+        self::print_message($session, $message, true);
+    }
 
-        // Make sure this step is only used with interactive terminal (if detected).
-        if ($posixexists && !@posix_isatty(STDOUT)) {
-            throw new ExpectationException('Break point should only be used with interactive terminal.', $session);
-        }
-
+    /**
+     * Display a message on the console whilst running a test.
+     *
+     * ANSI colours can be used as per the documentation in {@see cli_ansi_format()}.
+     *
+     * @param Session $session The Mink session
+     * @param string $message The message to display
+     * @param bool $wait Pause after displaying the message
+     */
+    public static function print_message(Session $session, string $message, bool $wait = false): void {
         // Save the cursor position, ring the bell, and add a new line.
-        fwrite(STDOUT, cli_ansi_format("<cursor:save><bell><newline>"));
+        if ($wait) {
+            fwrite(STDOUT, cli_ansi_format("<cursor:save><bell><newline>"));
+        } else {
+            fwrite(STDOUT, cli_ansi_format("<cursor:save><newline>"));
+        }
 
         // Output the formatted message and reset colour back to normal.
         $formattedmessage = cli_ansi_format("{$message}<colour:normal>");
         fwrite(STDOUT, $formattedmessage);
 
-        // Wait for input.
-        fread(STDIN, 1024);
+        if ($wait) {
+            // Make sure this step is only used with interactive terminal (if detected).
+            $posixexists = function_exists('posix_isatty');
+            if ($posixexists && !@posix_isatty(STDOUT)) {
+                throw new ExpectationException('Break point should only be used with interactive terminal.', $session);
+            }
+            // Wait for input.
+            fread(STDIN, 1024);
+        }
 
         // Move the cursor back up to the previous position, then restore the original position stored earlier, and move
         // it back down again.
