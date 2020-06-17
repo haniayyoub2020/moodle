@@ -546,7 +546,7 @@ class behat_hooks extends behat_base {
             // the following scenarios. Some browsers already closes the alert, so
             // wrapping in a try & catch.
             try {
-                $this->getSession()->getDriver()->getWebDriverSession()->accept_alert();
+                $this->getSession()->getDriver()->getWebDriver()->switchTo()->alert()->accept();
             } catch (Exception $e) {
                 // Catching the generic one as we never know how drivers reacts here.
             }

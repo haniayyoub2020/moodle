@@ -270,7 +270,7 @@ class behat_general extends behat_base {
      * @Given /^I accept the currently displayed dialog$/
      */
     public function accept_currently_displayed_alert_dialog() {
-        $this->getSession()->getDriver()->getWebDriverSession()->accept_alert();
+        $this->getSession()->getDriver()->getWebDriver()->switchTo()->alert()->accept();
     }
 
     /**
@@ -278,7 +278,7 @@ class behat_general extends behat_base {
      * @Given /^I dismiss the currently displayed dialog$/
      */
     public function dismiss_currently_displayed_alert_dialog() {
-        $this->getSession()->getDriver()->getWebDriverSession()->dismiss_alert();
+        $this->getSession()->getDriver()->getWebDriver()->switchTo()->alert()->dismiss();
     }
 
     /**
