@@ -1,0 +1,35 @@
+This files describes API changes in the Behat API.
+Information provided here is intended especially for developers.
+
+=== 3.11 ===
+* New keyboard interaction steps have been introduced:
+  * `I type "[keys]"` - used to send keys direct to the browser without requiring a specific element
+  An example usage of this is:
+    `I type "Penguin"`
+  * New steps for pressing named keys with, or without, a modifier:
+    * `I press the [key] key`
+    * `I press the [modifier][key] key`
+    * `I press the [key] key combination`
+    * `I press the [modifier][key] key combination`
+
+    The following named keys are supported:
+    * up
+    * down
+    * left
+    * right
+    * escape
+    * enter
+    * tab
+    * space
+
+    The following modifier keys are supported:
+    * shift
+    * control
+    * alt
+    * meta
+
+    Example uses of these new steps:
+    `I press the up key`
+    `I press the space key`
+    `I press shift tab key`
+    `I press ctrl+shift tab key combination`
