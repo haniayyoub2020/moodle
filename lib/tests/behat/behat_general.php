@@ -27,12 +27,12 @@
 
 require_once(__DIR__ . '/../../behat/behat_base.php');
 
-use Behat\Mink\Exception\ExpectationException as ExpectationException,
-    Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException,
-    Behat\Mink\Exception\DriverException as DriverException,
-    WebDriver\Exception\NoSuchElement as NoSuchElement,
-    WebDriver\Exception\StaleElementReference as StaleElementReference,
-    Behat\Gherkin\Node\TableNode as TableNode;
+use Behat\Gherkin\Node\TableNode as TableNode;
+use Behat\Mink\Exception\DriverException as DriverException;
+use Behat\Mink\Exception\ElementNotFoundException as ElementNotFoundException;
+use Behat\Mink\Exception\ExpectationException as ExpectationException;
+use WebDriver\Exception\NoSuchElement as NoSuchElement;
+use WebDriver\Exception\StaleElementReference as StaleElementReference;
 
 /**
  * Cross component steps definitions.
@@ -1708,6 +1708,100 @@ EOF;
         } else {
             throw new ExpectationException('Unknown browser button.', $session);
         }
+    }
+
+    /**
+     * Send key presses to the browser without first changing focusing, or applying the key presses to a specific
+     * element.
+     *
+     * @When I type :keys
+     * @param string $keys The key, or list of keys, to type
+     */
+    public function i_press_key($keys): void {
+        behat_base::type_keys($this->getSession(), str_split($keys));
+    }
+
+    /**
+     * Press a named key with an optional set of modifiers.
+     *
+     * Supported named keys are:
+     * - up
+     * - down
+     * - left
+     * - right
+     * - escape
+     * - enter
+     * - tab
+     *
+     * Supported moderators are:
+     * - shift
+     * - ctrl
+     * - alt
+     * - meta
+     *
+     * Multiple moderator keys can be combined using the '+' operator, for example:
+     *
+     *   I press ctrl + shift enter
+     *
+     * @When /^I press the (?P<modifiers_string>.* )?(?P<key_string>.*) key$/
+     * @When /^I press the (?P<modifiers_string>.* )?(?P<key_string>.*) key combination$/
+     */
+    public function i_press_named_key($modifiers, $key): void {
+        $keys = [];
+
+        foreach (explode('+', $modifiers) as $modifier) {
+            switch (strtoupper(trim($modifier))) {
+                case '':
+                    break;
+                case 'SHIFT':
+                    $keys[] = behat_keys::SHIFT;
+                    break;
+                case 'CTRL':
+                    $keys[] = behat_keys::CONTROL;
+                    break;
+                case 'ALT':
+                    $keys[] = behat_keys::ALT;
+                    break;
+                case 'META':
+                    $keys[] = behat_keys::META;
+                    break;
+                default:
+                    throw new \coding_exception("Unknown modifier key '$modifier'}");
+            }
+        }
+
+        $key = trim($key);
+        switch (strtoupper($key)) {
+            case 'UP':
+                $keys[] = behat_keys::UP_ARROW;
+                break;
+            case 'DOWN':
+                $keys[] = behat_keys::DOWN_ARROW;
+                break;
+            case 'LEFT':
+                $keys[] = behat_keys::LEFT_ARROW;
+                break;
+            case 'RIGHT':
+                $keys[] = behat_keys::RIGHT_ARROW;
+                break;
+            case 'ESCAPE':
+                $keys[] = behat_keys::ESCAPE;
+                break;
+            case 'ENTER':
+                $keys[] = behat_keys::ENTER;
+                break;
+            case 'TAB':
+                $keys[] = behat_keys::TAB;
+                break;
+            case 'SPACE':
+                $keys[] = behat_keys::SPACE;
+                break;
+            default:
+                throw new \coding_exception("Unknown key '$key'}");
+        }
+        $keys[] = behat_keys::NULL_KEY;
+
+        behat_base::type_keys($this->getSession(), $keys);
     }
 
     /**
