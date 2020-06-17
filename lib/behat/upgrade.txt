@@ -2,6 +2,8 @@ This files describes API changes in the Behat API.
 Information provided here is intended especially for developers.
 
 === 3.11 ===
+* Behat is now aware of the `inplaceeditable` form field type.
+  It is no longer to use additional steps like `And I press "13" in the field`
 * New keyboard interaction steps have been introduced:
   * `I type "[keys]"` - used to send keys direct to the browser without requiring a specific element
   An example usage of this is:

@@ -174,7 +174,8 @@ Y.extend(SECTIONTOOLBOX, TOOLBOX, {
                 'autocomplete': 'off',
                 'aria-describedby': 'id_editinstructions',
                 'maxLength': '255' // This is the maxlength in DB.
-            });
+            })
+            .setAttribute('data-fieldtype', 'inplaceeditable');
 
             // Clear the existing content and put the editor in.
             editform.appendChild(editor);
