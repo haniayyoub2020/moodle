@@ -822,9 +822,7 @@ class behat_course extends behat_base {
             array(get_string('edittitle'), "link", $activity)
         );
 
-        // Adding chr(10) to save changes.
-        $this->execute('behat_forms::i_set_the_field_to',
-            array('title', $this->escape($newactivityname) . chr(10))
+        $this->execute('behat_forms::i_set_the_field_to', array('title', $this->escape($newactivityname))
         );
 
     }
