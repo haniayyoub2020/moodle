@@ -160,17 +160,14 @@ Feature: Users can edit tags to add description or rename
     # Renaming tag to a valid name
     And I click on "Edit tag name" "link" in the "Cat" "table_row"
     And I set the field "New name for tag Cat" to "Kitten"
-    And I press the enter key
     Then I should not see "Cat"
     And "New name for tag" "field" should not exist
-    And I wait until "Kitten" "link" exists
     And I follow "Default collection"
     And I should see "Kitten"
     And I should not see "Cat"
     # Renaming tag to an invalid name
     And I click on "Edit tag name" "link" in the "Turtle" "table_row"
     And I set the field "New name for tag Turtle" to "DOG"
-    And I press the enter key
     And I should see "The tag name is already in use. Do you want to combine these tags?"
     And I click on "Cancel" "button" in the "Confirm" "dialogue"
     And "New name for tag" "field" should not exist
@@ -183,7 +180,7 @@ Feature: Users can edit tags to add description or rename
     And I should not see "DOG"
     # Cancel tag renaming
     And I click on "Edit tag name" "link" in the "Dog" "table_row"
-    And I set the field "New name for tag Dog" to "Penguin"
+    And I type "Penguin"
     And I press the escape key
     And "New name for tag" "field" should not exist
     And I should see "Turtle"
@@ -199,7 +196,6 @@ Feature: Users can edit tags to add description or rename
     And I follow "Default collection"
     And I click on "Edit tag name" "link" in the "Turtle" "table_row"
     And I set the field "New name for tag Turtle" to "DOG"
-    And I press the enter key
     And I should see "The tag name is already in use. Do you want to combine these tags?"
     And I press "Yes"
     Then I should not see "Turtle"
