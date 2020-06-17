@@ -38,6 +38,10 @@ use Behat\Mink\Session;
 require_once(__DIR__ . '/classes/component_named_selector.php');
 require_once(__DIR__ . '/classes/component_named_replacement.php');
 
+// Alias the WebDriver\Key  class to behat_keys to make future transition to a different WebDriver implementation
+// easier.
+class_alias('WebDriver\\Key', 'behat_keys');
+
 /**
  * Steps definitions base class.
  *
@@ -243,6 +247,18 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
             'locator' => $locator,
             'container' => $container,
         ];
+    }
+
+    /**
+     * Send key presses straight to the currently active element.
+     *
+     * @param Session $session
+     * @param array $keys
+     */
+    public static function type_keys(Session $session, array $keys): void {
+        $session->getDriver()->getWebDriverSession()->keys([
+            'value' => $keys,
+        ]);
     }
 
     /**
