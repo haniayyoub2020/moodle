@@ -41,7 +41,6 @@ Feature: Adding questions to a quiz from the question bank
     And I open the "last" add to quiz menu
     And I follow "from question bank"
     And I set the field "Filter by tags..." to "foo"
-    And I press the enter key
     Then I should see "question 01 name" in the "categoryquestions" "table"
     And I should not see "question 02 name" in the "categoryquestions" "table"
 
