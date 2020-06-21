@@ -88,11 +88,11 @@ Feature: Users can view and search database entries
     And I add an entry to "Test database name" database with:
       | Test field name   | Student original entry untagged   |
       | Test field 2 name | Student original entry untagged 2 |
+    And I press "Save and view"
     And I add an entry to "Test database name" database with:
       | Test field name   | Student original entry tagged   |
       | Test field 2 name | Student original entry tagged 2 |
-    And I set the field with xpath "//div[@class='datatagcontrol']//input[@type='text']" to "Tag1"
-    And I click on "[data-value='Tag1']" "css_element"
+      | Enter tags...     | Tag1                            |
     And I press "Save and view"
     And I should see "Student original entry"
     And I should see "Tag1" in the "div.tag_list" "css_element"
@@ -101,8 +101,7 @@ Feature: Users can view and search database entries
     And I follow "View list"
     And I should see "Tag1" in the "div.tag_list" "css_element"
     And I follow "Search"
-    And I set the field with xpath "//div[@class='datatagcontrol']//input[@type='text']" to "Tag1"
-    And I click on "[data-value='Tag1']" "css_element"
+    And I set the field "Enter tags..." to "Tag1"
     When I press "Save settings"
     Then I should see "Student original entry tagged"
     And I should see "Student original entry tagged 2"
