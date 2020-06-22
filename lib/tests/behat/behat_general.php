@@ -1723,6 +1723,10 @@ EOF;
      * @When /^I press the (?P<modifiers_string>.* )?(?P<key_string>.*) key combination$/
      */
     public function i_press_named_key($modifiers, $key): void {
+        if (!$this->running_javascript()) {
+            throw new DriverException('Javascript required to use key press steps');
+        }
+
         $keys = [];
 
         foreach (explode('+', $modifiers) as $modifier) {
@@ -1933,12 +1937,11 @@ EOF;
      * @throws DriverException
      */
     public function i_manually_press_tab($shift = '') {
-        if (!$this->running_javascript()) {
-            throw new DriverException($shift . ' Tab press step is not available with Javascript disabled');
+        if (empty($shift)) {
+            $this->execute('behat_general::i_press_named_key', ['', 'tab']);
+        } else {
+            $this->execute('behat_general::i_press_named_key', ['shift', 'tab']);
         }
-
-        $value = ($shift == ' shift') ? [\WebDriver\Key::SHIFT . \WebDriver\Key::TAB] : [\WebDriver\Key::TAB];
-        $this->getSession()->getDriver()->getWebDriverSession()->activeElement()->postValue(['value' => $value]);
     }
 
     /**
