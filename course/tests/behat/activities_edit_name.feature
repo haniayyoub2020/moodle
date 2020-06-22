@@ -23,7 +23,7 @@ Feature: Edit activity name in-place
     # Rename activity
     And I click on "Edit title" "link" in the "//div[contains(@class,'activityinstance') and contains(.,'Test forum name')]" "xpath_element"
     And I set the field "New name for activity Test forum name" to "Good news"
-    And I press key "13" in the field "New name for activity Test forum name"
+    And I press the enter key
     Then I should not see "Test forum name" in the ".course-content" "css_element"
     And "New name for activity Test forum name" "field" should not exist
     And I should see "Good news"
