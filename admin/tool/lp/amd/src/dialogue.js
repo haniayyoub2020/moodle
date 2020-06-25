@@ -43,6 +43,7 @@ define(['core/yui'], function(Y) {
             wide = false;
         }
 
+        M.util.js_pending('tool_lp/dialogue:dialogue');
         Y.use('moodle-core-notification', 'timers', function() {
             var width = '480px';
             if (wide) {
@@ -79,6 +80,7 @@ define(['core/yui'], function(Y) {
             });
 
             parent.yuiDialogue.show();
+            M.util.js_complete('tool_lp/dialogue:dialogue');
         });
     };
 
