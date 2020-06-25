@@ -50,6 +50,7 @@ define(['jquery'], function($) {
      * @param {Event} e the event
      */
     UserCourseNavigation.prototype._userChanged = function(e) {
+        M.util.js_pending('report_competency/user_course_navigation:_userChanged');
         var newUserId = $(e.target).val();
         var queryStr = '?user=' + newUserId + '&id=' + this._courseId + '&mod=' + this._moduleId;
         document.location = this._baseUrl + queryStr;
@@ -62,6 +63,7 @@ define(['jquery'], function($) {
      * @param {Event} e the event
      */
     UserCourseNavigation.prototype._moduleChanged = function(e) {
+        M.util.js_pending('report_competency/user_course_navigation:_moduleChanged');
         var newModuleId = $(e.target).val();
         var queryStr = '?mod=' + newModuleId + '&id=' + this._courseId + '&user=' + this._userId;
         document.location = this._baseUrl + queryStr;
