@@ -44,6 +44,9 @@ class behat_search extends behat_base {
      * @param string $query Query to search for
      */
     public function i_search_for_using_the_header_global_search_box($query) {
+        // Hover over a different part of the page to ensure that the mouse has moved since any previous step.
+        $this->execute('behat_general::i_hover', ['Toggle messaging drawer', 'link']);
+
         // Hover over the search icon.
         $this->execute('behat_general::i_hover', ['.icon[title=Search]', 'css_element']);
 
