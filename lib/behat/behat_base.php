@@ -34,7 +34,7 @@ use Behat\Mink\Exception\ElementNotFoundException;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Element\Element;
 use Behat\Mink\Session;
-use Facebook\WebDriver\Exception\NoSuchWindowException;
+use Facebook\WebDriver\Exception\{ElementNotInteractableException, NoSuchWindowException};
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverElement;
 
@@ -298,7 +298,12 @@ class behat_base extends Behat\MinkExtension\Context\RawMinkContext {
      * @param array $keys
      */
     public static function type_keys(Session $session, array $keys): void {
-        $session->getDriver()->getWebDriver()->getKeyboard()->sendKeys($keys);
+        // Note: This is a workaround to https://bugzilla.mozilla.org/show_bug.cgi?id=1494661
+        $keystring = implode('', $keys);
+        $keysets = explode(behat_keys::NULL, $keystring);
+        foreach ($keysets as $keyset) {
+            $session->getDriver()->getWebDriver()->getKeyboard()->sendKeys(str_split($keyset));
+        }
     }
 
     /**
