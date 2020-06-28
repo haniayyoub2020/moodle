@@ -1866,9 +1866,8 @@ EOF;
         }
         // Gets the node based on the requested selector type and locator.
         $node = $this->get_selected_node($selectortype, $element);
-        $driver = $this->getSession()->getDriver();
-        $driver->keyDown($node->getXpath(), "\t");
-        $driver->keyUp($node->getXpath(), "\t");
+        $this->execute('behat_general::i_click_on', [$node, 'NodeElement']);
+        $this->execute('behat_general::i_press_named_key', ['', 'tab']);
     }
 
     /**
