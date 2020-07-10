@@ -17,11 +17,11 @@ Feature: Viewing the list of cohorts to enrol in a course
 
   @javascript
   Scenario: Check the teacher does not see the cohorts field without the proper capabilities
-    Given I log in as "admin"
-    And I set the following system permissions of "Teacher" role:
-      | capability           | permission |
+    Given the following "role capability" exists:
+      | role                 | Teacher  |
       | moodle/cohort:manage | Prohibit |
       | moodle/cohort:view   | Prohibit |
+    And I log in as "admin"
     And I navigate to "Users > Accounts >Cohorts" in site administration
     And I follow "Add new cohort"
     And I set the following fields to these values:

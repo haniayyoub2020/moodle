@@ -83,36 +83,34 @@ Feature: We can change what we are viewing on the grader report
 
   @javascript
   Scenario: View and minimise the grader report containing hidden activities without the 'moodle/grade:viewhidden' capability
+    Given the following "role capability" exists:
+      | role                    | Teacher |
+      | moodle/grade:viewhidden | Prevent |
     And I am on "Course 1" course homepage with editing mode on
     And I open "Test assignment name 2" actions menu
     And I click on "Hide" "link" in the "Test assignment name 2" activity
     And I log out
-    And I log in as "admin"
-    And I set the following system permissions of "Teacher" role:
-      | capability | permission |
-      | moodle/grade:viewhidden | Prevent |
-    And I log out
     And the following "course enrolments" exist:
       | user | course | role |
       | student2 | C1 | student |
-    And I log in as "teacher1"
+    When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I navigate to "View > Grader report" in the course gradebook
-    And I should see "Test assignment name 1"
+    Then I should see "Test assignment name 1"
     And I should see "Test assignment name 2"
     And I should see "Course total"
-    And the following should exist in the "user-grades" table:
+    When the following should exist in the "user-grades" table:
       | -1-                | -4-       | -5-       | -6-       |
       | Student 1          | 80        | -         | 80        |
     And I click on "Change to aggregates only" "link"
-    And I should not see "Test assignment name 1"
+    Then I should not see "Test assignment name 1"
     And I should not see "Test assignment name 2"
     And I should see "Course total"
     And the following should exist in the "user-grades" table:
       | -1-                | -4-       |
       | Student 1          | 80        |
-    And I click on "Change to grades only" "link"
-    And I should see "Test assignment name 1"
+    When I click on "Change to grades only" "link"
+    Then I should see "Test assignment name 1"
     And I should see "Test assignment name 2"
     And I should not see "Course total"
     And the following should exist in the "user-grades" table:

@@ -62,11 +62,9 @@ Feature: Anonymous feedback
 
   @javascript
   Scenario: Complete anonymous feedback and view analysis on the front page as an authenticated user
-    And I log in as "admin"
-    And I set the following system permissions of "Authenticated user on frontpage" role:
-      | capability                   | permission |
-      | mod/feedback:viewanalysepage | Allow      |
-    And I log out
+    Given the following "role capability" exists:
+      | role                         | Authenticated user on frontpage |
+      | mod/feedback:viewanalysepage | Allow                           |
     And I log in as "user1"
     And I am on site homepage
     When I follow "Site feedback"
@@ -128,12 +126,12 @@ Feature: Anonymous feedback
 
   @javascript
   Scenario: Complete fully anonymous feedback and view analyze on the front page as a guest
-    And I log in as "admin"
+    Given I log in as "admin"
     And I set the following administration settings values:
       | feedback_allowfullanonymous | 1 |
-    And I set the following system permissions of "Guest" role:
-      | capability                   | permission |
-      | mod/feedback:viewanalysepage | Allow      |
+    And the following "role capability" exists:
+      | role                         | Guest |
+      | mod/feedback:viewanalysepage | Allow |
     And I log out
     When I follow "Site feedback"
     And I follow "Preview"

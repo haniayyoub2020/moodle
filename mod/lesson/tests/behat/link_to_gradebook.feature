@@ -99,11 +99,9 @@ Feature: link to gradebook on the end of lesson page
 
   Scenario: No link to gradebook if no gradereport/user:view capability
     Given I log out
-    And I log in as "admin"
-    And I set the following system permissions of "Student" role:
-      | capability | permission |
-      | gradereport/user:view | Prevent |
-    And I log out
+    And the following "role capability" exists:
+      | role                  | student |
+      | gradereport/user:view | prevent |
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test lesson"

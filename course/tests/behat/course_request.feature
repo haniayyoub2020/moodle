@@ -18,9 +18,9 @@ Feature: Users can request and approve courses
     Given I log in as "admin"
     And I set the following administration settings values:
       | lockrequestcategory | 1 |
-    And I set the following system permissions of "Authenticated user" role:
-      | capability | permission |
-      | moodle/course:request | Allow |
+    And the following "role capability" exists:
+      | role                  | user  |
+      | moodle/course:request | allow |
     And I log out
     When I log in as "user1"
     And I am on course index
@@ -67,11 +67,9 @@ Feature: Users can request and approve courses
       | user1 | courserequestor | Category     | ENG       |
       | user2 | manager         | Category     | SCI       |
       | user3 | manager         | Category     | ENG       |
-    Given I log in as "admin"
-    And I set the following system permissions of "Course requestor" role:
-      | capability            | permission |
-      | moodle/course:request | Allow      |
-    And I log out
+    And the following "role capability" exists:
+      | role                  | courserequestor |
+      | moodle/course:request | allow           |
     And I log in as "user1"
     And I am on course index
     And I follow "English category"
