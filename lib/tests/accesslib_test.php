@@ -32,6 +32,11 @@ defined('MOODLE_INTERNAL') || die();
  * Note: execution may take many minutes especially on slower servers.
  */
 class core_accesslib_testcase extends advanced_testcase {
+
+    public function test_fail() {
+        $this->assertFalse(true);
+    }
+
     /**
      * Verify comparison of context instances in phpunit asserts.
      */
