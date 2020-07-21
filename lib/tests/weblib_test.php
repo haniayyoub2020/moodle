@@ -252,45 +252,60 @@ class core_weblib_testcase extends advanced_testcase {
         $this->assertSame('lala xx', clean_text($text, FORMAT_HTML));
     }
 
-    public function test_make_well_formed_html() {
-        // Test that good html doesn't change.
-        $goodhtml = '<div>Hello world</div><script type="text/javascript">alert("Hello");</script><!-- this comment is OK -->';
-        $this->assertSame($goodhtml, make_well_formed_html($goodhtml));
+    /**
+     * Tests for make_well_formed_html.
+     *
+     * @dataProvider    make_well_formed_html_provider
+     * @param   string $input
+     * @param   string $expected
+     */
+    public function test_make_well_formed_html(string $input, string $expected): void {
+        $this->assertSame($expected, make_well_formed_html($input));
+    }
 
-        // Test that excess closing tags are removed.
-        $excessclosinghtml  = "<div>Hello world</div></div><div>OK</div></div></li></ul></ol></section>";
-        $wellformedhtml = "<div>Hello world</div><div>OK</div>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($excessclosinghtml));
-
-        // Test that unclosed comment tags are removed.
-        $unclosedcommenthtml    = "<div>Hello world</div><!-- style-junk:pasted; from:word;";
-        $wellformedhtml         = "<div>Hello world</div>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($unclosedcommenthtml));
-        $unclosedcommenthtml    = "<div><!-- bad comment </div><div>this will be removed</div>";
-        $wellformedhtml         = "<div></div>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($unclosedcommenthtml));
-
-        // Test that unclosed script tags are balanced.
-        $unclosedscripthtml = '<div>Hello world</div><script type="text/javascript">alert("Hello");';
-        $wellformedhtml     = '<div>Hello world</div><script type="text/javascript">alert("Hello");</script>';
-        $this->assertSame($wellformedhtml, make_well_formed_html($unclosedscripthtml));
-        $unclosedscripthtml = "<div>Hello world</div><script>alert('Hello');";
-        $wellformedhtml     = "<div>Hello world</div><script>alert('Hello');</script>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($unclosedscripthtml));
-        // Tag attributes using single quotes are replaced with double quotes.
-        $unclosedscripthtml = "<div>Hello world</div><script type='text/javascript'>alert('Hello');";
-        $wellformedhtml     = "<div>Hello world</div><script type=\"text/javascript\">alert('Hello');</script>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($unclosedscripthtml));
-
-        // Test that unclosed html gets balanced.
-        $unclosedcommenthtml    = "<ul><li><div>Hello world";
-        $wellformedhtml         = "<ul><li><div>Hello world</div></li></ul>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($unclosedcommenthtml));
-
-        // Test that prepared tags aren't confused with our placeholder prepared tags used in make_well_formed_html().
-        $wellformedhtml    = "<prepared>for anything</prepared><div>Hello world</div>";
-        $this->assertSame($wellformedhtml, make_well_formed_html($wellformedhtml));
-
+    public function make_well_formed_html_provider(): array {
+        return [
+            "Good html doesn't change." => [
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");</script><!-- this comment is OK -->',
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");</script><!-- this comment is OK -->',
+            ],
+            'Excess closing tags are removed' => [
+                '<div>Hello world</div></div><div>OK</div></div></li></ul></ol></section>',
+                '<div>Hello world</div><div>OK</div>',
+            ],
+            'Unclosed comment tags are removed 1' => [
+                "<div>Hello world</div><!-- style-junk:pasted; from:word;",
+                "<div>Hello world</div>",
+            ],
+            'Unclosed comment tags are removed 2' => [
+                "<div><!-- bad comment </div><div>this will be removed</div>",
+                "<div></div>",
+            ],
+            'Unclosed script tags are balanced 1' => [
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");',
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");</script>',
+            ],
+            'Unclosed script tags are balanced 2' => [
+                "<div>Hello world</div><script>alert('Hello');",
+                "<div>Hello world</div><script>alert('Hello');</script>",
+            ],
+            'Tag attributes using single quotes are replaced with double quotes' => [
+                "<div>Hello world</div><script type='text/javascript'>alert('Hello'),g",
+                "<div>Hello world</div><script type=\"text/javascript\">alert('Hello'),g</script>",
+            ],
+            'Unclosed html gets balanced' => [
+                "<ul><li><div>Hello world",
+                "<ul><li><div>Hello world</div></li></ul>",
+            ],
+            "Prepared tags aren't confused with our placeholder prepared tags used in make_well_formed_html()." => [
+                "<prepared>for anything</prepared><div>Hello world</div>",
+                "<prepared>for anything</prepared><div>Hello world</div>",
+            ],
+            'Image' => [
+                '<img src="foo">',
+                '<img src="foo">',
+            ],
+        ];
     }
 
     public function test_qualified_me() {
