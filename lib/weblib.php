@@ -1938,14 +1938,13 @@ function purify_html($text, $options = array()) {
  * Make the text into well-formed html. Remove or balance unbalanced tags that break the
  * moodle interface in ways that will not allow users to correct the bad html themselves.
  *
- * @param string $text The (X)HTML string to make well-formed
+ * @param string $text The HTML string to make well-formed
  * @return string
  */
 function make_well_formed_html($text) {
     // Prepare the text by wrapping it in prepared tags so we can easily fetch it later.
     // The prepared tags force DomDocument to not add whitespaces or carriage returns in long lines of html.
-    // Also add the XHTML declaration for the DomDocument class.
-    $preparehtml = '<?xml version="1.0" encoding="UTF-8"?><prepared>' . $text . '</prepared>';
+    $preparehtml = "<!DOCTYPE html><html><body><prepared>{$text}</prepared></body></html>";
 
     $doc = new DomDocument();
     libxml_use_internal_errors(true);   // Disable standard libxml errors and enable user error handling.
