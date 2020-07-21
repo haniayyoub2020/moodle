@@ -56,10 +56,22 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
     public $_type       = 'editor';
 
     /** @var array options provided to initalize filepicker */
-    protected $_options = array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'changeformat' => 0,
-            'areamaxbytes' => FILE_AREA_MAX_BYTES_UNLIMITED, 'context' => null, 'noclean' => 0, 'trusttext' => 0,
-            'return_types' => 15, 'enable_filemanagement' => true, 'removeorphaneddrafts' => false, 'autosave' => true);
-    // 15 is $_options['return_types'] = FILE_INTERNAL | FILE_EXTERNAL | FILE_REFERENCE | FILE_CONTROLLED_LINK.
+    protected $_options = [
+        'subdirs' => 0,
+        'maxbytes' => 0,
+        'maxfiles' => 0,
+        'changeformat' => 0,
+        'areamaxbytes' => FILE_AREA_MAX_BYTES_UNLIMITED,
+        'context' => null,
+        'noclean' => 0,
+        'trusttext' => 0,
+        // 15 is $_options['return_types'] = FILE_INTERNAL | FILE_EXTERNAL | FILE_REFERENCE | FILE_CONTROLLED_LINK.
+        'return_types' => 15,
+        'enable_filemanagement' => true,
+        'removeorphaneddrafts' => false,
+        'autosave' => true,
+        'normalisevalue' => true,
+    ];
 
     /** @var array values for editor */
     protected $_values     = array('text'=>null, 'format'=>null, 'itemid'=>null);
@@ -113,6 +125,32 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
     }
 
     /**
+     * Whether the content of the value should be normalised.
+     *
+     * Normalisation involves ensuring that HTML content is valid.
+     *
+     * @param   array $value
+     * @return  bool
+     */
+    protected function should_normalise_value(array $value): bool {
+        return $this->_options['normalisevalue'] && $value['format'] === FORMAT_HTML;;
+    }
+
+    /**
+     * Normalise the text value of the supplied value if required.
+     *
+     * @param   array $value Value object containing the format, and text to be normalised.
+     * @return  array Normalised value
+     */
+    protected function normalise_value(array $value): array {
+        if ($this->should_normalise_value($value)) {
+            $value['text'] = make_well_formed_html($value['text']);
+        }
+
+        return $value;
+    }
+
+    /**
      * Called by HTML_QuickForm whenever form event is made on this element
      *
      * @param string $event Name of event
@@ -143,10 +181,7 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
         if (null === $value) {
             $value = $this->getValue();
         }
-        if ($value['format'] === FORMAT_HTML) {
-            $value['text'] = make_well_formed_html($value['text']);
-        }
-        return $this->_prepareValue($value, $assoc);
+        return $this->_prepareValue($this->normalise_value($value), $assoc);
     }
 
     /**
