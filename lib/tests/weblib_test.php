@@ -253,17 +253,22 @@ class core_weblib_testcase extends advanced_testcase {
     }
 
     /**
-     * Tests for make_well_formed_html.
+     * Tests for normalise_html.
      *
-     * @dataProvider    make_well_formed_html_provider
+     * @dataProvider    normalise_html_provider
      * @param   string $input
      * @param   string $expected
      */
-    public function test_make_well_formed_html(string $input, string $expected): void {
-        $this->assertSame($expected, make_well_formed_html($input));
+    public function test_normalise_html(string $input, string $expected): void {
+        $this->assertSame($expected, normalise_html($input));
     }
 
-    public function make_well_formed_html_provider(): array {
+    /**
+     * Data provider for normalise_html tests.
+     *
+     * @return  array
+     */
+    public function normalise_html_provider(): array {
         return [
             "Good html doesn't change." => [
                 '<div>Hello world</div><script type="text/javascript">alert("Hello");</script><!-- this comment is OK -->',

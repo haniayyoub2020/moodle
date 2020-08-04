@@ -144,7 +144,7 @@ class MoodleQuickForm_editor extends HTML_QuickForm_element implements templatab
      */
     protected function normalise_value(array $value): array {
         if ($this->should_normalise_value($value)) {
-            $value['text'] = make_well_formed_html($value['text']);
+            $value['text'] = normalise_html($value['text']);
         }
 
         return $value;

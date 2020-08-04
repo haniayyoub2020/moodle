@@ -1935,16 +1935,15 @@ function purify_html($text, $options = array()) {
 }
 
 /**
- * Make the text into well-formed html. Remove or balance unbalanced tags that break the
- * moodle interface in ways that will not allow users to correct the bad html themselves.
+ * Normalise the provided HTML and ensure that it is well-formed HTML content.
  *
- * @param string $text The HTML string to make well-formed
- * @return string
+ * @param   string $html The HTML string to normalise
+ * @return  string The normalised HTML content
  */
-function make_well_formed_html($text) {
+function normalise_html(string $html): string {
     // Prepare the text by wrapping it in prepared tags so we can easily fetch it later.
     // The prepared tags force DomDocument to not add whitespaces or carriage returns in long lines of html.
-    $preparehtml = "<!DOCTYPE html><html><body><prepared>{$text}</prepared></body></html>";
+    $preparehtml = "<!DOCTYPE html><html><head><meta charset='utf-8'></head><body><prepared>{$html}</prepared></body></html>";
 
     $doc = new DomDocument();
     libxml_use_internal_errors(true);   // Disable standard libxml errors and enable user error handling.
@@ -1953,6 +1952,7 @@ function make_well_formed_html($text) {
 
     // Save the first prepared tag as HTML.
     $temphtml = $doc->saveHTML($doc->getElementsByTagName('prepared')->item(0));
+
     // Get the fixed text from inside the prepared tag.
     $fixedhtml = preg_replace('#<prepared>(.*)</prepared>#s', '$1', $temphtml);
 
