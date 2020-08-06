@@ -1353,11 +1353,23 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
         $text = html_writer::tag('div', $text, array('class' => 'no-overflow'));
     }
 
+    // Fetch previous libxml errors, and then disable standard libxml errors to enable user error handling.
+    $previousinternalerrors = libxml_use_internal_errors(true);
+
+    // Note: It is not possible to use LIBXML_HTML_NOIMPLIED as the content will be wrapped in the first element that is
+    // found. For example, <h1>Welcome</h1><p>To Mars!</p> becomes <h1>Welcome<p>To Mars!</p></h1>, which would be
+    // incorrect.
+    $domdoc = new DOMDocument();
+
+    $header = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>';
+    $footer = '</body></html>';
+    $domdoc->loadHTML($header . $text . $footer, LIBXML_HTML_NODEFDTD | LIBXML_BIGLINES);
+
+    // Clear the libxml error buffer and switch back to libxml internal errors.
+    libxml_clear_errors();
+    libxml_use_internal_errors($previousinternalerrors);
+
     if ($options['blanktarget']) {
-        $domdoc = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $domdoc->loadHTML('<?xml version="1.0" encoding="UTF-8" ?>' . $text);
-        libxml_clear_errors();
         foreach ($domdoc->getElementsByTagName('a') as $link) {
             if ($link->hasAttribute('target') && strpos($link->getAttribute('target'), '_blank') === false) {
                 continue;
@@ -1367,15 +1379,75 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
                 $link->setAttribute('rel', trim($link->getAttribute('rel') . ' noreferrer'));
             }
         }
-
-        // This regex is nasty and I don't like it. The correct way to solve this is by loading the HTML like so:
-        // $domdoc->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD); however it seems like the libxml
-        // version that travis uses doesn't work properly and ends up leaving <html><body>, so I'm forced to use
-        // this regex to remove those tags.
-        $text = trim(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $domdoc->saveHTML($domdoc->documentElement)));
     }
 
-    return $text;
+    if (version_compare(PHP_VERSION, '7.3.0') >= 0) {
+        // Grab just the body Node.
+        $text = trim($domdoc->saveHTML($domdoc->getElementsByTagName('body')[0]));
+    } else {
+        // There is a bug in PHP Versions earlier than 7.3 whereby it is not possible to prevent formatting of output
+        // when exporting a specific node.
+        // See https://bugs.php.net/bug.php?id=76285 for further information.
+        // TODO Remove as part of 3.11 release once PHP 7.2 is no longer supported.
+
+        // Grab all of the content.
+        $text = trim($domdoc->saveHTML());
+    }
+
+    // Remove to the end of the <body> tag.
+    $text = substr($text, strpos($text, '<body>') + strlen('<body>'));
+
+    // Remove </body> to the end
+    $text = substr($text, 0, strpos($text, '</body>'));
+
+    // Remove leading/trailing whitespace. DOMDocument adds \n chars around many tags.
+    return trim($text);
+}
+
+/**
+ * Balance and standardise the supplied HTML.
+ *
+ * @param   string $text
+ * @return  string
+ */
+function balance_html(string $text): string {
+    // Fetch previous libxml errors, and then disable standard libxml errors to enable user error handling.
+    $previousinternalerrors = libxml_use_internal_errors(true);
+
+    // Note: It is not possible to use LIBXML_HTML_NOIMPLIED as the content will be wrapped in the first element that is
+    // found. For example, <h1>Welcome</h1><p>To Mars!</p> becomes <h1>Welcome<p>To Mars!</p></h1>, which would be
+    // incorrect.
+    $domdoc = new DOMDocument();
+
+    $header = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>';
+    $footer = '</body></html>';
+    $domdoc->loadHTML($header . $text . $footer, LIBXML_HTML_NODEFDTD | LIBXML_BIGLINES);
+
+    // Clear the libxml error buffer and switch back to libxml internal errors.
+    libxml_clear_errors();
+    libxml_use_internal_errors($previousinternalerrors);
+
+    if (version_compare(PHP_VERSION, '7.3.0') >= 0) {
+        // Grab just the body Node.
+        $text = trim($domdoc->saveHTML($domdoc->getElementsByTagName('body')[0]));
+    } else {
+        // There is a bug in PHP Versions earlier than 7.3 whereby it is not possible to prevent formatting of output
+        // when exporting a specific node.
+        // See https://bugs.php.net/bug.php?id=76285 for further information.
+        // TODO Remove as part of 3.11 release once PHP 7.2 is no longer supported.
+
+        // Grab all of the content.
+        $text = trim($domdoc->saveHTML());
+    }
+
+    // Remove to the end of the <body> tag.
+    $text = substr($text, strpos($text, '<body>') + strlen('<body>'));
+
+    // Remove </body> to the end
+    $text = substr($text, 0, strpos($text, '</body>'));
+
+    // Remove leading/trailing whitespace. DOMDocument adds \n chars around many tags.
+    return trim($text);
 }
 
 /**

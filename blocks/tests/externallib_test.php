@@ -155,7 +155,7 @@ class core_block_externallib_testcase extends externallib_advanced_testcase {
 
         // Create a HTML block.
         $title = 'Some course info';
-        $body = 'Some course info<br /><p>Some contents</p>';
+        $body = 'Some course info<br><p>Some contents</p>';
         $bodyformat = FORMAT_MOODLE;
         $page = new moodle_page();
         $page->set_context($coursecontext);

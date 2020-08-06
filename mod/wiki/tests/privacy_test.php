@@ -343,7 +343,7 @@ class mod_wiki_privacy_testcase extends provider_testcase {
             ], array_keys($data));
         // First page was initially created by this user and all its information is returned to this user.
         $data11 = $data[$this->pagepaths[1][1]];
-        $this->assertEquals($this->pages[1][1]->cachedcontent, $data11['page']['cachedcontent']);
+        $this->assertEquals(trim($this->pages[1][1]->cachedcontent), $data11['page']['cachedcontent']);
         $this->assertNotEmpty($data11['page']['timecreated']);
         // Wiki creates two revisions when page is created, first one with empty content.
         $this->assertEquals(2, count($data11['revisions']));
@@ -399,7 +399,7 @@ class mod_wiki_privacy_testcase extends provider_testcase {
 
         // This user was the last one to modify this page, so the page info is returned.
         $data12 = $data[$this->pagepaths[1][2]];
-        $this->assertEquals('update3 <img src="files/Hamster.jpg" alt="Hamster.jpg" />', trim($data12['page']['cachedcontent']));
+        $this->assertEquals('update3 <img src="files/Hamster.jpg" alt="Hamster.jpg">', trim($data12['page']['cachedcontent']));
         // He made one revision.
         $this->assertEquals(1, count($data12['revisions']));
         $lastrevision = reset($data12['revisions']);

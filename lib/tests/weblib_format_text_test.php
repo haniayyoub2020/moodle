@@ -38,7 +38,7 @@ class core_weblib_format_text_testcase extends advanced_testcase {
         $this->resetAfterTest();
         filter_set_global_state('emoticon', TEXTFILTER_ON);
         $this->assertRegExp('~^<p><img class="icon emoticon" alt="smile" title="smile" ' .
-                'src="https://www.example.com/moodle/theme/image.php/_s/boost/core/1/s/smiley" /></p>$~',
+                'src="https://www.example.com/moodle/theme/image.php/_s/boost/core/1/s/smiley"></p>$~',
                 format_text('<p>:-)</p>', FORMAT_HTML));
     }
 
@@ -68,15 +68,15 @@ class core_weblib_format_text_testcase extends advanced_testcase {
         $this->resetAfterTest();
         filter_set_global_state('emoticon', TEXTFILTER_ON);
         $this->assertRegExp('~^<p><em><img class="icon emoticon" alt="smile" title="smile" ' .
-                'src="https://www.example.com/moodle/theme/image.php/_s/boost/core/1/s/smiley" />' .
-                '</em></p>\n$~',
+                'src="https://www.example.com/moodle/theme/image.php/_s/boost/core/1/s/smiley">' .
+                '</em></p>$~',
                 format_text('*:-)*', FORMAT_MARKDOWN));
     }
 
     public function test_format_text_format_markdown_nofilter() {
         $this->resetAfterTest();
         filter_set_global_state('emoticon', TEXTFILTER_ON);
-        $this->assertEquals("<p><em>:-)</em></p>\n",
+        $this->assertEquals("<p><em>:-)</em></p>",
                 format_text('*:-)*', FORMAT_MARKDOWN, array('filter' => false)));
     }
 
@@ -85,7 +85,7 @@ class core_weblib_format_text_testcase extends advanced_testcase {
         filter_set_global_state('emoticon', TEXTFILTER_ON);
         $this->assertRegExp('~^<div class="text_to_html"><p>' .
                 '<img class="icon emoticon" alt="smile" title="smile" ' .
-                'src="https://www.example.com/moodle/theme/image.php/_s/boost/core/1/s/smiley" /></p></div>$~',
+                'src="https://www.example.com/moodle/theme/image.php/_s/boost/core/1/s/smiley"></p></div>$~',
                 format_text('<p>:-)</p>', FORMAT_MOODLE));
     }
 
@@ -160,7 +160,7 @@ class core_weblib_format_text_testcase extends advanced_testcase {
                 'ᛋᛏᚫᚾᛞ ᛒᚣ ᚦᛖ ᚷᚱᛖᚣ ᛋᛏᚩᚾᛖ ᚻᚹᛁᛚᛖ ᚦᛖ ᚦᚱᚢᛋᚻ ᚾᚩᚳᛋ ᚫᚾᛞ ᚦᛖ ᛋᛖᛏᛏᛁᚾᚷ ᛋᚢᚾ ᚹᛁᚦ ᚦᛖ ᛚᚫᛋᛏ ᛚᛁᚷᚻᛏ ᚩᚠ ᛞᚢᚱᛁᚾᛋ ᛞᚫᚣ ᚹᛁᛚᛚ ᛋᚻᛁᚾᛖ ᚢᛈᚩᚾ ᚦᛖ ᚳᛖᚣᚻᚩᛚᛖ',
                 '<div class="text_to_html">ᛋᛏᚫᚾᛞ ᛒᚣ ᚦᛖ ᚷᚱᛖᚣ ᛋᛏᚩᚾᛖ ᚻᚹᛁᛚᛖ ᚦᛖ ᚦᚱᚢᛋᚻ ᚾᚩᚳᛋ ᚫᚾᛞ ᚦᛖ ᛋᛖᛏᛏᛁᚾᚷ ᛋᚢᚾ ᚹᛁᚦ ᚦᛖ ᛚᚫᛋᛏ ᛚᛁᚷᚻᛏ ᚩᚠ ᛞᚢᚱᛁᚾᛋ ᛞᚫᚣ ᚹ' .
                 'ᛁᛚᛚ ᛋᚻᛁᚾᛖ ᚢᛈᚩᚾ ᚦᛖ ᚳᛖᚣᚻᚩᛚᛖ</div>'
-            ]
+            ],
         ];
     }
 
@@ -209,7 +209,7 @@ class core_weblib_format_text_testcase extends advanced_testcase {
             'Inline frames' => [
                 'Let us go phishing! <iframe src="https://1.2.3.4/google.com"></iframe>',
                 'Let us go phishing! <iframe src="https://1.2.3.4/google.com"></iframe>',
-                'Let us go phishing! ',
+                'Let us go phishing!',
             ],
             'Malformed A tags' => [
                 '<a onmouseover="alert(document.cookie)">xxs link</a>',
@@ -218,23 +218,103 @@ class core_weblib_format_text_testcase extends advanced_testcase {
             ],
             'Malformed IMG tags' => [
                 '<IMG """><SCRIPT>alert("XSS")</SCRIPT>">',
-                '<IMG """><SCRIPT>alert("XSS")</SCRIPT>">',
+                '<img><script>alert("XSS")</script>"&gt;',
                 '"&gt;',
             ],
             'On error alert' => [
                 '<IMG SRC=/ onerror="alert(String.fromCharCode(88,83,83))"></img>',
-                '<IMG SRC=/ onerror="alert(String.fromCharCode(88,83,83))"></img>',
-                '<img src="/" alt="" />',
+                '<img src="/" onerror="alert(String.fromCharCode(88,83,83))">',
+                '<img src="/" alt="">',
             ],
             'IMG onerror and javascript alert encode' => [
                 '<img src=x onerror="&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000083&#0000083&#0000039&#0000041">',
-                '<img src=x onerror="&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000083&#0000083&#0000039&#0000041">',
-                '<img src="x" alt="x" />',
+                '<img src="x" onerror="javascSS\')">',
+                '<img src="x" alt="x">',
             ],
             'DIV background-image' => [
                 '<DIV STYLE="background-image: url(javascript:alert(\'XSS\'))">',
-                '<DIV STYLE="background-image: url(javascript:alert(\'XSS\'))">',
+                '<div style="background-image: url(javascript:alert(\'XSS\'))"></div>',
                 '<div></div>',
+            ],
+        ];
+    }
+
+    /**
+     * Ensure that `balance_html` balancesHTML content correctly.
+     *
+     * @dataProvider balanced_html_provider
+     * @param   string $input
+     * @param   string $expected
+     */
+    public function test_balance_html(string $input, string $expected): void {
+        // Note: All other options are disabled as they change the output in some way.
+        $this->assertEquals($expected, balance_html($input));
+    }
+
+    /**
+     * Ensure that `format_text` fixes incorrect HTML content.
+     *
+     * @dataProvider balanced_html_provider
+     * @param   string $input
+     * @param   string $expected
+     */
+    public function test_format_text_balances_html(string $input, string $expected): void {
+        // Note: All other options are disabled as they change the output in some way.
+        $this->assertEquals($expected, format_text($input, FORMAT_HTML, [
+            'trusted' => true,
+            'noclean' => true,
+            'noocache' => true,
+            'filter' => false,
+            'para' => false,
+            'newlines' => false,
+            'overflowdiv' => false,
+        ]));
+    }
+
+    /**
+     * Data provider for format_html() to ensure that all generated HTML is correctly balanced.
+     */
+    public function balanced_html_provider(): array {
+        return [
+            "Good html doesn't change." => [
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");</script><!-- this comment is OK -->',
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");</script><!-- this comment is OK -->',
+            ],
+            'Excess closing tags are removed' => [
+                '<div>Hello world</div></div><div>OK</div></div></li></ul></ol></section>',
+                '<div>Hello world</div><div>OK</div>',
+            ],
+            'Unclosed comment tags are removed 1' => [
+                "<div>Hello world</div><!-- style-junk:pasted; from:word;",
+                "<div>Hello world</div>",
+            ],
+            'Unclosed comment tags are removed 2' => [
+                "<div><!-- bad comment </div><div>this will be removed</div>",
+                "<div></div>",
+            ],
+            'Unclosed script tags are balanced 1' => [
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");',
+                '<div>Hello world</div><script type="text/javascript">alert("Hello");</script>',
+            ],
+            'Unclosed script tags are balanced 2' => [
+                "<div>Hello world</div><script>alert('Hello');",
+                "<div>Hello world</div><script>alert('Hello');</script>",
+            ],
+            'Tag attributes using single quotes are replaced with double quotes' => [
+                "<div>Hello world</div><script type='text/javascript'>alert('Hello'),g",
+                "<div>Hello world</div><script type=\"text/javascript\">alert('Hello'),g</script>",
+            ],
+            'Unclosed html gets balanced' => [
+                "<ul><li><div>Hello world",
+                "<ul><li><div>Hello world</div></li></ul>",
+            ],
+            "Prepared tags aren't confused with our placeholder prepared tags used in make_well_formed_html()." => [
+                "<prepared>for anything</prepared><div>Hello world</div>",
+                "<prepared>for anything</prepared><div>Hello world</div>",
+            ],
+            'Image' => [
+                '<img src="foo">',
+                '<img src="foo">',
             ],
         ];
     }

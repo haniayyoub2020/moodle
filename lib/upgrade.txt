@@ -32,6 +32,8 @@ information provided here is intended especially for developers.
 * The `core_output_load_fontawesome_icon_map` web service has been deprecated and replaced by
   `core_output_load_fontawesome_icon_system_map` which takes the name of the theme to generate the icon system map for.
 * The class coursecat_sortable_records has been removed.
+* The `format_text` function now always parses generated content and ensures that the generated HTML is valid.
+  Previously this occurred as a by-product of the blanktarget feature of format_text.
 
 === 3.9 ===
 * Following function has been deprecated, please use \core\task\manager::run_from_cli().

@@ -123,7 +123,7 @@ class mod_survey_external_testcase extends externallib_advanced_testcase {
         $survey2->groupmode = 0;
         $survey2->groupingid = 0;
         $tempo = $DB->get_field("survey", "intro", array("id" => $survey2->template));
-        $survey2->intro = nl2br(get_string($tempo, "survey"));
+        $survey2->intro = nl2br(get_string($tempo, "survey"), false);
         $survey2->introfiles = [];
 
         foreach ($expectedfields as $field) {

@@ -392,7 +392,7 @@ class core_htmlpurifier_testcase extends basic_testcase {
                 '<audio %1$s><source src="http://example.com/getup.wav">No tasty jams for you.</audio>',
                 '<div class="text_to_html">' .
                     '<audio %1$s>' .
-                        '<source src="http://example.com/getup.wav" />' .
+                        '<source src="http://example.com/getup.wav"></source>' .
                         'No tasty jams for you.' .
                     '</audio>' .
                 '</div>'
@@ -405,9 +405,9 @@ class core_htmlpurifier_testcase extends basic_testcase {
                 '</audio>',
                 '<div class="text_to_html">' .
                     '<audio %1$s>' .
-                        '<source src="http://example.com/getup.wav" type="audio/wav" />' .
-                        '<source src="http://example.com/getup.mp3" type="audio/mpeg" />' .
-                        '<source src="http://example.com/getup.ogg" type="audio/ogg" />' .
+                        '<source src="http://example.com/getup.wav" type="audio/wav"></source>' .
+                        '<source src="http://example.com/getup.mp3" type="audio/mpeg"></source>' .
+                        '<source src="http://example.com/getup.ogg" type="audio/ogg"></source>' .
                         'No tasty jams for you.' .
                     '</audio>' .
                 '</div>'
@@ -420,9 +420,9 @@ class core_htmlpurifier_testcase extends basic_testcase {
                 '</audio>',
                 '<div class="text_to_html">' .
                     '<audio %1$s>' .
-                        '<source src="http://example.com/getup.wav" type="audio/wav" />' .
-                        '<track kind="subtitles" src="http://example.com/subtitles_en.vtt" label="English" srclang="en" />' .
-                        '<track kind="subtitles" src="http://example.com/subtitles_es.vtt" label="Espanol" srclang="es" />' .
+                        '<source src="http://example.com/getup.wav" type="audio/wav"></source>' .
+                        '<track kind="subtitles" src="http://example.com/subtitles_en.vtt" label="English" srclang="en"></track>' .
+                        '<track kind="subtitles" src="http://example.com/subtitles_es.vtt" label="Espanol" srclang="es"></track>' .
                         'No tasty jams for you.' .
                     '</audio>' .
                 '</div>'
@@ -443,7 +443,7 @@ class core_htmlpurifier_testcase extends basic_testcase {
                 '<video %1$s><source src="http://example.com/prettygood.mp4">Oh, that\'s pretty bad 😦</video>',
                 '<div class="text_to_html">' .
                     '<video %1$s>' .
-                        '<source src="http://example.com/prettygood.mp4" />' .
+                        '<source src="http://example.com/prettygood.mp4"></source>' .
                         'Oh, that\'s pretty bad 😦' .
                     '</video>' .
                 '</div>'
@@ -456,9 +456,9 @@ class core_htmlpurifier_testcase extends basic_testcase {
                 '</video>',
                 '<div class="text_to_html">' .
                     '<video %1$s>' .
-                        '<source src="http://example.com/prettygood.mp4" type="video/mp4" />' .
-                        '<source src="http://example.com/eljefe.mp4" type="video/mp4" />' .
-                        '<source src="http://example.com/turnitup.mov" type="video/mov" />' .
+                        '<source src="http://example.com/prettygood.mp4" type="video/mp4"></source>' .
+                        '<source src="http://example.com/eljefe.mp4" type="video/mp4"></source>' .
+                        '<source src="http://example.com/turnitup.mov" type="video/mov"></source>' .
                         'Oh, that\'s pretty bad 😦' .
                     '</video>' .
                 '</div>'
@@ -471,9 +471,9 @@ class core_htmlpurifier_testcase extends basic_testcase {
                 '</video>',
                 '<div class="text_to_html">' .
                     '<video %1$s>' .
-                        '<source src="http://example.com/getup.wav" type="audio/wav" />' .
-                        '<track kind="subtitles" src="http://example.com/subtitles_en.vtt" label="English" srclang="en" />' .
-                        '<track kind="subtitles" src="http://example.com/subtitles_es.vtt" label="Espanol" srclang="es" />' .
+                        '<source src="http://example.com/getup.wav" type="audio/wav"></source>' .
+                        '<track kind="subtitles" src="http://example.com/subtitles_en.vtt" label="English" srclang="en"></track>' .
+                        '<track kind="subtitles" src="http://example.com/subtitles_es.vtt" label="Espanol" srclang="es"></track>' .
                     'No tasty jams for you.' .
                     '</video>' .
                 '</div>'
@@ -497,14 +497,14 @@ class core_htmlpurifier_testcase extends basic_testcase {
                     '</div>'
             ]] + ['Other attributes' => [
                 '<video src="http://example.com/turnitdown.mov" class="nofilter" data-something="data attribute" someattribute="somevalue" onclick="boom">' .
-                    '<source src="http://example.com/getup.wav" type="audio/wav" class="shouldberemoved" data-sourcedata="source data" onmouseover="kill session" />' .
-                    '<track src="http://example.com/subtitles_en.vtt" class="shouldberemoved" data-trackdata="track data" onmouseover="removeme" />' .
+                    '<source src="http://example.com/getup.wav" type="audio/wav" class="shouldberemoved" data-sourcedata="source data" onmouseover="kill session">' .
+                    '<track src="http://example.com/subtitles_en.vtt" class="shouldberemoved" data-trackdata="track data" onmouseover="removeme">' .
                     'Do not remove attribute class but remove other attributes' .
                 '</video>',
                 '<div class="text_to_html">' .
                     '<video src="http://example.com/turnitdown.mov" class="nofilter">' .
-                        '<source src="http://example.com/getup.wav" type="audio/wav" />' .
-                        '<track src="http://example.com/subtitles_en.vtt" />' .
+                        '<source src="http://example.com/getup.wav" type="audio/wav"></source>' .
+                        '<track src="http://example.com/subtitles_en.vtt"></track>' .
                         'Do not remove attribute class but remove other attributes' .
                     '</video>' .
                 '</div>'

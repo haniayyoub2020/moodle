@@ -617,6 +617,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedfirstpage['caneditpage'] = true; // No groups and students have 'mod/wiki:editpage' capability.
         $expectedfirstpage['firstpage'] = true;
         $expectedfirstpage['contentformat'] = 1;
+        $expectedfirstpage['cachedcontent'] = trim($expectedfirstpage['cachedcontent']);
         $expectedfirstpage['tags'] = \core_tag\external\util::get_item_tags('mod_wiki', 'wiki_pages', $this->firstpage->id);
         // Cast to expected.
         $expectedfirstpage['tags'][0]['isstandard'] = (bool) $expectedfirstpage['tags'][0]['isstandard'];
@@ -646,6 +647,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectednewpage['firstpage'] = false;
         $expectednewpage['contentformat'] = 1;
         $expectednewpage['tags'] = array();
+        $expectednewpage['cachedcontent'] = trim($expectednewpage['cachedcontent']);
         array_unshift($expectedpages, $expectednewpage); // Add page to the beginning since it orders by title by default.
 
         $result = mod_wiki_external::get_subwiki_pages($this->wiki->id);
@@ -699,6 +701,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedteacherpage['firstpage'] = true;
         $expectedteacherpage['contentformat'] = 1;
         $expectedteacherpage['tags'] = array();
+        $expectedteacherpage['cachedcontent'] = trim($expectedteacherpage['cachedcontent']);
         $expectedpages = array($expectedteacherpage);
 
         $result = mod_wiki_external::get_subwiki_pages($indwiki->id, 0, $this->teacher->id);
@@ -711,6 +714,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedstudentpage['firstpage'] = true;
         $expectedstudentpage['contentformat'] = 1;
         $expectedstudentpage['tags'] = array();
+        $expectedstudentpage['cachedcontent'] = trim($expectedstudentpage['cachedcontent']);
         $expectedpages = array($expectedstudentpage);
 
         $result = mod_wiki_external::get_subwiki_pages($indwiki->id, 0, $this->student->id);
@@ -747,6 +751,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikisep->id, $this->group1->id);
@@ -770,6 +775,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikisep->id, 0);
@@ -794,6 +800,8 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikivis->id, $this->group1->id);
@@ -806,6 +814,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikivis->id, $this->group2->id);
@@ -818,6 +827,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikivis->id, 0);
@@ -841,6 +851,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikisepind->id, $this->group1->id, $this->student->id);
@@ -865,6 +876,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikisepind->id, $this->group1->id, $this->student2->id);
@@ -888,6 +900,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikivisind->id, $this->group1->id, $this->student->id);
@@ -900,6 +913,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikivisind->id, $this->group2->id, $this->teacher->id);
@@ -912,6 +926,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
         $expectedpage['firstpage'] = true;
         $expectedpage['contentformat'] = 1;
         $expectedpage['tags'] = array();
+        $expectedpage['cachedcontent'] = trim($expectedpage['cachedcontent']);
         $expectedpages = array($expectedpage);
 
         $result = mod_wiki_external::get_subwiki_pages($this->wikivisind->id, 0, $this->teacher->id);
@@ -1002,7 +1017,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
             'groupid' => 0, // No groups.
             'userid' => 0, // Collaborative.
             'title' => $this->firstpage->title,
-            'cachedcontent' => $this->firstpage->cachedcontent,
+            'cachedcontent' => trim($this->firstpage->cachedcontent),
             'contentformat' => 1,
             'caneditpage' => true,
             'version' => 1,
@@ -1021,7 +1036,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
 
         $expectedpage['id'] = $newpage->id;
         $expectedpage['title'] = $newpage->title;
-        $expectedpage['cachedcontent'] = $newpage->cachedcontent;
+        $expectedpage['cachedcontent'] = trim($newpage->cachedcontent);
         $expectedpage['tags'] = array();
 
         $result = mod_wiki_external::get_page_contents($newpage->id);
@@ -1048,7 +1063,7 @@ class mod_wiki_external_testcase extends externallib_advanced_testcase {
             'groupid' => $this->group1->id,
             'userid' => $this->student->id,
             'title' => $this->fpsepg1indstu->title,
-            'cachedcontent' => $this->fpsepg1indstu->cachedcontent,
+            'cachedcontent' => trim($this->fpsepg1indstu->cachedcontent),
             'contentformat' => 1,
             'caneditpage' => true,
             'version' => 1,
