@@ -4626,12 +4626,12 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
         $this->assertCount(2, $writtenmessages);
         $this->assertObjectHasAttribute('id', $writtenmessages[0]);
         $this->assertEquals($user1->id, $writtenmessages[0]->useridfrom);
-        $this->assertEquals('<p>a message from user 1</p>', $writtenmessages[0]->text);
+        $this->assertEquals('a message from user 1', $writtenmessages[0]->text);
         $this->assertNotEmpty($writtenmessages[0]->timecreated);
 
         $this->assertObjectHasAttribute('id', $writtenmessages[1]);
         $this->assertEquals($user1->id, $writtenmessages[1]->useridfrom);
-        $this->assertEquals('<p>another message from user 1</p>', $writtenmessages[1]->text);
+        $this->assertEquals('another message from user 1', $writtenmessages[1]->text);
         $this->assertNotEmpty($writtenmessages[1]->timecreated);
     }
 
@@ -4678,12 +4678,12 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
         $this->assertCount(2, $writtenmessages);
         $this->assertObjectHasAttribute('id', $writtenmessages[0]);
         $this->assertEquals($user1->id, $writtenmessages[0]->useridfrom);
-        $this->assertEquals('<p>a message from user 1 to group conv</p>', $writtenmessages[0]->text);
+        $this->assertEquals('a message from user 1 to group conv', $writtenmessages[0]->text);
         $this->assertNotEmpty($writtenmessages[0]->timecreated);
 
         $this->assertObjectHasAttribute('id', $writtenmessages[1]);
         $this->assertEquals($user1->id, $writtenmessages[1]->useridfrom);
-        $this->assertEquals('<p>another message from user 1 to group conv</p>', $writtenmessages[1]->text);
+        $this->assertEquals('another message from user 1 to group conv', $writtenmessages[1]->text);
         $this->assertNotEmpty($writtenmessages[1]->timecreated);
     }
 
