@@ -711,4 +711,22 @@ abstract class advanced_testcase extends base_testcase {
         }
         $tasks->close();
     }
+
+    /**
+     * Assert that the supplied HTML values match, accounting for normalisation of the HTML content.
+     *
+     * @param   string $expected
+     * @param   string $actual
+     */
+    public function assertHTMLEquals($expected, $actual): void {
+        $args = array_merge(
+            [
+                balance_html($expected),
+                balance_html($actual),
+            ],
+            array_slice(func_get_args(), 2)
+        );
+
+        call_user_func_array([$this, 'assertEquals'], $args);
+    }
 }
