@@ -2751,7 +2751,24 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
     if ($course->id != SITEID and \core\session\manager::is_loggedinas()) {
         if ($USER->loginascontext->contextlevel == CONTEXT_COURSE) {
             if ($USER->loginascontext->instanceid != $course->id) {
-                print_error('loginasonecourse', '', $CFG->wwwroot.'/course/view.php?id='.$USER->loginascontext->instanceid);
+                $redirectcontext = new moodle_url('/course/view.php', [
+                    'id' => $USER->loginascontext->instanceid,
+                ]);
+                $loginascourse = get_course($USER->loginascontext->instanceid);
+                redirect(
+                    $redirectcontext,
+                    get_string('loginascourserestrictionwarning', 'course', (object) [
+                        'loginasfullname' => fullname($USER),
+                        'loginascourse' => $loginascourse->fullname,
+                        'attemptedtoviewcourse' => $course->fullname,
+                        'logoutlink' => (new moodle_url('/login/logout.php', [
+                            'sesskey' => sesskey(),
+                            'loginpage' => 1,
+                        ]))->out(),
+                    ]),
+                    null,
+                    \core\output\notification::NOTIFY_ERROR
+                );
             }
         }
     }

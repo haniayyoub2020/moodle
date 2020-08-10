@@ -55,6 +55,7 @@ $string['errorendbeforestart'] = 'The end date ({$a}) is before the course start
 $string['favourite'] = 'Starred course';
 $string['gradetopassnotset'] = 'This course does not have a grade to pass set. It may be set in the grade item of the course (Gradebook setup).';
 $string['informationformodule'] = 'Information about the {$a} activity';
+$string['loginascourserestrictionwarning'] = 'You are currently logged in as {$a->loginasfullname} and may only access the {$a->loginascourse} course. If you wish to view the {$a->attemptedtoviewcourse} course you must first <a href="{$a->logoutlink}">Log out</a>.';
 $string['module'] = 'Activity';
 $string['nocourseactivity'] = 'Not enough course activity between the start and the end of the course';
 $string['nocourseendtime'] = 'The course does not have an end time';
