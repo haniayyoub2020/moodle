@@ -2034,14 +2034,14 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user3',
-                            'subject'           => '<p>S5</p>',
+                            'subject'           => 'S5',
                             'unreadcount'       => 0,
                         ),
                         // User1 has also conversed with user2. The most recent message is S2.
                         array(
                             'messageposition'   => 1,
                             'with'              => 'user2',
-                            'subject'           => '<p>S2</p>',
+                            'subject'           => 'S2',
                             'unreadcount'       => 1,
                         ),
                     ),
@@ -2050,7 +2050,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user1',
-                            'subject'           => '<p>S2</p>',
+                            'subject'           => 'S2',
                             'unreadcount'       => 2,
                         ),
                     ),
@@ -2059,7 +2059,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user1',
-                            'subject'           => '<p>S5</p>',
+                            'subject'           => 'S5',
                             'unreadcount'       => 0,
                         ),
                     ),
@@ -2106,7 +2106,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user2',
-                            'subject'           => '<p>S4</p>',
+                            'subject'           => 'S4',
                             'unreadcount'       => 0,
                         ),
                     ),
@@ -2115,7 +2115,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user1',
-                            'subject'           => '<p>S4</p>',
+                            'subject'           => 'S4',
                             'unreadcount'       => 2,
                         ),
                     ),
@@ -2165,7 +2165,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user2',
-                            'subject'           => '<p>S2</p>',
+                            'subject'           => 'S2',
                             'unreadcount'       => 0,
                         ),
                     ),
@@ -2173,7 +2173,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user1',
-                            'subject'           => '<p>S2</p>',
+                            'subject'           => 'S2',
                             'unreadcount'       => 2
                         ),
                     ),
@@ -2250,7 +2250,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user2',
-                            'subject'           => '<p>S8</p>',
+                            'subject'           => 'S8',
                             'unreadcount'       => 1,
                         ),
                     ),
@@ -2258,7 +2258,7 @@ class core_message_api_testcase extends core_message_messagelib_testcase {
                         array(
                             'messageposition'   => 0,
                             'with'              => 'user1',
-                            'subject'           => '<p>S8</p>',
+                            'subject'           => 'S8',
                             'unreadcount'       => 3,
                         ),
                     ),
