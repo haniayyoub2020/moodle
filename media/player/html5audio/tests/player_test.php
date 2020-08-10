@@ -147,6 +147,6 @@ class media_html5audio_testcase extends advanced_testcase {
         $content = format_text($text, FORMAT_HTML);
 
         $this->assertNotRegExp('~mediaplugin_html5audio~', $content);
-        $this->assertEquals(clean_text($text, FORMAT_HTML), $content);
+        $this->assertXmlStringEqualsXmlString(clean_text($text, FORMAT_HTML), $content);
     }
 }
