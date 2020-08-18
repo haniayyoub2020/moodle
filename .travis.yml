@@ -21,10 +21,6 @@ php:
     # We only run the highest and lowest supported versions to reduce the load on travis-ci.org.
     - 7.4
 
-before_script:
-    - >
-      which travis_retry
-
 script:
     - echo "/etc/profile"
     - cat /etc/profile
