@@ -23,38 +23,31 @@ php:
 
 before_script:
     - >
-      # Copy generic configuration in place.
       cp config-dist.php config.php ;
 
-      # The database name and password.
       sed -i \
         -e "s%= 'moodle'%= 'travis_ci_test'%" \
         -e "s%= 'password'%= ''%" \
         config.php ;
 
-      # The wwwroot and dataroot.
       sed -i \
         -e "s%http://example.com/moodle%https://localhost%" \
         -e "s%/home/example/moodledata%/home/travis/roots/base%" \
         config.php ;
 
-      # The phpunit dataroot and prefix..
       sed -i \
         -e "/require_once/i \\\$CFG->phpunit_dataroot = '\/home\/travis\/roots\/phpunit';" \
         -e "/require_once/i \\\$CFG->phpunit_prefix = 'p_';" \
         config.php ;
 
-      # Enable test external resources
       sed -i \
         -e "/require_once/i \\define('TEST_EXTERNAL_FILES_HTTP_URL', 'http://127.0.0.1:8080');" \
         config.php ;
 
-      # Redis cache store tests
       sed -i \
         -e "/require_once/i \\define('TEST_CACHESTORE_REDIS_TESTSERVERS', '127.0.0.1');" \
         config.php ;
 
-      # Redis session tests, but not for PHP 7.2 and up. See MDL-60978 for more info.
       redissession="define('TEST_SESSION_REDIS_HOST', '127.0.0.1');"
       sed -i \
         -e "/require_once/i \\${redissession}" \
