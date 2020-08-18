@@ -64,8 +64,6 @@ before_script:
         sed -i \
           -e "/require_once/i \\${redissession}" \
           config.php ;
-
-        cat config.php
-
-        exit 1
       fi
+
+script: cat config.php
