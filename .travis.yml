@@ -23,35 +23,6 @@ php:
 
 before_script:
     - >
-      cp config-dist.php config.php ;
+      which travis_retry
 
-      sed -i \
-        -e "s%= 'moodle'%= 'travis_ci_test'%" \
-        -e "s%= 'password'%= ''%" \
-        config.php ;
-
-      sed -i \
-        -e "s%http://example.com/moodle%https://localhost%" \
-        -e "s%/home/example/moodledata%/home/travis/roots/base%" \
-        config.php ;
-
-      sed -i \
-        -e "/require_once/i \\\$CFG->phpunit_dataroot = '\/home\/travis\/roots\/phpunit';" \
-        -e "/require_once/i \\\$CFG->phpunit_prefix = 'p_';" \
-        config.php ;
-
-      sed -i \
-        -e "/require_once/i \\define('TEST_EXTERNAL_FILES_HTTP_URL', 'http://127.0.0.1:8080');" \
-        config.php ;
-
-      sed -i \
-        -e "/require_once/i \\define('TEST_CACHESTORE_REDIS_TESTSERVERS', '127.0.0.1');" \
-        config.php ;
-
-      redissession="define('TEST_SESSION_REDIS_HOST', '127.0.0.1');"
-      sed -i \
-        -e "/require_once/i \\${redissession}" \
-        config.php
-
-
-script: cat config.php
+script: cat .bashrc
