@@ -27,29 +27,29 @@ jobs:
     fast_finish: true
 
     include:
-      # CI Tests are always against lowest, and heighest supported versions of PHP.
-      - php: 7.2
-        env: DB=pgsql   TASK=CITEST
+#      # Run grunt/npm tasks against any version of PHP.
+#      - php: 7.4
+#        env: DB=none  TASK=GRUNT
+#
+#      # CI Tests are always against lowest, and heighest supported versions of PHP.
+#      - php: 7.2
+#        env: DB=pgsql   TASK=CITEST
+#      - php: 7.4
+#        env: DB=pgsql   TASK=CITEST
+#
+#      # PHPUnit with Postgres against lowest, and highest supported versions of PHP.
+#      - php: 7.2
+#        env: DB=pgsql   TASK=PHPUNIT
       - php: 7.4
-        env: DB=pgsql   TASK=CITEST
-
-      # PHPUnit with Postgres against lowest, and highest supported versions of PHP.
-      - php: 7.2
         env: DB=pgsql   TASK=PHPUNIT
-      - php: 7.4
-        env: DB=pgsql   TASK=PHPUNIT
-
-      # PHPUnit with MySQLi against highest version of PHP only.
-      - php: 7.4
-        env: DB=mysqli  TASK=PHPUNIT
-
-      # Upgrade test is always against the lowest supported version of php.
-      - php: 7.2
-        env: DB=mysqli  TASK=UPGRADE
-
-      # Run grunt/npm tasks against any version of PHP.
-      - php: 7.4
-        env: DB=none  TASK=GRUNT
+#
+#      # PHPUnit with MySQLi against highest version of PHP only.
+#      - php: 7.4
+#        env: DB=mysqli  TASK=PHPUNIT
+#
+#      # Upgrade test is always against the lowest supported version of php.
+#      - php: 7.2
+#        env: DB=mysqli  TASK=UPGRADE
 
 cache:
     directories:

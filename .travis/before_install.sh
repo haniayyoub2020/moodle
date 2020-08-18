@@ -16,6 +16,9 @@ phpenv config-rm xdebug.ini
 # Copy generic configuration in place.
 cp .travis/config.php config.php
 
+# Create a file to store any environment vars to persist between phases.
+ENVVARFILE="${TRAVIS_HOME}/environment.sh"
+touch "${ENVVARFILE}"
 
 ########################################################################
 # PHPUNIT, and UPGRADE Tests.
@@ -68,6 +71,63 @@ then
 
     # Avoid IPv6 default binding as service (causes redis not to start).
     sudo service redis-server start --bind 127.0.0.1
+
+		LDAPTESTNAME=ldap
+		docker run \
+			--detach \
+			--name ${LDAPTESTNAME} \
+			--network "${NETWORK}" \
+			larrycai/openldap
+		export LDAPTESTURL="ldap://${LDAPTESTNAME}"
+		echo "LDAPTESTURL=\"{$LDAPTESTURL}\"" >> "${ENVVARFILE}"
+
+		SOLRTESTNAME=solr
+		docker run \
+			--detach \
+			--name ${SOLRTESTNAME} \
+			--network "${NETWORK}" \
+			solr:7 \
+			solr-precreate test
+		echo "SOLRTESTNAME=\"{$SOLRTESTNAME}\"" >> "${ENVVARFILE}"
+
+		export REDISTESTNAME=redis
+		docker run \
+			--detach \
+			--name ${REDISTESTNAME} \
+			--network "${NETWORK}" \
+			redis:3
+		echo "REDISTESTNAME=\"{$REDISTESTNAME}\"" >> "${ENVVARFILE}"
+
+		MEMCACHED1TESTNAME=memcached1
+		docker run \
+			--detach \
+			--name ${MEMCACHED1TESTNAME} \
+			--network "${NETWORK}" \
+			memcached:1.4
+		export MEMCACHED1TESTURL="${MEMCACHED1TESTNAME}:11211"
+		echo "MEMCACHED1TESTURL=\"{$MEMCACHED1TESTURL}\"" >> "${ENVVARFILE}"
+
+		MEMCACHED2TESTNAME=memcached2
+		docker run \
+			--detach \
+			--name ${MEMCACHED2TESTNAME} \
+			--network "${NETWORK}" \
+			memcached:1.4
+		export MEMCACHED2TESTURL="${MEMCACHED2TESTNAME}:11211"
+		echo "MEMCACHED1TESTURL=\"{$MEMCACHED1TESTURL}\"" >> "${ENVVARFILE}"
+
+		MONGODBTESTNAME=mongodb
+		docker run \
+			--detach \
+			--name ${MONGODBTESTNAME} \
+			--network "${NETWORK}" \
+			mongo:4.0
+		export MONGODBTESTURL="mongodb://${MONGODBTESTNAME}:27017"
+		echo MONGODBTESTURL >> "${ENVVARFILE}"
+		echo "MONGODBTESTURL=\"{$MONGODBTESTURL}\"" >> "${ENVVARFILE}"
+
+		cat $ENVVARFILE
+exit 1
 fi
 
 
