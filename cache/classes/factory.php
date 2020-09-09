@@ -447,12 +447,17 @@ class cache_factory {
                         $instance = $this->create_config_instance(true);
                         $instance->update_definitions();
                         $definition = $instance->get_definition_by_id($id);
-                        if (!$definition) {
-                            throw new coding_exception('The requested cache definition does not exist.'. $id, $id);
-                        }
-                        if (!$this->is_disabled() && !($this instanceof cache_factory_disabled)) {
-                            debugging('Cache definitions reparsed causing cache reset in order to locate definition.
-                                You should bump the version number to ensure definitions are reprocessed.', DEBUG_DEVELOPER);
+                        if ($this instanceof cache_factory_disabled) {
+                            if (!$definition) {
+                                return $this->create_default_disabled_definition($component, $area);;
+                            }
+                        } else {
+                            if (!$definition) {
+                                throw new coding_exception('The requested cache definition does not exist.'. $id, $id);
+                            } else if (!$this->is_disabled()) {
+                                debugging('Cache definitions reparsed causing cache reset in order to locate definition.
+                                    You should bump the version number to ensure definitions are reprocessed.', DEBUG_DEVELOPER);
+                            }
                         }
                         $definition = cache_definition::load($id, $definition);
                     }
