@@ -207,19 +207,13 @@ class cache_factory_disabled extends cache_factory {
     }
 
     /**
-     * Creates a definition instance or returns the existing one if it has already been created.
+     * Creates a default definition instance used for when no definition exists and the cache is disabled.
      *
      * @param string $component
      * @param string $area
-     * @param string $unused Used to be datasourceaggregate but that was removed and this is now unused.
      * @return cache_definition
      */
-    public function create_definition($component, $area, $unused = null) {
-        $definition = parent::create_definition($component, $area);
-        if ($definition->has_data_source()) {
-            return $definition;
-        }
-
+    protected function create_default_disabled_definition(string $component, string $area): cache_definition {
         return cache_definition::load_adhoc(cache_store::MODE_REQUEST, $component, $area);
     }
 
@@ -326,6 +320,15 @@ class cache_factory_disabled extends cache_factory {
 
         // Return the instance.
         return $this->configs[$class];
+    }
+
+    /**
+     * Returns true if the cache API has been disabled.
+     *
+     * @return bool
+     */
+    public function is_disabled() {
+        return true;
     }
 }
 
