@@ -4173,62 +4173,13 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
     $fs = get_file_storage();
 
     $sendfileoptions = ['preview' => $preview, 'offline' => $offline, 'embed' => $embed];
+    \core_files\local\access::handle_pluginfile($USER, $component, $context, $filearea, $args, $sendfileoptions, $forcedownload);
+
+    debugging('The file_pluginfile function has been deprecated in favour of the file access API', DEBUG_DEVELOPER);
 
     // ========================================================================================================================
     if ($component === 'blog') {
-        // Blog file serving
-        if ($context->contextlevel != CONTEXT_SYSTEM) {
-            send_file_not_found();
-        }
-        if ($filearea !== 'attachment' and $filearea !== 'post') {
-            send_file_not_found();
-        }
-
-        if (empty($CFG->enableblogs)) {
-            print_error('siteblogdisable', 'blog');
-        }
-
-        $entryid = (int)array_shift($args);
-        if (!$entry = $DB->get_record('post', array('module'=>'blog', 'id'=>$entryid))) {
-            send_file_not_found();
-        }
-        if ($CFG->bloglevel < BLOG_GLOBAL_LEVEL) {
-            require_login();
-            if (isguestuser()) {
-                print_error('noguest');
-            }
-            if ($CFG->bloglevel == BLOG_USER_LEVEL) {
-                if ($USER->id != $entry->userid) {
-                    send_file_not_found();
-                }
-            }
-        }
-
-        if ($entry->publishstate === 'public') {
-            if ($CFG->forcelogin) {
-                require_login();
-            }
-
-        } else if ($entry->publishstate === 'site') {
-            require_login();
-            //ok
-        } else if ($entry->publishstate === 'draft') {
-            require_login();
-            if ($USER->id != $entry->userid) {
-                send_file_not_found();
-            }
-        }
-
-        $filename = array_pop($args);
-        $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-
-        if (!$file = $fs->get_file($context->id, $component, $filearea, $entryid, $filepath, $filename) or $file->is_directory()) {
-            send_file_not_found();
-        }
-
-        send_stored_file($file, 10*60, 0, true, $sendfileoptions); // download MUST be forced - security!
-
-    // ========================================================================================================================
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if ($component === 'grade') {
 
         require_once($CFG->libdir . '/grade/constants.php');
@@ -4290,157 +4241,13 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
 
     // ========================================================================================================================
     } else if ($component === 'tag') {
-        if ($filearea === 'description' and $context->contextlevel == CONTEXT_SYSTEM) {
-
-            // All tag descriptions are going to be public but we still need to respect forcelogin
-            if ($CFG->forcelogin) {
-                require_login();
-            }
-
-            $fullpath = "/$context->id/tag/description/".implode('/', $args);
-
-            if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close(); // Unlock session during file serving.
-            send_stored_file($file, 60*60, 0, true, $sendfileoptions);
-
-        } else {
-            send_file_not_found();
-        }
+        throw new coding_exception("Something went wrong. The new API should be used");
     // ========================================================================================================================
     } else if ($component === 'badges') {
-        require_once($CFG->libdir . '/badgeslib.php');
-
-        $badgeid = (int)array_shift($args);
-        $badge = new badge($badgeid);
-        $filename = array_pop($args);
-
-        if ($filearea === 'badgeimage') {
-            if ($filename !== 'f1' && $filename !== 'f2' && $filename !== 'f3') {
-                send_file_not_found();
-            }
-            if (!$file = $fs->get_file($context->id, 'badges', 'badgeimage', $badge->id, '/', $filename.'.png')) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close();
-            send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
-        } else if ($filearea === 'userbadge'  and $context->contextlevel == CONTEXT_USER) {
-            if (!$file = $fs->get_file($context->id, 'badges', 'userbadge', $badge->id, '/', $filename.'.png')) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close();
-            send_stored_file($file, 60*60, 0, true, $sendfileoptions);
-        }
+        throw new coding_exception("Something went wrong. The new API should be used");
     // ========================================================================================================================
     } else if ($component === 'calendar') {
-        if ($filearea === 'event_description'  and $context->contextlevel == CONTEXT_SYSTEM) {
-
-            // All events here are public the one requirement is that we respect forcelogin
-            if ($CFG->forcelogin) {
-                require_login();
-            }
-
-            // Get the event if from the args array
-            $eventid = array_shift($args);
-
-            // Load the event from the database
-            if (!$event = $DB->get_record('event', array('id'=>(int)$eventid, 'eventtype'=>'site'))) {
-                send_file_not_found();
-            }
-
-            // Get the file and serve if successful
-            $filename = array_pop($args);
-            $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-            if (!$file = $fs->get_file($context->id, $component, $filearea, $eventid, $filepath, $filename) or $file->is_directory()) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close(); // Unlock session during file serving.
-            send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
-
-        } else if ($filearea === 'event_description' and $context->contextlevel == CONTEXT_USER) {
-
-            // Must be logged in, if they are not then they obviously can't be this user
-            require_login();
-
-            // Don't want guests here, potentially saves a DB call
-            if (isguestuser()) {
-                send_file_not_found();
-            }
-
-            // Get the event if from the args array
-            $eventid = array_shift($args);
-
-            // Load the event from the database - user id must match
-            if (!$event = $DB->get_record('event', array('id'=>(int)$eventid, 'userid'=>$USER->id, 'eventtype'=>'user'))) {
-                send_file_not_found();
-            }
-
-            // Get the file and serve if successful
-            $filename = array_pop($args);
-            $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-            if (!$file = $fs->get_file($context->id, $component, $filearea, $eventid, $filepath, $filename) or $file->is_directory()) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close(); // Unlock session during file serving.
-            send_stored_file($file, 0, 0, true, $sendfileoptions);
-
-        } else if ($filearea === 'event_description' and $context->contextlevel == CONTEXT_COURSE) {
-
-            // Respect forcelogin and require login unless this is the site.... it probably
-            // should NEVER be the site
-            if ($CFG->forcelogin || $course->id != SITEID) {
-                require_login($course);
-            }
-
-            // Must be able to at least view the course. This does not apply to the front page.
-            if ($course->id != SITEID && (!is_enrolled($context)) && (!is_viewing($context))) {
-                //TODO: hmm, do we really want to block guests here?
-                send_file_not_found();
-            }
-
-            // Get the event id
-            $eventid = array_shift($args);
-
-            // Load the event from the database we need to check whether it is
-            // a) valid course event
-            // b) a group event
-            // Group events use the course context (there is no group context)
-            if (!$event = $DB->get_record('event', array('id'=>(int)$eventid, 'courseid'=>$course->id))) {
-                send_file_not_found();
-            }
-
-            // If its a group event require either membership of view all groups capability
-            if ($event->eventtype === 'group') {
-                if (!has_capability('moodle/site:accessallgroups', $context) && !groups_is_member($event->groupid, $USER->id)) {
-                    send_file_not_found();
-                }
-            } else if ($event->eventtype === 'course' || $event->eventtype === 'site') {
-                // Ok. Please note that the event type 'site' still uses a course context.
-            } else {
-                // Some other type.
-                send_file_not_found();
-            }
-
-            // If we get this far we can serve the file
-            $filename = array_pop($args);
-            $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-            if (!$file = $fs->get_file($context->id, $component, $filearea, $eventid, $filepath, $filename) or $file->is_directory()) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close(); // Unlock session during file serving.
-            send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
-
-        } else {
-            send_file_not_found();
-        }
-
+        throw new coding_exception("Something went wrong. The new API should be used");
     // ========================================================================================================================
     } else if ($component === 'user') {
         if ($filearea === 'icon' and $context->contextlevel == CONTEXT_USER) {

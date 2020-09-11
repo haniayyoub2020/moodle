@@ -911,6 +911,54 @@ $cache = '.var_export($cache, true).';
     }
 
     /**
+     * Call the named method with the specified params on the supplied component if it implements the relevant interface on its provider.
+     *
+     * @param   string  $component The component to call
+     * @param   string  $apipath The path within the API to call
+     * @param   string  $interface The interface to implement
+     * @param   string  $methodname The method to call
+     * @param   array   $params The params to call
+     * @return  mixed
+     */
+    public static function component_class_is_valid(string $component, string $apipath, string $interface) {
+        $classname = "{$component}\\{$apipath}";
+
+        if (!class_exists($classname)) {
+            return false;
+        }
+
+        if (!is_subclass_of($classname, $interface)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Call the named method with the specified params on the supplied component if it implements the relevant interface on its provider.
+     *
+     * @param   string  $component The component to call
+     * @param   string  $apipath The path within the API to call
+     * @param   string  $interface The interface to implement
+     * @param   string  $methodname The method to call
+     * @param   array   $params The params to call
+     * @return  mixed
+     */
+    public static function component_class_callback(string $component, string $apipath, string $interface, string $methodname, array $params) {
+        $classname = "{$component}\\{$apipath}";
+
+        if (!class_exists($classname)) {
+            return null;
+        }
+
+        if (!is_subclass_of($classname, $interface)) {
+            return null;
+        }
+
+        return component_class_callback($classname, $methodname, $params);
+    }
+
+    /**
      * Returns the exact absolute path to plugin directory.
      *
      * @param string $plugintype type of plugin

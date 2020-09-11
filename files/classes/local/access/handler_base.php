@@ -1,0 +1,426 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Course content exporter implementation for mod_folder.
+ *
+ * @package     core_files
+ * @copyright   2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+namespace core_files\local\access;
+
+use context;
+use core_files\local\access as parent_access;
+use core_files\local\access\file_proxy\stored_file_proxy;
+use stdClass;
+use stored_file;
+
+/**
+ * File access.
+ *
+ * @copyright   2020 Andrew Nicols <andrew@nicols.co.uk>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class handler_base {
+
+    /** @var file_proxy */
+    protected $fileproxy = null;
+
+    /** @var stored_file */
+    private $storedfile = null;
+
+    /** @var context The context of the file */
+    protected $context = null;
+
+    /**
+     * @var int The itemid is not present at all in the URL and defaults to zero
+     *
+     * The URL is in the form:
+     *     /pluginfile.php/[contextid]/[component]/[filearea]/[file/path]/[filename.extension]
+     *
+     * An example of this would be
+     *     /pluginfile.php/29/mod_assign/intro/instructions/image_of_cat.png
+     *
+     *     contextid:   29
+     *     component:   mod_assign
+     *     filearea:    intro
+     *     filepath:    instructions
+     *     filename:    image_of_cat.png
+     *     itemid:      0
+     */
+    const ITEMID_NOT_PRESENT = 0;
+
+    /**
+     * @var int The itemid is present in the URL but has no meaning and should always be zero
+     *
+     * The URL is in the form:
+     *     /pluginfile.php/[contextid]/[component]/[filearea]/[itemid]/[file/path]/[filename.extension]
+     *
+     * An example of this would be
+     *     /pluginfile.php/29/mod_assign/content/0/workbooks/template.docx
+     *
+     *     contextid:   29
+     *     component:   mod_assign
+     *     filearea:    content
+     *     itemid:      0
+     *     filepath:    workbooks
+     *     filename:    template.docx
+     */
+    const ITEMID_PRESENT_BUT_DEFAULT = 1;
+
+    /**
+     *  @var int The itemid is present in the URL and is in use
+     *
+     * The URL is in the form:
+     *     /pluginfile.php/[contextid]/[component]/[filearea]/[itemid]/[file/path]/[filename.extension]
+     *
+     * An example of this would be
+     *     /pluginfile.php/32/mod_forum/attachment/950/cat.png
+     *
+     *     contextid:   32
+     *     component:   mod_forum
+     *     filearea:    attachment
+     *     itemid:      950
+     *     filepath:    [none]
+     *     filename:    cat.png
+     */
+    const ITEMID_PRESENT_IN_USE = 2;
+
+    /**
+     * Constructor for a new handler.
+     */
+    protected function __construct() {
+        // Note: This handler is currently empty but it is retained for extension.
+    }
+
+    /**
+     * Create a new instance of the file access handler from a set of pluginfile parameters.
+     *
+     * @param   stdClass $user The user accessing the file
+     * @param   context $context The context that the file is in
+     * @param   string $filearea The file area as reported to the pluginfile
+     * @param   array $args The remaining args from the pluginfile
+     */
+    public static function create_from_pluginfile_params(
+        stdClass $user,
+        context $context,
+        string $filearea,
+        array $args
+
+    ): self {
+        $instance = new static();
+        $instance->set_pluginfile_params($context, $filearea, $args);
+
+        return $instance;
+    }
+
+    /**
+     * Get a list of the file areas in use for this plugin with a mapping containing how the itemid is mapped.
+     *
+     * For more complex mappings than ITEMID_NOT_PRESENT, ITEMID_PRESENT_BUT_DEFAULT, ITEMID_PRESENT_IN_USE, you will
+     * need to extend the @see{get_itemid_from_pluginfile_params} function.
+     *
+     * @return  string[]
+     */
+    protected static function get_file_areas(): array {
+        return [];
+    }
+
+    protected function set_pluginfile_params(context $context, string $filearea, array $args): void {
+        $this->context = $context;
+        $this->filearea = $filearea;
+        $this->pluginfileargs = $args;
+    }
+
+    /**
+     * Get a list of the itemids for the specified context, and filearea.
+     *
+     * @param   context $context
+     * @param   string $filearea
+     * @return  int[]
+     */
+    protected static function get_itemids_for_context_and_filearea(context $context, string $filearea): array {
+        $itemidtype = static::get_itemid_usage_for_filearea($filearea);
+        if ($itemidtype === self::ITEMID_NOT_PRESENT || $itemitype === self::ITEMID_PRESENT_BUT_DEFAULT) {
+            return [0];
+        }
+
+        return [];
+    }
+
+    /**
+     * Get the name of the component.
+     *
+     * @return  string
+     */
+    protected static function get_component(): string {
+        $parts = explode('\\', static::class);
+
+        // Return the first level of the namespace.
+        return $parts[0];
+    }
+
+    /**
+     * Get a list of the stored files in the context.
+     *
+     * @param   context $context
+     * @return  stored_file[]
+     */
+    public function get_file_list(context $context): array {
+        $fs = get_file_storage();
+
+        $files = [];
+        foreach (self::get_file_areas() as $filearea) {
+            foreach (static::get_itemids_for_context_and_filearea($context, $filearea) as $itemid) {
+                $files = array_merge(
+                    $files,
+                    $fs->get_area_files(
+                        $context->id,
+                        static::get_component(),
+                        $filearea,
+                        $itemid
+                    )
+                );
+            }
+        }
+
+        return $files;
+    }
+
+    /**
+     * Get the itemid usage given the specified file area.
+     *
+     * @param   string $filearea
+     * @return  int
+     */
+    protected static function get_itemid_usage_for_filearea(string $filearea): ?int {
+        if (!static::owns_filearea($filearea)) {
+            return null;
+        }
+
+        $areas = static::get_file_areas();
+        return $areas[$filearea];
+    }
+
+    /**
+     * Whether this class owns the specified filearea.
+     *
+     * @param   string $filearea
+     * @return  bool
+     */
+    protected static function owns_filearea(string $filearea): bool {
+        return array_key_exists($filearea, static::get_file_areas());
+    }
+
+    /**
+     * Get the itemid from the pluginfile_params.
+     *
+     * @param   context $context The context that the file is in
+     * @param   string $filearea The file area as reported to the pluginfile
+     * @param   array $args The remaining args from the pluginfile
+     * @return  array An array containing the args after any changes, and the itemid
+     */
+    protected function get_itemid_from_pluginfile_params(context $context, string $filearea, array $args): array {
+        $itemidtype = $this->get_itemid_usage_for_filearea($filearea);
+
+        if ($itemidtype === self::ITEMID_NOT_PRESENT) {
+            // Some component file areas do not include the itemid at all.
+            // This is the case in the generic activity 'intro' section, for example.
+            $itemid = 0;
+        }
+
+        if ($itemidtype === self::ITEMID_PRESENT_BUT_DEFAULT) {
+            // Many components have a space in the URL where an itemid would be, but only ever expect an itemid of 0.
+            $itemid = 0;
+            array_shift($args);
+        }
+
+        if ($itemidtype === self::ITEMID_PRESENT_IN_USE) {
+            // Most uses of the pluginfile URL have the itemid as the first argument.
+            $itemid = array_shift($args);
+        }
+
+        return [
+            'args' => $args,
+            'itemid' => $itemid,
+        ];
+    }
+
+    /**
+     * Convert pluginfile parameters into file params used by the file_storage API.
+     *
+     * @param   stdClass $user The user accessing the file
+     * @param   context $context The context that the file is in
+     * @param   string $filearea The file area as reported to the pluginfile
+     * @param   array $args The remaining args from the pluginfile
+     * @return  null|stored_file A stored_file for the given pluginfile params, or null if none was found
+     */
+    protected function get_stored_file_from_pluginfile_params(context $context, string $filearea, array $args): ?stored_file {
+        // Most uses of the pluginfile URL have the itemid as the first argument.
+        [
+            'itemid' => $itemid,
+            'args' => $args,
+        ] = $this->get_itemid_from_pluginfile_params($context, $filearea, $args);
+
+        $filename = array_pop($args);
+
+        // Get the remaining filepath.
+        if (empty($args)) {
+            $filepath = '/';
+        } else {
+            $filepath = '/' . implode('/', $args) . '/';
+        }
+
+        return static::get_stored_file_from_filepath($context, $filearea, $itemid, $filepath, $filename);
+    }
+
+    /**
+     * Get the stored file at the specified location.
+     *
+     * @return  null|stored_file A stored_file for the given params, or null if none was found
+     */
+    protected static function get_stored_file_from_filepath(context $context, string $filearea, int $itemid, string $filepath, string $filename): ?stored_file {
+        $fs = get_file_storage();
+        $file = $fs->get_file(
+            $context->id,
+            self::get_component(),
+            $filearea,
+            $itemid,
+            $filepath,
+            $filename
+        );
+
+        if (!$file) {
+            // File not found.
+            return null;
+        }
+
+        return $file;
+    }
+
+    /**
+     * Return the stored file.
+     *
+     * @return  null|stored_file
+     */
+    public function get_stored_file(): ?stored_file {
+        if ($this->storedfile === null) {
+            $file = $this->get_stored_file_from_pluginfile_params(
+                $this->context,
+                $this->filearea,
+                $this->pluginfileargs
+            );
+
+            if ($file) {
+                $this->set_stored_file($file);
+            }
+        }
+
+        return $this->storedfile;
+    }
+
+    protected function set_stored_file(stored_file $file): void {
+        $this->storedfile = $file;
+    }
+
+    /**
+     * Fetch a file proxy which can be served.
+     *
+     * @param   stdClass $user The user accessing the file
+     * @param   context $context The context that the file is in
+     * @param   string $filearea The file area as reported to the pluginfile
+     * @param   array $args The remaining args from the pluginfile
+     * @return  null|stored_file_proxy An object which knows how to fetch or serve the file content
+     */
+    public function get_file_proxy(): ?stored_file_proxy {
+        if ($this->fileproxy === null) {
+            if ($file = $this->get_stored_file()) {
+                return stored_file_proxy::create($file);
+            }
+        }
+
+        return $this->fileproxy;
+    }
+
+    /**
+     * Whether the user can access the file.
+     *
+     * @param   null|stdClass $user
+     * @return  bool
+     */
+    public function can_access(?object $user = null): bool {
+        if ($file = $this->get_stored_file()) {
+            return static::can_access_storedfile($this->get_stored_file());
+        }
+
+        return true;
+    }
+
+    /**
+     * Whether the user can access the stored file.
+     *
+     * @param   stored_file $file
+     * @param   null|stdClass $user
+     * @return  bool
+     */
+    public static function can_access_storedfile(stored_file $file, ?object $user = null): bool {
+        return true;
+    }
+
+    /**
+     * Whether login is required to access this item.
+     *
+     * @return  bool
+     */
+    public function requires_login(): bool {
+        return true;
+    }
+
+    /**
+     * Get arguments to pass to require_course_login(), or null if course login is not required.
+     *
+     * @return  array
+     */
+    public function get_required_course_login_args(): ?array {
+        return null;
+    }
+
+    /**
+     * Get the user object to use for testing capabilities and other related areas.
+     *
+     * @param   object $user
+     * @return  object
+     */
+    protected static function get_user(?object $user = null): object {
+        global $USER;
+
+        if ($user) {
+            return $user;
+        }
+
+        return $USER;
+    }
+
+    /**
+     * Return the context.
+     *
+     * @return  context
+     */
+    protected function get_context(): context {
+        return $this->context;
+    }
+}
