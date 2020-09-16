@@ -44,6 +44,7 @@ class access {
      * @return  string
      */
     protected static function get_file_access_classname_for_component(string $component): string {
+        $component = core_component::normalize_componentname($component);
         return "{$component}\\files\\access\\controller";
     }
 

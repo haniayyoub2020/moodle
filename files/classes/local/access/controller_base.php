@@ -200,6 +200,11 @@ abstract class controller_base {
 
             // Return the first level of the namespace.
             $this->component = $parts[0];
+
+            [$type, $plugin] = core_component::normalize_component($this->component);
+            if ($type === 'core') {
+                $this->component = $plugin;
+            }
         }
 
         return $this->component;
@@ -478,7 +483,7 @@ abstract class controller_base {
      * @return  bool
      */
     public function requires_login(): bool {
-        return true;
+        return false;
     }
 
     /**
@@ -487,15 +492,24 @@ abstract class controller_base {
      * @return  bool
      */
     public function requires_course_login(): bool {
-        return $this->get_required_course_login_params() !== null;
+        return $this->get_require_course_login_params() !== null;
+    }
+
+    /**
+     * Get arguments to pass to require_login().
+     *
+     * @return  array
+     */
+    public function get_require_login_params(): array {
+        return [];
     }
 
     /**
      * Get arguments to pass to require_course_login(), or null if course login is not required.
      *
-     * @return  array
+     * @return  null|array
      */
-    public function get_required_course_login_params(): ?array {
+    public function get_require_course_login_params(): ?array {
         return null;
     }
 
@@ -504,10 +518,11 @@ abstract class controller_base {
      */
     public function require_login(): void {
         if ($this->requires_course_login()) {
-            $courseloginparams = $handler->get_required_course_login_params();
+            $courseloginparams = $this->get_require_course_login_params();
             require_course_login(...$courseloginparams);
         } else if ($this->requires_login()) {
-            require_login();
+            $loginparams = $this->get_require_login_params();
+            require_login(...$loginparams);
         }
     }
 
