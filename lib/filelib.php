@@ -4310,31 +4310,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
         }
     // ========================================================================================================================
     } else if ($component === 'badges') {
-        require_once($CFG->libdir . '/badgeslib.php');
-
-        $badgeid = (int)array_shift($args);
-        $badge = new badge($badgeid);
-        $filename = array_pop($args);
-
-        if ($filearea === 'badgeimage') {
-            if ($filename !== 'f1' && $filename !== 'f2' && $filename !== 'f3') {
-                send_file_not_found();
-            }
-            if (!$file = $fs->get_file($context->id, 'badges', 'badgeimage', $badge->id, '/', $filename.'.png')) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close();
-            send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
-        } else if ($filearea === 'userbadge'  and $context->contextlevel == CONTEXT_USER) {
-            if (!$file = $fs->get_file($context->id, 'badges', 'userbadge', $badge->id, '/', $filename.'.png')) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close();
-            send_stored_file($file, 60*60, 0, true, $sendfileoptions);
-        }
-    // ========================================================================================================================
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if ($component === 'calendar') {
         if ($filearea === 'event_description'  and $context->contextlevel == CONTEXT_SYSTEM) {
 
