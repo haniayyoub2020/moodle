@@ -4146,7 +4146,6 @@ class curl_cache {
  * @param boolean $offline If offline is requested - don't serve a redirect to an external file, return a file suitable for viewing
  *                         offline (e.g. mobile app).
  * @param bool $embed Whether this file will be served embed into an iframe.
- * @todo MDL-31088 file serving improments
  */
 function file_pluginfile($relativepath, $forcedownload, $preview = null, $offline = false, $embed = false) {
     global $DB, $CFG, $USER;
@@ -4173,8 +4172,8 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
     $fs = get_file_storage();
 
     $sendfileoptions = ['preview' => $preview, 'offline' => $offline, 'embed' => $embed];
+    \core_files\local\access::handle_pluginfile($USER, $component, $context, $filearea, $args, $sendfileoptions, $forcedownload);
 
-    // ========================================================================================================================
     if ($component === 'blog') {
         // Blog file serving
         if ($context->contextlevel != CONTEXT_SYSTEM) {
@@ -4932,60 +4931,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
         \core\session\manager::write_close(); // Unlock session during file serving.
         send_stored_file($file, 0, 0, true, $sendfileoptions); // must force download - security!
     } else if (strpos($component, 'mod_') === 0) {
-        $modname = substr($component, 4);
-        if (!file_exists("$CFG->dirroot/mod/$modname/lib.php")) {
-            send_file_not_found();
-        }
-        require_once("$CFG->dirroot/mod/$modname/lib.php");
-
-        if ($context->contextlevel == CONTEXT_MODULE) {
-            if ($cm->modname !== $modname) {
-                // somebody tries to gain illegal access, cm type must match the component!
-                send_file_not_found();
-            }
-        }
-
-        if ($filearea === 'intro') {
-            if (!plugin_supports('mod', $modname, FEATURE_MOD_INTRO, true)) {
-                send_file_not_found();
-            }
-
-            // Require login to the course first (without login to the module).
-            require_course_login($course, true);
-
-            // Now check if module is available OR it is restricted but the intro is shown on the course page.
-            $cminfo = cm_info::create($cm);
-            if (!$cminfo->uservisible) {
-                if (!$cm->showdescription || !$cminfo->is_visible_on_course_page()) {
-                    // Module intro is not visible on the course page and module is not available, show access error.
-                    require_course_login($course, true, $cminfo);
-                }
-            }
-
-            // all users may access it
-            $filename = array_pop($args);
-            $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-            if (!$file = $fs->get_file($context->id, 'mod_'.$modname, 'intro', 0, $filepath, $filename) or $file->is_directory()) {
-                send_file_not_found();
-            }
-
-            // finally send the file
-            send_stored_file($file, null, 0, false, $sendfileoptions);
-        }
-
-        $filefunction = $component.'_pluginfile';
-        $filefunctionold = $modname.'_pluginfile';
-        if (function_exists($filefunction)) {
-            // if the function exists, it must send the file and terminate. Whatever it returns leads to "not found"
-            $filefunction($course, $cm, $context, $filearea, $args, $forcedownload, $sendfileoptions);
-        } else if (function_exists($filefunctionold)) {
-            // if the function exists, it must send the file and terminate. Whatever it returns leads to "not found"
-            $filefunctionold($course, $cm, $context, $filearea, $args, $forcedownload, $sendfileoptions);
-        }
-
-        send_file_not_found();
-
-    // ========================================================================================================================
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if (strpos($component, 'block_') === 0) {
         $blockname = substr($component, 6);
         // note: no more class methods in blocks please, that is ....
