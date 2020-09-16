@@ -2973,61 +2973,24 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
+ * @deprecated since Moodle 3.10
  */
-function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
-    global $CFG, $DB;
+function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    debugging('The forum_pluginfile function has been deprecated in favour of the file access API', DEBUG_DEVELOPER);
 
-    if ($context->contextlevel != CONTEXT_MODULE) {
-        return false;
-    }
+    $servable = core_files\local\access::fetch_servable_content_from_pluginfile_params(
+        $user,
+        $component,
+        $context,
+        $filearea,
+        $args
+    );
 
-    require_course_login($course, true, $cm);
-
-    $areas = forum_get_file_areas($course, $cm, $context);
-
-    // filearea must contain a real area
-    if (!isset($areas[$filearea])) {
-        return false;
-    }
-
-    $postid = (int)array_shift($args);
-
-    if (!$post = $DB->get_record('forum_posts', array('id'=>$postid))) {
-        return false;
-    }
-
-    if (!$discussion = $DB->get_record('forum_discussions', array('id'=>$post->discussion))) {
-        return false;
-    }
-
-    if (!$forum = $DB->get_record('forum', array('id'=>$cm->instance))) {
-        return false;
-    }
-
-    $fs = get_file_storage();
-    $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_forum/$filearea/$postid/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-        return false;
-    }
-
-    // Make sure groups allow this user to see this file
-    if ($discussion->groupid > 0) {
-        $groupmode = groups_get_activity_groupmode($cm, $course);
-        if ($groupmode == SEPARATEGROUPS) {
-            if (!groups_is_member($discussion->groupid) and !has_capability('moodle/site:accessallgroups', $context)) {
-                return false;
-            }
-        }
-    }
-
-    // Make sure we're allowed to see it...
-    if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
-        return false;
-    }
-
-    // finally send the file
-    send_stored_file($file, 0, 0, true, $options); // download MUST be forced - security!
+    core_files\local\access::serve_servable_content(
+        $servable,
+        $sendfileoptions,
+        $forcedownload
+    );
 }
 
 /**
