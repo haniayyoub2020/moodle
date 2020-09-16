@@ -256,36 +256,24 @@ function folder_get_file_info($browser, $areas, $course, $cm, $context, $fileare
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
+ * @deprecated since Moodle 3.10
  */
-function folder_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
-    global $CFG, $DB;
+function folder_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    debugging('The folder_pluginfile function has been deprecated in favour of the file access API', DEBUG_DEVELOPER);
 
-    if ($context->contextlevel != CONTEXT_MODULE) {
-        return false;
-    }
+    $servable = core_files\local\access::fetch_servable_content_from_pluginfile_params(
+        $user,
+        $component,
+        $context,
+        $filearea,
+        $args
+    );
 
-    require_course_login($course, true, $cm);
-    if (!has_capability('mod/folder:view', $context)) {
-        return false;
-    }
-
-    if ($filearea !== 'content') {
-        // intro is handled automatically in pluginfile.php
-        return false;
-    }
-
-    array_shift($args); // ignore revision - designed to prevent caching problems only
-
-    $fs = get_file_storage();
-    $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_folder/content/0/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-        return false;
-    }
-
-    // finally send the file
-    // for folder module, we force download file all the time
-    send_stored_file($file, 0, 0, true, $options);
+    core_files\local\access::serve_servable_content(
+        $servable,
+        $sendfileoptions,
+        $forcedownload
+    );
 }
 
 /**
