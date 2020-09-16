@@ -4651,28 +4651,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
             send_stored_file($file, 60*60, 0, $forcedownload, $sendfileoptions);
         }
     } else if ($component === 'contentbank') {
-        if ($filearea != 'public' || isguestuser()) {
-            send_file_not_found();
-        }
-
-        if ($context->contextlevel == CONTEXT_SYSTEM || $context->contextlevel == CONTEXT_COURSECAT) {
-            require_login();
-        } else if ($context->contextlevel == CONTEXT_COURSE) {
-            require_login($course);
-        } else {
-            send_file_not_found();
-        }
-
-        $itemid = (int)array_shift($args);
-        $filename = array_pop($args);
-        $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-        if (!$file = $fs->get_file($context->id, $component, $filearea, $itemid, $filepath, $filename) or
-            $file->is_directory()) {
-            send_file_not_found();
-        }
-
-        \core\session\manager::write_close(); // Unlock session during file serving.
-        send_stored_file($file, 0, 0, true, $sendfileoptions); // must force download - security!
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if (strpos($component, 'mod_') === 0) {
         throw new coding_exception("Something went wrong. The new API should be used");
     } else if (strpos($component, 'block_') === 0) {
