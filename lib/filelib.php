@@ -4676,46 +4676,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
     } else if (strpos($component, 'mod_') === 0) {
         throw new coding_exception("Something went wrong. The new API should be used");
     } else if (strpos($component, 'block_') === 0) {
-        $blockname = substr($component, 6);
-        // note: no more class methods in blocks please, that is ....
-        if (!file_exists("$CFG->dirroot/blocks/$blockname/lib.php")) {
-            send_file_not_found();
-        }
-        require_once("$CFG->dirroot/blocks/$blockname/lib.php");
-
-        if ($context->contextlevel == CONTEXT_BLOCK) {
-            $birecord = $DB->get_record('block_instances', array('id'=>$context->instanceid), '*',MUST_EXIST);
-            if ($birecord->blockname !== $blockname) {
-                // somebody tries to gain illegal access, cm type must match the component!
-                send_file_not_found();
-            }
-
-            if ($context->get_course_context(false)) {
-                // If block is in course context, then check if user has capability to access course.
-                require_course_login($course);
-            } else if ($CFG->forcelogin) {
-                // If user is logged out, bp record will not be visible, even if the user would have access if logged in.
-                require_login();
-            }
-
-            $bprecord = $DB->get_record('block_positions', array('contextid' => $context->id, 'blockinstanceid' => $context->instanceid));
-            // User can't access file, if block is hidden or doesn't have block:view capability
-            if (($bprecord && !$bprecord->visible) || !has_capability('moodle/block:view', $context)) {
-                 send_file_not_found();
-            }
-        } else {
-            $birecord = null;
-        }
-
-        $filefunction = $component.'_pluginfile';
-        if (function_exists($filefunction)) {
-            // if the function exists, it must send the file and terminate. Whatever it returns leads to "not found"
-            $filefunction($course, $birecord, $context, $filearea, $args, $forcedownload, $sendfileoptions);
-        }
-
-        send_file_not_found();
-
-    // ========================================================================================================================
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if (strpos($component, '_') === false) {
         // all core subsystems have to be specified above, no more guessing here!
         send_file_not_found();
