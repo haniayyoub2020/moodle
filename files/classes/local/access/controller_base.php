@@ -24,6 +24,7 @@
 namespace core_files\local\access;
 
 use context;
+use core_component;
 use core_files\local\access as parent_access;
 use core_files\local\access\servable_content;
 use core_files\local\access\servable_content\servable_stored_file_content;
@@ -543,5 +544,56 @@ abstract class controller_base {
      */
     protected function get_context_from_stored_file(stored_file $file): context {
         return context::instance_by_id($file->get_contextid());
+    }
+
+    /**
+     * Attempt to call deprecated pluginfile functions.
+     *
+     * @param   object $user
+     * @param   string $component
+     * @param   context $context
+     * @param   string $filearea
+     * @param   array $args
+     * @param   array $sendfileoptions
+     */
+    public static function handle_legacy_pluginfile_functions(
+        object $user,
+        string $component,
+        context $context,
+        string $filearea,
+        array $args,
+        array $sendfileoptions,
+        bool $forcedownload
+    ): void {
+        // Note: This global $CFG is required because the included file is included in the context of the function
+        // including it.
+        // The legacy file_pluginfile() function defines the following globals so these must therefore be maintained.
+        global $CFG, $DB, $USER;
+
+        $dir = core_component::get_component_directory($component);
+        if (!file_exists("{$dir}/lib.php")) {
+            return;
+        }
+
+        require_once("{$dir}/lib.php");
+
+        [, $course, $cm] = get_context_info_array($context->id);
+
+        $filefunction = "{$component}_pluginfile";
+
+        if (function_exists($filefunction)) {
+            debugging(
+                "The [component]_pluginfile function has been deprecated in favour of the file access API. " .
+                "Please update the {$component} component to utilise this.",
+                DEBUG_DEVELOPER
+            );
+
+            // If the function exists, it must send the file and terminate>
+            $filefunction($course, $cm, $context, $filearea, $args, $forcedownload, $sendfileoptions);
+
+            // Poorly behaved function.
+            // If the function exists, is called, and does not terminate, then we fall back to sending a 404.
+            send_file_not_found();
+        }
     }
 }

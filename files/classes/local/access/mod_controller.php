@@ -24,6 +24,7 @@
 namespace core_files\local\access;
 
 use context;
+use core_component;
 use core_files\local\access\controller_base;
 use stored_file;
 use cm_info;
@@ -127,5 +128,95 @@ class mod_controller extends controller_base {
         }
 
         return substr($component, 4);
+    }
+
+    /**
+     * Handle fallback to the legacy pluginfile functions for this plugin type.
+     *
+     * @param   object $user
+     * @param   string $component
+     * @param   context $context
+     * @param   string $filearea
+     * @param   array $args
+     * @param   array $sendfileoptions
+     * @param   bool $forcedownload
+     */
+    public static function handle_legacy_pluginfile_functions(
+        object $user,
+        string $component,
+        context $context,
+        string $filearea,
+        array $args,
+        array $sendfileoptions,
+        bool $forcedownload
+    ): void {
+        // Note: All of the below globals are required as files required in a function inherit the scope of that
+        // function.
+        global $CFG, $DB, $USER;
+
+        [$type, $plugin] = core_component::normalize_component($component);
+
+        $libfilepath = "{$CFG->dirroot}/mod/{$plugin}/lib.php";
+        if (!file_exists($libfilepath)) {
+            send_file_not_found();
+        }
+        require_once($libfilepath);
+
+        [, $course, $cm] = get_context_info_array($context->id);
+
+        $filefunction = "{$component}_pluginfile";
+        self::call_legacy_pluginfile_function(
+            $filefunction,
+            $component,
+            $course,
+            $cm,
+            $context,
+            $filearea,
+            $args,
+            $forcedownload,
+            $sendfileoptions
+        );
+
+        $filefunction = "{$plugin}_pluginfile";
+        self::call_legacy_pluginfile_function(
+            $filefunction,
+            $component,
+            $course,
+            $cm,
+            $context,
+            $filearea,
+            $args,
+            $forcedownload,
+            $sendfileoptions
+        );
+
+        // We should never get to this position.
+        // Either this case should have been handled in the `access::handle_pluginfile()` function, or the above legacy
+        // functions.
+        throw new \coding_exception("The {$component} plugin has an improperly implemented pluginfile implementation.");
+    }
+
+    /**
+     * Call a legacy pluginfile function
+     *
+     * @param   string $filefuction The function to call
+     * @param   string $component The owning component
+     * @param   array $args The args to pass to the function
+     */
+    protected static function call_legacy_pluginfile_function(string $filefunction, string $component, ...$args) {
+        if (function_exists($filefunction)) {
+            debugging(
+                "The [plugin]_pluginfile function has been deprecated in favour of the file access API. " .
+                "Please update the {$component} component to utilise this.",
+                DEBUG_DEVELOPER
+            );
+
+            // If the function exists, it must send the file and terminate>
+            $filefunction(...$args);
+
+            // Poorly behaved function.
+            // If the function exists, is called, and does not terminate, then we fall back to sending a 404.
+            send_file_not_found();
+        }
     }
 }

@@ -170,11 +170,36 @@ class access {
 
                     self::serve_servable_content($servable, $sendfileoptions, $forcedownload);
                 }
+
+                $classname::handle_legacy_pluginfile_functions(
+                    $user,
+                    $component,
+                    $context,
+                    $filearea,
+                    $args,
+                    $sendfileoptions,
+                    $forcedownload
+                );
+
+                // We should never get to this position.
+                // Either this case should have been handled in the `access::handle_pluginfile()` function, or the above legacy
+                // functions.
+                throw new \coding_exception("The {$component} plugin has an improperly implemented pluginfile implementation.");
             }
 
-            // If there is a legacy _pluginfile function, this must be attempted first.
-            // Note: The legacy functions guarantee an exit.
-            self::attempt_deprecated_pluginfile($user, $component, $context, $filearea, $args, $sendfileoptions, $forcedownload);
+            // TODO Prevent core subsystems from going any further once the remaining leegacy code in file_pluginfile()
+            // is rewritten.
+
+            // There is no plugintype implementation so fall back to the legacy _pluginfile immediately.
+            controller_base::handle_legacy_pluginfile_functions(
+                $user,
+                $component,
+                $context,
+                $filearea,
+                $args,
+                $sendfileoptions,
+                $forcedownload
+            );
 
             // No legacy function found. Return here for now until all legacy code in file_pluginfile() is rewritten.
             // TODO Rewrite to send_file_not_found().
@@ -186,85 +211,4 @@ class access {
 
         self::serve_servable_content($servable, $sendfileoptions, $forcedownload);
     }
-
-    /**
-     * Attempt to call deprecated pluginfile functions.
-     *
-     * @param   array $args
-     */
-    protected static function attempt_deprecated_pluginfile(
-        object $user,
-        string $component,
-        context $context,
-        string $filearea,
-        array $args,
-        array $sendfileoptions,
-        bool $forcedownload
-    ): void {
-        // Note: This global $CFG is required because the included file is included in the context of the function
-        // including it.
-        // The legacy file_pluginfile() function defines the following globals so these must therefore be maintained.
-        global $CFG, $DB, $USER;
-
-        $dir = core_component::get_component_directory($component);
-        if (!file_exists("{$dir}/lib.php")) {
-            return;
-        }
-
-        require_once("{$dir}/lib.php");
-
-        [, $course, $cm] = get_context_info_array($context->id);
-        // The old format is component_pluginfile.
-        self::attempt_deprecated_pluginfile_oldfunction(
-            $component,
-            $course,
-            $cm,
-            $context,
-            $filearea,
-            $args,
-            $forcedownload,
-            $sendfileoptions
-        );
-
-        [$type, $plugin] = core_component::normalize_component($component);
-        if ($type === 'mod') {
-            // For activities there was an even older format of mod_pluginfile.
-            self::attempt_deprecated_pluginfile_oldfunction(
-                $plugin,
-                $course,
-                $cm,
-                $context,
-                $filearea,
-                $args,
-                $forcedownload,
-                $sendfileoptions
-            );
-        }
-    }
-
-    /**
-     * Attempt to call a deprecated pluginfile function if it exists.
-     *
-     * @param   string $prefix The preefix to place before _pluginfile
-     * @param   array $args
-     */
-    private static function attempt_deprecated_pluginfile_oldfunction(string $prefix, ...$args): void {
-        $filefunction = "{$prefix}_pluginfile"; 
-
-        if (function_exists($filefunction)) {
-            debugging(
-                "The [component]_pluginfile function has been deprecated in favour of the file access API. " .
-                "Please update the {$component} component to utilise this.",
-                DEBUG_DEVELOPER
-            );
-
-            // If the function exists, it must send the file and terminate
-            $filefunction(...$args);
-
-            // Poorly behaved function.
-            // If the function exists, is called, and does not terminate, then we fall back to sending a 404.
-            send_file_not_found();
-        }
-    }
-
 }
