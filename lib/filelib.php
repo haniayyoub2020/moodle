@@ -4237,26 +4237,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
 
     // ========================================================================================================================
     } else if ($component === 'tag') {
-        if ($filearea === 'description' and $context->contextlevel == CONTEXT_SYSTEM) {
-
-            // All tag descriptions are going to be public but we still need to respect forcelogin
-            if ($CFG->forcelogin) {
-                require_login();
-            }
-
-            $fullpath = "/$context->id/tag/description/".implode('/', $args);
-
-            if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-                send_file_not_found();
-            }
-
-            \core\session\manager::write_close(); // Unlock session during file serving.
-            send_stored_file($file, 60*60, 0, true, $sendfileoptions);
-
-        } else {
-            send_file_not_found();
-        }
-    // ========================================================================================================================
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if ($component === 'badges') {
         throw new coding_exception("Something went wrong. The new API should be used");
     } else if ($component === 'calendar') {
