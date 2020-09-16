@@ -4175,59 +4175,7 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
     \core_files\local\access::handle_pluginfile($USER, $component, $context, $filearea, $args, $sendfileoptions, $forcedownload);
 
     if ($component === 'blog') {
-        // Blog file serving
-        if ($context->contextlevel != CONTEXT_SYSTEM) {
-            send_file_not_found();
-        }
-        if ($filearea !== 'attachment' and $filearea !== 'post') {
-            send_file_not_found();
-        }
-
-        if (empty($CFG->enableblogs)) {
-            print_error('siteblogdisable', 'blog');
-        }
-
-        $entryid = (int)array_shift($args);
-        if (!$entry = $DB->get_record('post', array('module'=>'blog', 'id'=>$entryid))) {
-            send_file_not_found();
-        }
-        if ($CFG->bloglevel < BLOG_GLOBAL_LEVEL) {
-            require_login();
-            if (isguestuser()) {
-                print_error('noguest');
-            }
-            if ($CFG->bloglevel == BLOG_USER_LEVEL) {
-                if ($USER->id != $entry->userid) {
-                    send_file_not_found();
-                }
-            }
-        }
-
-        if ($entry->publishstate === 'public') {
-            if ($CFG->forcelogin) {
-                require_login();
-            }
-
-        } else if ($entry->publishstate === 'site') {
-            require_login();
-            //ok
-        } else if ($entry->publishstate === 'draft') {
-            require_login();
-            if ($USER->id != $entry->userid) {
-                send_file_not_found();
-            }
-        }
-
-        $filename = array_pop($args);
-        $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-
-        if (!$file = $fs->get_file($context->id, $component, $filearea, $entryid, $filepath, $filename) or $file->is_directory()) {
-            send_file_not_found();
-        }
-
-        send_stored_file($file, 10*60, 0, true, $sendfileoptions); // download MUST be forced - security!
-
-    // ========================================================================================================================
+        throw new coding_exception("Something went wrong. The new API should be used");
     } else if ($component === 'grade') {
 
         require_once($CFG->libdir . '/grade/constants.php');
