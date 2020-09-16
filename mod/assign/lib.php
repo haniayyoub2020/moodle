@@ -1332,49 +1332,24 @@ function assign_get_completion_state($course, $cm, $userid, $type) {
  * @param bool $forcedownload
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
+ * @deprecated since Moodle 3.10
  */
-function assign_pluginfile($course,
-                $cm,
-                context $context,
-                $filearea,
-                $args,
-                $forcedownload,
-                array $options=array()) {
-    global $CFG;
+function assign_pluginfile($course, $cm, context $context, $filearea, $args, $forcedownload, array $options = []) {
+    debugging('The assign_pluginfile function has been deprecated in favour of the file access API', DEBUG_DEVELOPER);
 
-    if ($context->contextlevel != CONTEXT_MODULE) {
-        return false;
-    }
+    $servable = core_files\local\access::fetch_servable_content_from_pluginfile_params(
+        $user,
+        $component,
+        $context,
+        $filearea,
+        $args
+    );
 
-    require_login($course, false, $cm);
-    if (!has_capability('mod/assign:view', $context)) {
-        return false;
-    }
-
-    require_once($CFG->dirroot . '/mod/assign/locallib.php');
-    $assign = new assign($context, $cm, $course);
-
-    if ($filearea !== ASSIGN_INTROATTACHMENT_FILEAREA) {
-        return false;
-    }
-    if (!$assign->show_intro()) {
-        return false;
-    }
-
-    $itemid = (int)array_shift($args);
-    if ($itemid != 0) {
-        return false;
-    }
-
-    $relativepath = implode('/', $args);
-
-    $fullpath = "/{$context->id}/mod_assign/$filearea/$itemid/$relativepath";
-
-    $fs = get_file_storage();
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
-        return false;
-    }
-    send_stored_file($file, 0, 0, $forcedownload, $options);
+    core_files\local\access::serve_servable_content(
+        $servable,
+        $sendfileoptions,
+        $forcedownload
+    );
 }
 
 /**
