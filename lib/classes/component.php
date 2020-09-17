@@ -72,6 +72,8 @@ class core_component {
     protected static $parents = null;
     /** @var array subplugins */
     protected static $subplugins = null;
+    /** @var array list of classes that can be autoloaded during unit testing within the test folder */
+    protected static $testclassmap = null;
     /** @var array list of all known classes that can be autoloaded */
     protected static $classmap = null;
     /** @var array list of all classes that have been renamed to be autoloaded */
@@ -147,6 +149,14 @@ class core_component {
         // If the file is found, require it.
         if (!empty($file)) {
             require($file);
+            return;
+        }
+
+        if (isset(self::$testclassmap[$classname])) {
+            // Global $CFG is expected in included scripts.
+            global $CFG;
+            // Function include would be faster, but for BC it is better to include only once.
+            include_once(self::$testclassmap[$classname]);
             return;
         }
     }
@@ -253,6 +263,7 @@ class core_component {
                 self::$subplugins       = $cache['subplugins'];
                 self::$classmap         = $cache['classmap'];
                 self::$classmaprenames  = $cache['classmaprenames'];
+                self::$testclassmap     = $cache['testclassmap'];
                 self::$filemap          = $cache['filemap'];
                 return;
             }
@@ -293,6 +304,7 @@ class core_component {
                     self::$subplugins       = $cache['subplugins'];
                     self::$classmap         = $cache['classmap'];
                     self::$classmaprenames  = $cache['classmaprenames'];
+                    self::$testclassmap     = $cache['testclassmap'];
                     self::$filemap          = $cache['filemap'];
                     return;
                 }
@@ -379,6 +391,7 @@ class core_component {
             'subplugins'        => self::$subplugins,
             'classmap'          => self::$classmap,
             'classmaprenames'   => self::$classmaprenames,
+            'testclassmap'      => self::$testclassmap,
             'filemap'           => self::$filemap,
             'version'           => self::$version,
         );
@@ -648,7 +661,25 @@ $cache = '.var_export($cache, true).';
                 self::load_classes($plugintype.'_'.$pluginname, "$fulldir/classes");
             }
         }
+
         ksort(self::$classmap);
+
+        if (PHPUNIT_TEST) {
+            foreach (self::$subsystems as $subsystem => $fulldir) {
+                if (!$fulldir) {
+                    continue;
+                }
+                self::load_classes("core_{$subsystem}\\test", "$fulldir/tests", '', true);
+            }
+
+            foreach (self::$plugins as $plugintype => $plugins) {
+                foreach ($plugins as $pluginname => $fulldir) {
+                    self::load_classes("{$plugintype}_{$pluginname}\\test", "$fulldir/tests", '', true);
+                }
+            }
+
+            ksort(self::$testclassmap);
+        }
     }
 
     /**
@@ -681,11 +712,13 @@ $cache = '.var_export($cache, true).';
 
     /**
      * Find classes in directory and recurse to subdirs.
-     * @param string $component
-     * @param string $fulldir
-     * @param string $namespace
+     *
+     * @param   string $component
+     * @param   string $fulldir
+     * @param   string $namespace
+     * @param   bool $testclasses Whether this is a class only available in unit tests
      */
-    protected static function load_classes($component, $fulldir, $namespace = '') {
+    protected static function load_classes($component, $fulldir, $namespace = '', $testclasses = false) {
         if (!is_dir($fulldir)) {
             return;
         }
@@ -704,7 +737,7 @@ $cache = '.var_export($cache, true).';
             }
             if ($item->isDir()) {
                 $dirname = $item->getFilename();
-                self::load_classes($component, "$fulldir/$dirname", $namespace.'\\'.$dirname);
+                self::load_classes($component, "$fulldir/$dirname", $namespace.'\\'.$dirname, $testclasses);
                 continue;
             }
 
@@ -717,10 +750,19 @@ $cache = '.var_export($cache, true).';
             }
             if ($namespace === '') {
                 // Legacy long frankenstyle class name.
-                self::$classmap[$component.'_'.$classname] = "$fulldir/$filename";
+                if ($testclasses) {
+                    self::$testclassmap[$component.'_'.$classname] = "$fulldir/$filename";
+                } else {
+                    self::$classmap[$component.'_'.$classname] = "$fulldir/$filename";
+                }
             }
+
             // New namespaced classes.
-            self::$classmap[$component.$namespace.'\\'.$classname] = "$fulldir/$filename";
+            if ($testclasses) {
+                self::$testclassmap[$component.$namespace.'\\'.$classname] = "$fulldir/$filename";
+            } else {
+                self::$classmap[$component.$namespace.'\\'.$classname] = "$fulldir/$filename";
+            }
         }
         unset($item);
         unset($items);
