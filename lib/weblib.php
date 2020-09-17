@@ -1353,11 +1353,10 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
         $text = html_writer::tag('div', $text, array('class' => 'no-overflow'));
     }
 
+    $cleaner = \core\output\html_cleaner::create($text);
+
+    $domdoc = $cleaner->get_dom_document();
     if ($options['blanktarget']) {
-        $domdoc = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $domdoc->loadHTML('<?xml version="1.0" encoding="UTF-8" ?>' . $text);
-        libxml_clear_errors();
         foreach ($domdoc->getElementsByTagName('a') as $link) {
             if ($link->hasAttribute('target') && strpos($link->getAttribute('target'), '_blank') === false) {
                 continue;
@@ -1367,15 +1366,9 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
                 $link->setAttribute('rel', trim($link->getAttribute('rel') . ' noreferrer'));
             }
         }
-
-        // This regex is nasty and I don't like it. The correct way to solve this is by loading the HTML like so:
-        // $domdoc->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD); however it seems like the libxml
-        // version that travis uses doesn't work properly and ends up leaving <html><body>, so I'm forced to use
-        // this regex to remove those tags.
-        $text = trim(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $domdoc->saveHTML($domdoc->documentElement)));
     }
 
-    return $text;
+    return $cleaner->get_clean_html();
 }
 
 /**

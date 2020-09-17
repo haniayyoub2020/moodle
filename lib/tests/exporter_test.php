@@ -173,7 +173,7 @@ class core_exporter_testcase extends advanced_testcase {
 
         $youtube = 'https://moodle.org';
         $fileurl = (new moodle_url('/webservice/pluginfile.php/' . $syscontext->id . '/test/area/9/test.pdf'))->out(false);
-        $expected = "<p><strong>Watch out:</strong> $youtube $fileurl</p>\n";
+        $expected = "<p><strong>Watch out:</strong> $youtube $fileurl</p>";
         $this->assertEquals($expected, $result->stringA);
         $this->assertEquals(FORMAT_HTML, $result->stringAformat);
 
@@ -182,7 +182,7 @@ class core_exporter_testcase extends advanced_testcase {
         $result = $exporter->export($output);
         $youtube = '<a href="https://moodle.org" class="_blanktarget">https://moodle.org</a>';
         $fileurl = (new moodle_url('/webservice/pluginfile.php/' . $coursecontext->id . '/test/area/9/test.pdf'))->out(false);
-        $expected = "<p><strong>Watch out:</strong> $youtube <a href=\"$fileurl\" class=\"_blanktarget\">$fileurl</a></p>\n";
+        $expected = "<p><strong>Watch out:</strong> $youtube <a href=\"$fileurl\" class=\"_blanktarget\">$fileurl</a></p>";
         $this->assertEquals($expected, $result->stringA);
         $this->assertEquals(FORMAT_HTML, $result->stringAformat);
     }

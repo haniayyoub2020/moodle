@@ -146,8 +146,7 @@ class core_externallib_testcase extends advanced_testcase {
         // Filters can be opted out from by the developer.
         $test = '$$ \pi $$';
         $testformat = FORMAT_MARKDOWN;
-        $correct = array('<p>$$ \pi $$</p>
-', FORMAT_HTML);
+        $correct = array('<p>$$ \pi $$</p>', FORMAT_HTML);
         // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, ['filter' => false]), $correct);
         $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, ['filter' => false]), $correct);

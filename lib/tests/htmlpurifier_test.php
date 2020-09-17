@@ -357,7 +357,7 @@ class core_htmlpurifier_testcase extends basic_testcase {
      */
     public function test_media_tags($mediatag, $expected) {
         $actual = format_text($mediatag, FORMAT_MOODLE, ['filter' => false]);
-        $this->assertEquals($expected, $actual);
+        $this->assertXmlStringEqualsXmlString($expected, $actual);
     }
 
     /**
