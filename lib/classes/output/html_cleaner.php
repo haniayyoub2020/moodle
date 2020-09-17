@@ -75,6 +75,34 @@ class html_cleaner {
     }
 
     /**
+     * Fix parentage of LI elements.
+     *
+     * Ensure that all `<li>` tags are a direct child of a valid list type (ol, ul, menu, dir).
+     *
+     * @param   string $parenttype The type of parent Node to use when a valid parent was not found
+     * @return  self
+     */
+    public function fix_li_parents(string $parenttype): self {
+        // Valid parents are UL, OL, menu, and dir.
+        foreach ($this->document->getElementsByTagName('li') as $li) {
+            $validparents = ['ul', 'ol', 'menu', 'dir'];
+            if (array_search($li->parentNode->nodeName, $validparents) === false) {
+                // This LI is not in a valid parent. Check whether the previous subling is a valid parent.
+                if ($li->previousSibling && array_search($li->previousSibling->nodeName, $validparents) !== false) {
+                    // The previous subling is a valid parent. Add to that list.
+                    $li->previousSibling->appendChild($li);
+                } else {
+                    // No sibling parent. Create a new parent of the type specified.
+                    $newparent = $li->parentNode->insertBefore($this->document->createElement($parenttype), $li);
+                    $newparent->appendChild($li);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Get the DOMDocument element.
      *
      * The `html_cleaner` uses a DOMDocument to allow normalisation, and specific fixes.
@@ -168,6 +196,12 @@ class html_cleaner {
      */
     public static function create(string $html, bool $applydefaultfixes = true): self {
         $cleaner = new self($html);
+
+        if ($applydefaultfixes) {
+            // Ensure that all LI elements are in an appropriate parent.
+            // Where no parent is found, add a new unordered list (ul).
+            $cleaner->fix_li_parents('ul');
+        }
 
         return $cleaner;
     }

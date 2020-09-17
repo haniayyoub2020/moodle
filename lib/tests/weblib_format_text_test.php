@@ -300,6 +300,14 @@ class core_weblib_format_text_testcase extends advanced_testcase {
                 "<prepared>for anything</prepared><div>Hello world</div>",
                 "<prepared>for anything</prepared><div>Hello world</div>",
             ],
+            'List items are in a list element #1' => [
+                '<div><li>Foo</li></div>',
+                '<div><ul><li>Foo</li></ul></div>',
+            ],
+            'List items are in a list element #2' => [
+                '<div><li>Foo</li><li>Bar</li></div>',
+                '<div><ul><li>Foo</li><li>Bar</li></ul></div>',
+            ],
         ];
     }
 }
