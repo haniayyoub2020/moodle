@@ -167,6 +167,36 @@ class html_cleaner_testcase extends advanced_testcase {
                 false,
                 "<prepared>for anything</prepared><div>Hello world</div>",
             ],
+            'Default applied: List items should be in a list element #1' => [
+                '<div><li>Foo</li></div>',
+                true,
+                '<div><ul><li>Foo</li></ul></div>',
+            ],
+            'Default NOT applied: List items should be in a list element #1' => [
+                '<div><li>Foo</li></div>',
+                false,
+                '<div><li>Foo</li></div>',
+            ],
+            'Default applied: List items should be in a list element #2' => [
+                '<div><li>Foo</li><li>Bar</li></div>',
+                true,
+                '<div><ul><li>Foo</li><li>Bar</li></ul></div>',
+            ],
+            'Default NOT applied: List items should be in a list element #2' => [
+                '<div><li>Foo</li><li>Bar</li></div>',
+                false,
+                '<div><li>Foo</li><li>Bar</li></div>',
+            ],
+            'Default applied: List items should be in a list element #3' => [
+                '<div><li>Foo</li><ol><li>Bar</li></ol></div>',
+                true,
+                '<div><ul><li>Foo</li></ul><ol><li>Bar</li></ol></div>',
+            ],
+            'Default NOT applied: List items should be in a list element #3' => [
+                '<div><li>Foo</li><ol><li>Bar</li></ol></div>',
+                false,
+                '<div><li>Foo</li><ol><li>Bar</li></ol></div>',
+            ],
             'Default applied: List items are already in a list element #1' => [
                 '<div><ul><li>Foo</li></ul><ol><li>Foo</li></ol><menu><li>Foo</li></menu><dir><li>Foo</li></dir></div>',
                 true,
