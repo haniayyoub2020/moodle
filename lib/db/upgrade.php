@@ -2708,5 +2708,18 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2021052500.15);
     }
 
+    if ($oldversion < 2021052500.19) {
+        // Define field downloadcontent to be added to course.
+        $table = new xmldb_table('course');
+        $field = new xmldb_field('downloadcontent', XMLDB_TYPE_INTEGER, '1', null, null, null, null, 'visibleold');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2021052500.19);
+    }
+
     return true;
 }
