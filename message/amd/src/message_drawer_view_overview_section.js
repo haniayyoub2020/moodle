@@ -221,7 +221,9 @@ function(
             if (!isMedia) {
                 // Try to get the text value of the content.
                 // If that's not possible, we'll report it under the catch-all 'other media'.
-                var messagePreview = $(lastMessage.text).text();
+                var messageContent = document.createElement('p');
+                messageContent.innerHTML = lastMessage.text;
+                var messagePreview = $(messageContent).text();
                 if (messagePreview) {
                     // The text value of the message must have no html/script tags.
                     if (messagePreview.indexOf('<') == -1) {
