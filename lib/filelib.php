@@ -4167,6 +4167,23 @@ function file_pluginfile($relativepath, $forcedownload, $preview = null, $offlin
     $contextid = (int)array_shift($args);
     $component = clean_param(array_shift($args), PARAM_COMPONENT);
     $filearea  = clean_param(array_shift($args), PARAM_AREA);
+    $context = context::instance_by_id($contextid);
+
+    $sendfileoptions = [
+        'preview' => $preview,
+        'offline' => $offline,
+        'embed' => $embed,
+    ];
+
+    \core\content::serve_file_from_pluginfile_params(
+        $component,
+        $context,
+        $filearea,
+        $args,
+        $USER,
+        $sendfileoptions,
+        $forcedownload
+    );
 
     list($context, $course, $cm) = get_context_info_array($contextid);
 
