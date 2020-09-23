@@ -27,6 +27,7 @@ use context;
 use core\content\filearea;
 use core\content\servable_item;
 use core\content\servable_item\servable_stored_file;
+use moodle_url;
 use stdClass;
 use stored_file;
 
@@ -162,5 +163,39 @@ abstract class file_controller extends abstract_controller {
         // Get an instance of the filearea handler for this component/filearea combinatino.
         $classname = static::get_filearea_classname_for_component($component, $fileareas[$filearea]);
         return $classname::can_access_stored_file_from_context($file, $user, $context);
+    }
+
+    /**
+     * Get a moodle_url which represents a stored_file.
+     *
+     * The viewcontext is required where the file is viewed from a different context. For example the course context is
+     * used for the course variant of a user profile, but the file sits in a user context.
+     *
+     * @param   stored_file $file The file to create a pluginfile URL for
+     * @param   bool $forcedownload Request a URL which will cause the file to be forcible downloaded
+     * @param   bool $tokenurl Request a URL which includes an authentication token so that an existing login session
+     *          is not required for the user to view the file
+     * @param   null|context $viewcontext The alternate context to use in the URL. If none is provided then the file's
+     *          context is used
+     * @return  moodle_url
+     */
+    public static function get_pluginfile_url_for_stored_file(
+        stored_file $file,
+        bool $forcedownload = false,
+        bool $tokenurl = false,
+        ?context $viewcontext
+    ): moodle_url {
+        $contextid = $viewcontext ? $viewcontext->id : $file->get_contextid();
+
+        return moodle_url::make_pluginfile_url(
+            $contextid,
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename(),
+            $forcedownload,
+            $tokenurl
+        );
     }
 }

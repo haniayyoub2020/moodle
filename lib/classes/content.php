@@ -26,6 +26,7 @@ namespace core;
 use context;
 use core_component;
 use core\content\servable_item;
+use moodle_url;
 use stdClass;
 use stored_file;
 use core\content\controllers\component_file_controller;
@@ -60,52 +61,13 @@ class content {
         array $args,
         stdClass $user
     ): ?servable_item {
-        // Attempt to fetch the servable content from the component.
-        $componentclass = self::get_contentarea_classname_for_component($component);
-        if (class_exists($componentclass)) {
-            $servable = $componentclass::get_servable_item_from_pluginfile_params($component, $context, $filearea, $args, $user);
+        $args = func_get_args();
 
-            if ($servable) {
-                return $servable;
-            }
-        }
-
-        // Check whether the plugin type knows this filearea.
-        $componentclass = self::get_contentarea_classname_for_component_plugintype($component);
-        if (class_exists($componentclass)) {
-            $servable = $componentclass::get_servable_item_from_pluginfile_params($component, $context, $filearea, $args, $user);
-
-            if ($servable) {
-                return $servable;
-            }
-        }
-
-
-        // TODO fallback for legacy values which use an incorrect component name.
-        if ($component === 'grouping') {
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the contentarea classname for a plugintype.
-     *
-     * @param   string $plugintype The plugin type, for example 'block', 'mod', etc.
-     * @return  string The classname
-     */
-    protected static function get_contentarea_classname_for_component_plugintype(string $component): string {
-        return plugintype_file_controller::get_contentarea_classname_for_component($component);
-    }
-
-    /**
-     * Get the contentarea classname for a component.
-     *
-     * @param   string $component The component name
-     * @return  string The classname
-     */
-    protected static function get_contentarea_classname_for_component(string $component): string {
-        return component_file_controller::get_contentarea_classname_for_component($component);
+        return self::call_file_controller_function_for_component(
+            $component,
+            'get_servable_item_from_pluginfile_params',
+            $args
+        );
     }
 
     /**
@@ -117,32 +79,19 @@ class content {
      * @return  bool
      */
     public static function can_access_stored_file_from_context(stored_file $file, stdClass $user, context $context): bool {
-        // Attempt to fetch the servable content from the component.
-        $componentclass = self::get_contentarea_classname_for_component($component);
-        if (class_exists($componentclass)) {
-            $canaccess = $componentclass::can_access_stored_file_from_context($file, $user, $context);
+        $args = func_get_args();
 
-            if ($canaccess !== null) {
-                return $canaccess;
-            }
+        $result =  self::call_file_controller_function_for_component(
+            $component,
+            'can_access_stored_file_from_context',
+            $args
+        );
+
+        if ($result === null) {
+            return false;
         }
 
-        // Check whether the plugin type knows this filearea.
-        $componentclass = self::get_contentarea_classname_for_component_plugintype($component);
-        if (class_exists($componentclass)) {
-            $canaccess = $componentclass::can_access_stored_file_from_context($file, $user, $context);
-
-            if ($canaccess !== null) {
-                return $canaccess;
-            }
-        }
-
-
-        // TODO fallback for legacy values which use an incorrect component name.
-        if ($component === 'grouping') {
-        }
-
-        return false;
+        return $result;
     }
 
     /**
@@ -198,5 +147,92 @@ class content {
         // The supplied component did not return a file.
         // In the future this will return a file not found, but for now it will return void to allow the legacy
         // `file_pluginfile` system to serve legacy content.
+    }
+
+    /**
+     * Get a moodle_url which represents a stored_file.
+     *
+     * The viewcontext is required where the file is viewed from a different context. For example the course context is
+     * used for the course variant of a user profile, but the file sits in a user context.
+     *
+     * @param   stored_file $file The file to create a pluginfile URL for
+     * @param   bool $forcedownload Request a URL which will cause the file to be forcible downloaded
+     * @param   bool $tokenurl Request a URL which includes an authentication token so that an existing login session
+     *          is not required for the user to view the file
+     * @param   null|context $viewcontext The alternate context to use in the URL. If none is provided then the file's
+     *          context is used
+     * @return  moodle_url
+     */
+    public static function get_pluginfile_url_for_stored_file(
+        stored_file $file,
+        bool $forcedownload = false,
+        bool $tokenurl = false,
+        ?context $viewcontext
+    ): moodle_url {
+        $args = func_get_args();
+
+        return self::call_file_controller_function_for_component(
+            $component,
+            'get_pluginfile_url_for_stored_file',
+            $args
+        );
+
+    }
+
+    /**
+     * Call the supplied function on the file controller for the specified component, checking any relevant parent plugintype.
+     *
+     * @param   string $component
+     * @param   string $function
+     * @param   array $args The array of arguments to provide
+     * @return  mixed
+     */
+    protected static function call_file_controller_function_for_component(string $component, string $functionname, array $args) {
+        // Attempt to fetch the servable content from the component.
+        $componentclass = self::get_contentarea_classname_for_component($component);
+        if (class_exists($componentclass)) {
+            $result = $componentclass::$functionname(...$args);
+
+            if ($result !== null) {
+                return $result;
+            }
+        }
+
+        // Check whether the plugin type knows this filearea.
+        $componentclass = self::get_contentarea_classname_for_component_plugintype($component);
+        if (class_exists($componentclass)) {
+            $result = $componentclass::$functionname(...$args);
+
+            if ($result !== null) {
+                return $result;
+            }
+        }
+
+        // TODO fallback for legacy values which use an incorrect component name.
+        if ($component === 'grouping') {
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Get the contentarea classname for a plugintype.
+     *
+     * @param   string $plugintype The plugin type, for example 'block', 'mod', etc.
+     * @return  string The classname
+     */
+    protected static function get_contentarea_classname_for_component_plugintype(string $component): string {
+        return plugintype_file_controller::get_contentarea_classname_for_component($component);
+    }
+
+    /**
+     * Get the contentarea classname for a component.
+     *
+     * @param   string $component The component name
+     * @return  string The classname
+     */
+    protected static function get_contentarea_classname_for_component(string $component): string {
+        return component_file_controller::get_contentarea_classname_for_component($component);
     }
 }
