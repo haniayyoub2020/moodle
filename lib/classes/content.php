@@ -187,26 +187,71 @@ class content {
      * @param   array $args The array of arguments to provide
      * @return  mixed
      */
+    protected static function call_file_controller_functions_for_component(string $component, string $functionname, array $args) {
+        $functionargs = func_get_args();
+        $result = self::call_file_controller_function_for_component(...$functionargs);
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = self::call_file_controller_function_for_component_plugintype(...$functionargs);
+        if ($result !== null) {
+            return $result;
+        }
+
+        $result = self::call_file_controller_functions_for_legacy_invaid_component(...$functionargs);
+        if ($result !== null) {
+            return $result;
+        }
+
+        return null;
+    }
+
+    /**
+     * Call the supplied function on the file controller specified component.
+     *
+     * @param   string $component
+     * @param   string $function
+     * @param   array $args The array of arguments to provide
+     * @return  mixed
+     */
     protected static function call_file_controller_function_for_component(string $component, string $functionname, array $args) {
         // Attempt to fetch the servable content from the component.
         $componentclass = self::get_contentarea_classname_for_component($component);
         if (class_exists($componentclass)) {
-            $result = $componentclass::$functionname(...$args);
-
-            if ($result !== null) {
-                return $result;
-            }
+            return $componentclass::$functionname(...$args);
         }
 
+        return null;
+    }
+
+    /**
+     * Call the supplied function on the file controller for the plugintype of the specified component.
+     *
+     * @param   string $component
+     * @param   string $function
+     * @param   array $args The array of arguments to provide
+     * @return  mixed
+     */
+    protected static function call_file_controller_function_for_component_plugintype(string $component, string $functionname, array $args) {
         // Check whether the plugin type knows this filearea.
         $componentclass = self::get_contentarea_classname_for_component_plugintype($component);
         if (class_exists($componentclass)) {
-            $result = $componentclass::$functionname(...$args);
-
-            if ($result !== null) {
-                return $result;
-            }
+            return $componentclass::$functionname(...$args);
         }
+
+        return null;
+    }
+
+    /**
+     * Call the supplied function for the legacy invalid component list.
+     *
+     * @param   string $component
+     * @param   string $function
+     * @param   array $args The array of arguments to provide
+     * @return  mixed
+     */
+    protected static function call_file_controller_functions_for_legacy_invaid_component(string $component, string $functionname, array $args) {
 
         // TODO fallback for legacy values which use an incorrect component name.
         if ($component === 'grouping') {
@@ -234,5 +279,22 @@ class content {
      */
     protected static function get_contentarea_classname_for_component(string $component): string {
         return component_file_controller::get_contentarea_classname_for_component($component);
+    }
+
+    /**
+     * Get a list of stored_file instances in the current component and context combination.o
+     *
+     * @param   context $context
+     * @param   string $component
+     * @return  stored_file[]
+     */
+    public static function get_all_files_in_context(context $context, string $component): array {
+        $functionargs = func_get_args();
+
+        return self::call_file_controller_functions_for_component(
+            $component,
+            'get_all_files_in_context',
+            $functionargs
+        );
     }
 }
