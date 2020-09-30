@@ -523,23 +523,31 @@ class helper {
         }
         self::$bootstrapped = true;
 
-        if ($tour = manager::get_current_tour()) {
-            $PAGE->requires->js_call_amd('tool_usertours/usertours', 'init', [
-                    $tour->get_id(),
-                    $tour->should_show_for_user(),
-                    $PAGE->context->id,
-                ]);
-        }
-    }
+        $tours = manager::get_current_tours();
 
-    /**
-     * Add the reset link to the current page.
-     */
-    public static function bootstrap_reset() {
-        if (manager::get_current_tour()) {
-            echo \html_writer::link('', get_string('resettouronpage', 'tool_usertours'), [
-                    'data-action'   => 'tool_usertours/resetpagetour',
-                ]);
+        if ($tours) {
+            $filters = static::get_all_filters();
+
+            $tourdetails = array_map(function($tour) use ($filters) {
+                return [
+                        'tourId' => $tour->get_id(),
+                        'startTour' => $tour->should_show_for_user(),
+                        'filtervalues' => $tour->get_client_filter_values($filters),
+                ];
+            }, $tours);
+
+            $filternames = [];
+            foreach ($filters as $filter) {
+                if ($filter::has_client_side_js()) {
+                    $filternames[] = $filter::get_filter_name();
+                }
+            }
+
+            $PAGE->requires->js_call_amd('tool_usertours/usertours', 'init', [
+                    $tourdetails,
+                    $PAGE->context->id,
+                    $filternames,
+            ]);
         }
     }
 
