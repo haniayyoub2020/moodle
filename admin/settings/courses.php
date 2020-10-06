@@ -78,15 +78,19 @@ if ($hassiteconfig or has_any_capability($capabilities, $systemcontext)) {
         1, $choices));
 
     // Enable/disable download course content.
-    if ($CFG->downloadcoursecontentallowed) {
-        $choices = [
-            DOWNLOAD_COURSE_CONTENT_DISABLED => new lang_string('no'),
-            DOWNLOAD_COURSE_CONTENT_ENABLED => new lang_string('yes'),
-        ];
-        $temp->add(new admin_setting_configselect('moodlecourse/downloadcontentsitedefault',
-                new lang_string('enabledownloadcoursecontent', 'course'),
-                new lang_string('downloadcoursecontent_help', 'course'), 0, $choices));
-    }
+    $choices = [
+        DOWNLOAD_COURSE_CONTENT_DISABLED => new lang_string('no'),
+        DOWNLOAD_COURSE_CONTENT_ENABLED => new lang_string('yes'),
+    ];
+    $downloadcontent = new admin_setting_configselect(
+        'moodlecourse/downloadcontentsitedefault',
+        new lang_string('enabledownloadcoursecontent', 'course'),
+        new lang_string('downloadcoursecontent_help', 'course'),
+        0,
+        $choices
+    );
+    $downloadcontent->add_dependent_on('downloadcoursecontentallowed');
+    $temp->add($downloadcontent);
 
     // Course format.
     $temp->add(new admin_setting_heading('courseformathdr', new lang_string('type_format', 'plugin'), ''));

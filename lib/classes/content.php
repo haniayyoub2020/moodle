@@ -67,7 +67,7 @@ class content {
                 if (isset($courseinfo->downloadcontent) && $courseinfo->downloadcontent != DOWNLOAD_COURSE_CONTENT_SITE_DEFAULT) {
                     $canexport = $courseinfo->downloadcontent;
                 } else {
-                    $canexport = get_config('moodlecourse')->downloadcontentsitedefault;
+                    $canexport = !empty(get_config('moodlecourse', 'downloadcontentsitedefault'));
                 }
 
             }
