@@ -55,11 +55,21 @@ if ($isdownload) {
         $exportoptions->maxfilesize = $CFG->maxsizeperdownloadcoursefile;
     }
 
-    $streamwriter = zipwriter::get_stream_writer($filename, $exportoptions);
-
-    content::export_context($coursecontext, $USER, $streamwriter);
-
-    redirect($courselink);
+    if (debugging()) {
+        $writer = \core\content\export\zipwriter::get_file_writer($filename, $exportoptions);
+        ob_start();
+        \core\content::export_context($coursecontext, $USER, $writer);
+        $content = ob_get_clean();
+        if (!empty($content)) {
+            throw new \coding_exception("Errors detected whilst generating export. " .
+                "Unable to generate the content. Errors: {$content}");
+        } else {
+            send_file($writer->get_file_path(), $filename);
+        }
+    } else {
+        $writer = \core\content\export\zipwriter::get_stream_writer($filename, $exportoptions);
+        \core\content::export_context($coursecontext, $USER, $writer);
+    }
 } else {
     $PAGE->set_title(get_string('downloadcoursecontent', 'course'));
     $PAGE->set_heading(format_string($courseinfo->fullname));
