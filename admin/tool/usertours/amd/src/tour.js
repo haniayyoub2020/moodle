@@ -522,9 +522,7 @@ export default class Tour {
             return this;
         }
 
-        this.eventHandlers[eventName].forEach(function(thisEvent) {
-            thisEvent.call(this, data);
-        }, this);
+        this.eventHandlers[eventName].forEach(thisEvent => thisEvent(this, data));
 
         return this;
     }

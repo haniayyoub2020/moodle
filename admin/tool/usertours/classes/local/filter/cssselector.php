@@ -23,8 +23,9 @@
  */
 namespace tool_usertours\local\filter;
 
-use tool_usertours\tour;
 use context;
+use stdClass;
+use tool_usertours\tour;
 
 /**
  * Course filter.
@@ -32,7 +33,7 @@ use context;
  * @copyright  2020 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class cssselector extends base {
+class cssselector extends base implements clientside_filter {
     /**
      * The name of the filter.
      *
@@ -93,32 +94,5 @@ class cssselector extends base {
         }
 
         $tour->set_filter_values($filtername, $newvalue);
-    }
-
-    /**
-     * Whether this filter has any client side logic (in a filter_filtername.js file).
-     *
-     * @return  bool
-     */
-    public static function has_client_side_js(): bool {
-        return true;
-    }
-
-    /**
-     * Returns the filter values needed for client side filtering.
-     *
-     * @param   tour            $tour       The tour to find the filter values for
-     * @return  array
-     */
-    public static function get_client_side_values(tour $tour): array {
-        $filtername = static::get_filter_name();
-        $filtervalues = $tour->get_filter_values($filtername);
-
-        // Filter values might not exist for tours that were created before this filter existed.
-        if (!$filtervalues) {
-            return [];
-        }
-
-        return $filtervalues;
     }
 }

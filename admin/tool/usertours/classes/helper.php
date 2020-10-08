@@ -24,7 +24,7 @@
 
 namespace tool_usertours;
 
-defined('MOODLE_INTERNAL') || die();
+use tool_usertours\local\filter\clientside_filter;
 
 /**
  * Tour helper.
@@ -538,15 +538,14 @@ class helper {
 
             $filternames = [];
             foreach ($filters as $filter) {
-                if ($filter::has_client_side_js()) {
+                if (is_a($filter, clientside_filter::class, true)) {
                     $filternames[] = $filter::get_filter_name();
                 }
             }
 
             $PAGE->requires->js_call_amd('tool_usertours/usertours', 'init', [
-                    $tourdetails,
-                    $PAGE->context->id,
-                    $filternames,
+                $tourdetails,
+                $filternames,
             ]);
         }
     }

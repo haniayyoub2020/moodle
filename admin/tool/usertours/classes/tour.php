@@ -24,7 +24,7 @@
 
 namespace tool_usertours;
 
-defined('MOODLE_INTERNAL') || die();
+use tool_usertours\local\filter\clientside_filter;
 
 /**
  * Tour class.
@@ -799,7 +799,7 @@ class tour {
         $results = [];
 
         foreach ($filters as $filter) {
-            if ($filter::has_client_side_js()) {
+            if (is_a($filter, clientside_filter::class, true)) {
                 $results[$filter::get_filter_name()] = $filter::get_client_side_values($this);
             }
         }

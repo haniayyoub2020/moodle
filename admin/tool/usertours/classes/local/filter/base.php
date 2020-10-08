@@ -24,10 +24,9 @@
 
 namespace tool_usertours\local\filter;
 
-defined('MOODLE_INTERNAL') || die();
-
-use tool_usertours\tour;
 use context;
+use stdClass;
+use tool_usertours\tour;
 
 /**
  * Filter base.
@@ -134,21 +133,18 @@ abstract class base {
     }
 
     /**
-     * Check whether this filter has any client side logic (in a filter_filtername.js file).
-     *
-     * @return  bool
-     */
-    public static function has_client_side_js(): bool {
-        return false;
-    }
-
-    /**
      * Returns the filter values needed for client side filtering.
      *
      * @param   tour            $tour       The tour to find the filter values for
-     * @return  array
+     * @return  stdClass
      */
-    public static function get_client_side_values(tour $tour): array {
-        return [];
+    public static function get_client_side_values(tour $tour): stdClass {
+        $data = (object) [];
+
+        if (is_a(static::class, clientside_filter::class, true)) {
+            $data->filterdata = $tour->get_filter_values(static::get_filter_name());
+        }
+
+        return $data;
     }
 }
