@@ -1,4 +1,3 @@
-<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,15 +14,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information.
+ * CSS selector client side filter.
  *
- * @package   tool_usertours
- * @copyright 2016 Andrew Nicols <andrew@nicols.co.uk>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @module     tool_usertours/filter_cssselector
+ * @class      filter_cssselector
+ * @package    tool_usertours
+ * @copyright 2020 The Open University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2021052502;            // The current module version (Date: YYYYMMDDXX).
-$plugin->requires  = 2021052500;            // Requires this Moodle version.
-$plugin->component = 'tool_usertours';      // Full name of the plugin (used for diagnostics).
+/**
+ * Checks whether the configured CSS selector exists on this page.
+ *
+ * @param {array} filterValues  The CSS selector filter values to check.
+ * @returns {boolean}
+ */
+export const filterMatches = function(filterValues) {
+    if (filterValues.length) {
+        return !!document.querySelector(filterValues[0]);
+    }
+    // If there is no CSS selector configured, this page matches.
+    return true;
+};

@@ -15,79 +15,44 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Filter base.
+ * Selector filter.
  *
  * @package    tool_usertours
- * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
+ * @copyright  2020 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 namespace tool_usertours\local\filter;
-
-defined('MOODLE_INTERNAL') || die();
 
 use tool_usertours\tour;
 use context;
 
 /**
- * Filter base.
+ * Course filter.
  *
- * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
+ * @copyright  2020 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class base {
-    /**
-     * Any Value.
-     */
-    const ANYVALUE = '__ANYVALUE__';
-
+class cssselector extends base {
     /**
      * The name of the filter.
      *
      * @return  string
      */
     public static function get_filter_name() {
-        throw new \coding_exception('get_filter_name() must be defined');
+        return 'cssselector';
     }
 
     /**
-     * Retrieve the list of available filter options.
+     * Overrides the base add form element with a selector text box.
      *
-     * @return  array                   An array whose keys are the valid options
-     */
-    public static function get_filter_options() {
-        return [];
-    }
-
-    /**
-     * Check whether the filter matches the specified tour and/or context.
-     *
-     * @param   tour        $tour       The tour to check
-     * @param   context     $context    The context to check
-     * @return  boolean
-     */
-    public static function filter_matches(tour $tour, context $context) {
-        return true;
-    }
-
-    /**
-     * Add the form elements for the filter to the supplied form.
-     *
-     * @param   MoodleQuickForm $mform      The form to add filter settings to.
+     * @param \MoodleQuickForm $mform
      */
     public static function add_filter_to_form(\MoodleQuickForm &$mform) {
-        $options = [
-            static::ANYVALUE   => get_string('all'),
-        ];
-        $options += static::get_filter_options();
-
-        $filtername = static::get_filter_name();
+        $filtername = self::get_filter_name();
         $key = "filter_{$filtername}";
 
-        $mform->addElement('select', $key, get_string($key, 'tool_usertours'), $options, [
-                'multiple' => true,
-            ]);
-        $mform->setDefault($key, static::ANYVALUE);
+        $mform->addElement('text', $key, get_string($key, 'tool_usertours'));
+        $mform->setType($key, PARAM_RAW);
         $mform->addHelpButton($key, $key, 'tool_usertours');
     }
 
@@ -104,9 +69,9 @@ abstract class base {
         $key = "filter_{$filtername}";
         $values = $tour->get_filter_values($filtername);
         if (empty($values)) {
-            $values = static::ANYVALUE;
+            $values = [""];
         }
-        $data->$key = $values;
+        $data->$key = $values[0];
 
         return $data;
     }
@@ -122,24 +87,21 @@ abstract class base {
 
         $key = "filter_{$filtername}";
 
-        $newvalue = $data->$key;
-        foreach ($data->$key as $value) {
-            if ($value === static::ANYVALUE) {
-                $newvalue = [];
-                break;
-            }
+        $newvalue = [$data->$key];
+        if (empty($data->$key)) {
+            $newvalue = [];
         }
 
         $tour->set_filter_values($filtername, $newvalue);
     }
 
     /**
-     * Check whether this filter has any client side logic (in a filter_filtername.js file).
+     * Whether this filter has any client side logic (in a filter_filtername.js file).
      *
      * @return  bool
      */
     public static function has_client_side_js(): bool {
-        return false;
+        return true;
     }
 
     /**
@@ -149,6 +111,14 @@ abstract class base {
      * @return  array
      */
     public static function get_client_side_values(tour $tour): array {
-        return [];
+        $filtername = static::get_filter_name();
+        $filtervalues = $tour->get_filter_values($filtername);
+
+        // Filter values might not exist for tours that were created before this filter existed.
+        if (!$filtervalues) {
+            return [];
+        }
+
+        return $filtervalues;
     }
 }
