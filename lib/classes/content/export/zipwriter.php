@@ -258,15 +258,22 @@ class zipwriter {
             'sitename' => $SITE->fullname,
             'siteurl' => $CFG->wwwroot,
             'pathtotop' => $this->get_relative_context_path($context, $this->rootcontext, '/'),
-            'contentexportsummary' => get_string('contentexport_footersummary', 'core', (object) [
-                'exportlocationlink' => $courselink,
-                'exportlocationname' => $exportedcourse->fullname,
+            'contentexportfooter' => get_string('contentexport_footersummary', 'core', (object) [
+                'courselink' => $courselink,
+                'coursename' => $exportedcourse->fullname,
                 'userfullname' => fullname($USER),
+                'date' => userdate(time()),
+            ]),
+            'contentexportsummary' => get_string('contentexport_coursesummary', 'core', (object) [
+                'courselink' => $courselink,
+                'coursename' => $exportedcourse->fullname,
                 'date' => userdate(time()),
             ]),
             'coursename' => $exportedcourse->fullname,
             'courseshortname' => $exportedcourse->shortname,
             'courselink' => $courselink,
+            'exportdate' => userdate(time()),
+            'maxfilesize' => display_size($this->maxfilesize),
         ];
 
         $renderer = $PAGE->get_renderer('core');
