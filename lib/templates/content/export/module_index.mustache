@@ -32,17 +32,21 @@
     Example context (json):
     {
         "global": {
-            "language": "en",
             "righttoleft": 0,
+            "language": "en",
             "sitename": "Kevin's Emporium of fine course material",
-            "coursename": "Marketting 101",
-            "pathtotop": "./",
             "siteurl": "https://kevin.example.com",
+            "pathtotop": "./",
+            "contentexportfooter": "This file is part of the content downloaded from <a href='https://example.com'>Kevin's Emporium of fine course material</a> by Jennifer Collins on Tuesday, 24th February 2021, 12:21 am.",
+            "contentexportsummary": "This file is part of the content downloaded from <a href='https://example.com/course/view.php?id=4'>Kevin's Emporium of fine course material</a> on Tuesday, 24th February 2021, 12:21 am.",
+            "coursename": "Marketing 101",
             "courseshortname": "MKT101",
-            "contentexportsummary": "Brought to you by the letters 'M', 'O', 'D', 'L', and 'E'."
+            "courselink": "https://example.com/course/view.php?id=4",
+            "exportdate": "Tuesday, 24th February 2021, 12:21 am",
+            "maxfilesize": "40MB"
         },
-        "name": "Data Structures - Discussion",
-        "link": "https://kevin.example.com/mod/forum/view.php?id=53",
+        "modulename": "Data Structures - Discussion",
+        "modulelink": "https://kevin.example.com/mod/forum/view.php?id=53",
         "intro": "<p>This forum provides a place for you to discuss the concepts of data structures.</p>",
         "sections": [
             {
@@ -61,11 +65,18 @@
 {{<core/content/export/external_page}}
 {{$pagecontent}}
     <h2>
-        {{{name}}}
+        {{{modulename}}}
     </h2>
 
     <div class="alert alert-info alert-block">
-        {{#str}}contentexport_vieworiginalactivityfullmessage, core, {{{link}}} {{/str}}
+        {{#str}}contentexport_modulesummary, core,
+{
+    "modulelink": "{{modulelink}}",
+    "modulename": {{#quote}}{{{modulename}}}{{/quote}},
+    "date": "{{global.exportdate}}",
+    "maxfilesize": "{{global.maxfilesize}}"
+}
+        {{/str}}
     </div>
 
     {{#intro}}

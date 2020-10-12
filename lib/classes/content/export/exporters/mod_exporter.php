@@ -42,8 +42,8 @@ final class mod_exporter extends mod_instance_exporter {
         global $PAGE;
 
         $templatedata = (object) [
-            'link' => $this->cm->url,
-            'name' => $this->cm->get_formatted_name(),
+            'modulelink' => $this->cm->url,
+            'modulename' => $this->cm->get_formatted_name(),
             'intro' => null,
             'sections' => [],
         ];
