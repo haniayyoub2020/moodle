@@ -37,9 +37,10 @@ class exporter extends mod_instance_exporter {
     /**
      * Get the exportable items for mod_folder.
      *
+     * @param   bool $includeuserdata Whether to include user data, in addition to shared content.
      * @return  \core\content\export\exportable_item[]
      */
-    public function get_exportables(): array {
+    public function get_exportables(bool $includeuserdata = false): array {
         $contentitems = [];
 
         $contentitems[]  = new exportable_filearea(
