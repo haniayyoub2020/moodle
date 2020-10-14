@@ -39,8 +39,6 @@ final class mod_exporter extends mod_instance_exporter {
      * @param   exportable_item[] $export_exportables
      */
     public function export_exportables(array $exportables): void {
-        global $PAGE;
-
         $templatedata = (object) [
             'modulelink' => $this->cm->url,
             'modulename' => $this->cm->get_formatted_name(),
@@ -49,7 +47,7 @@ final class mod_exporter extends mod_instance_exporter {
         ];
 
         if (plugin_supports('mod', $this->cm->modname, FEATURE_MOD_INTRO, true)) {
-            $templatedata->intro = $this->get_intro_data($this->context, $this->cm);
+            $templatedata->intro = $this->get_intro_data($this->get_context(), $this->cm);
         }
 
         $exporteditems = [];
@@ -59,8 +57,8 @@ final class mod_exporter extends mod_instance_exporter {
         }
 
         // Add the index to the archive.
-        $this->archive->add_file_from_template(
-            $this->context,
+        $this->get_archive()->add_file_from_template(
+            $this->get_context(),
             'index.html',
             'core/content/export/module_index',
             $templatedata
@@ -78,7 +76,7 @@ final class mod_exporter extends mod_instance_exporter {
         $record = $DB->get_record($this->cm->modname, ['id' => $this->cm->instance], 'intro');
 
         $exporteditem = $this->get_archive()->add_pluginfiles_for_content(
-            $this->context,
+            $this->get_context(),
             '',
             $record->intro,
             "mod_{$this->cm->modname}",

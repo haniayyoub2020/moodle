@@ -114,18 +114,6 @@ abstract class component_exporter {
     }
 
     /**
-     * Export the specified items for the user.
-     *
-     * @param   array $exportableitems Array of exportable items.
-     */
-    public function export_items_for_user(array $exportableitems): void {
-        $pathnames = [];
-        foreach ($exportableitems as $item) {
-            $item->add_to_archive($this);
-        }
-    }
-
-    /**
      * Get the name of the exporter for the specified component.
      *
      * @param   string $component The component to fetch a classname for

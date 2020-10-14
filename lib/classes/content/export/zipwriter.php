@@ -286,8 +286,6 @@ class zipwriter {
      * This includes CSS, and any other similar content.
      */
     protected function add_template_requirements(): void {
-        global $CFG;
-
         if ($this->pagerequirementsadded) {
             return;
         }

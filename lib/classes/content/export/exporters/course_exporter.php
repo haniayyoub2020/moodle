@@ -36,11 +36,8 @@ use stdClass;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_exporter extends component_exporter {
-    /** @var \context The course context */
-    protected $context;
-
-    /** @var zipwriter */
-    protected $archive;
+    /** @var stdClass The course being exported */
+    protected $course;
 
     /**
      * Constructor for the course exporter.
@@ -60,8 +57,6 @@ class course_exporter extends component_exporter {
      * @param   context[] $exportedcontexts A list of contexts which were successfully exported
      */
     public function export_course(array $exportedcontexts): void {
-        global $PAGE;
-
         // A course export is composed of:
         // - Course summary (including inline files)
         // - Overview files
@@ -82,8 +77,8 @@ class course_exporter extends component_exporter {
             $templatedata->sections[] = $this->get_course_section($exportedcontexts, $section);
         }
 
-        $this->archive->add_file_from_template(
-            $this->context,
+        $this->get_archive()->add_file_from_template(
+            $this->get_context(),
             'index.html',
             'core/content/export/course_index',
             $templatedata
@@ -105,8 +100,8 @@ class course_exporter extends component_exporter {
 
         // Fetch the course summary content.
         if ($this->course->summary) {
-            $summarydata = $this->archive->add_pluginfiles_for_content(
-                $this->context,
+            $summarydata = $this->get_archive()->add_pluginfiles_for_content(
+                $this->get_context(),
                 '_course',
                 $this->course->summary,
                 'course',
@@ -121,8 +116,8 @@ class course_exporter extends component_exporter {
             }
         }
 
-        $files = $this->archive->add_pluginfiles_for_content(
-            $this->context,
+        $files = $this->get_archive()->add_pluginfiles_for_content(
+            $this->get_context(),
             '',
             '',
             'course',
@@ -137,14 +132,14 @@ class course_exporter extends component_exporter {
         }
 
         if ($hascontent) {
-            $this->archive->add_file_from_template(
-                $this->context,
+            $this->get_archive()->add_file_from_template(
+                $this->get_context(),
                 'about.html',
                 'core/content/export/course_summary',
                 $templatedata
             );
 
-            return $this->archive->get_relative_context_path($this->context, $this->context, 'about.html');
+            return $this->get_archive()->get_relative_context_path($this->get_context(), $this->get_context(), 'about.html');
         }
 
         return null;
@@ -165,8 +160,8 @@ class course_exporter extends component_exporter {
             'activities' => [],
         ];
 
-        $sectiondata->summary = $this->archive->add_pluginfiles_for_content(
-            $this->context,
+        $sectiondata->summary = $this->get_archive()->add_pluginfiles_for_content(
+            $this->get_context(),
             "_course",
             $section->summary,
             'course',
@@ -189,7 +184,7 @@ class course_exporter extends component_exporter {
             if (array_key_exists($cm->context->id, $exportedcontexts)) {
                 // This activity was exported.
                 // The link to it from the course index should be a relative link.
-                $url = $this->archive->get_relative_context_path($this->context, $cm->context, 'index.html');
+                $url = $this->get_archive()->get_relative_context_path($this->get_context(), $cm->context, 'index.html');
             } else {
                 // This activity was not included in the export for some reason.
                 // Link to the live activity.
