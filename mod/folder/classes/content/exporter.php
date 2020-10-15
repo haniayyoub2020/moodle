@@ -24,7 +24,7 @@
 namespace mod_folder\content;
 
 use core\content\export\exportable_items\exportable_filearea;
-use core\content\export\exporters\mod_instance_exporter;
+use core\content\export\exporters\abstract_mod_exporter;
 
 /**
  * A class which assists a component to export content.
@@ -32,7 +32,7 @@ use core\content\export\exporters\mod_instance_exporter;
  * @copyright   2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class exporter extends mod_instance_exporter {
+class exporter extends abstract_mod_exporter {
 
     /**
      * Get the exportable items for mod_folder.
