@@ -31,7 +31,7 @@ use core\content\controllers\export\component_controller;
  * @copyright   2020 Andrew Nicols <andrew@nicols.co.uk>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class mod_instance_exporter extends component_exporter {
+abstract class abstract_mod_exporter extends component_exporter {
 
     /** @var \cm_info The activity information for this course module */
     protected $cm;
@@ -46,6 +46,17 @@ abstract class mod_instance_exporter extends component_exporter {
         $modinfo = get_fast_modinfo($coursecontext->instanceid);
         $this->cm = $modinfo->get_cm($this->context->instanceid);
     }
+
+    /**
+     * Get the exportable items for the user in the specified context.
+     *
+     * For activities which allow users to submit their own content which is not visible to all users, for example
+     * graded activities, the caller can request that this be either included, or excluded.
+     *
+     * @param   bool $includeuserdata Whether to include user data, in addition to shared content.
+     * @return  exportable_item[]
+     */
+    abstract public function get_exportables(bool $includeuserdata = false): array;
 
     /**
      * Get the modname for the activity.

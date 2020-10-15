@@ -50,19 +50,6 @@ abstract class component_exporter {
     protected $archive;
 
     /**
-     * Get the exportable items for the user in the specified context.
-     *
-     * For activities which allow users to submit their own content which is not visible to all users, for example
-     * graded activities, the caller can request that this be either included, or excluded.
-     *
-     * @param   bool $includeuserdata Whether to include user data, in addition to shared content.
-     * @return  exportable_item[]
-     */
-    public function get_exportables(bool $includeuserdata = false): array {
-        return [];
-    }
-
-    /**
      * Constructor for a new exporter.
      *
      * @param   context $context The context to export

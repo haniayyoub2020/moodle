@@ -24,6 +24,7 @@
 namespace core\content\export\exporters;
 
 use context_course;
+use context_module;
 use core\content\export\exported_item;
 use core\content\export\zipwriter;
 use section_info;
@@ -36,8 +37,12 @@ use stdClass;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_exporter extends component_exporter {
+
     /** @var stdClass The course being exported */
     protected $course;
+
+    /** @var \course_modinfo The course_modinfo instnace for this course */
+    protected $modinfo;
 
     /**
      * Constructor for the course exporter.
@@ -48,6 +53,8 @@ class course_exporter extends component_exporter {
      */
     public function __construct(context_course $context, stdClass $user, zipwriter $archive) {
         $this->course = get_course($context->instanceid);
+        $this->modinfo = get_fast_modinfo($this->course, $user->id);
+
         parent::__construct($context, 'core_course', $user, $archive);
     }
 
@@ -198,5 +205,72 @@ class course_exporter extends component_exporter {
         }
 
         return $sectiondata;
+    }
+
+    /**
+     * Export all exportable content for an activity module.
+     *
+     * @param   context_module $modcontect
+     * @param   exportable_item[] $export_exportables
+     */
+    public function export_mod_content(context_module $modcontext, array $exportables): void {
+        $cm = $this->modinfo->get_cm($modcontext->instanceid);
+        $modname = $cm->modname;
+
+        $templatedata = (object) [
+            'modulelink' => $cm->url,
+            'modulename' => $cm->get_formatted_name(),
+            'intro' => null,
+            'sections' => [],
+        ];
+
+        if (plugin_supports('mod', $modname, FEATURE_MOD_INTRO, true)) {
+            $templatedata->intro = $this->get_mod_intro_data($modcontext);
+        }
+
+        $exporteditems = [];
+        foreach ($exportables as $exportable) {
+            $exporteditem = $exportable->add_to_archive($this->get_archive());
+            $templatedata->sections[] = $exporteditem->get_template_data();
+        }
+
+        // Add the index to the archive.
+        $this->get_archive()->add_file_from_template(
+            $modcontext,
+            'index.html',
+            'core/content/export/module_index',
+            $templatedata
+        );
+    }
+
+    /**
+     * Get the course_module introduction data.
+     *
+     * @param   context_module $modcontect
+     * @return  null|string The content of the intro area
+     */
+    protected function get_mod_intro_data(context_module $modcontext): ?string {
+        global $DB;
+
+        $cm = $this->modinfo->get_cm($modcontext->instanceid);
+        $modname = $cm->modname;
+
+        $record = $DB->get_record($modname, ['id' => $cm->instance], 'intro');
+
+        $exporteditem = $this->get_archive()->add_pluginfiles_for_content(
+            $modcontext,
+            '',
+            $record->intro,
+            "mod_{$modname}",
+            'intro',
+            0,
+            null
+        );
+
+        if ($exporteditem->has_any_data()) {
+            return $exporteditem->get_content();
+        }
+
+        return null;
     }
 }

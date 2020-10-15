@@ -120,6 +120,7 @@ class content {
 
         // Export each context.
         $exportedcontexts = [];
+        $coursecontroller = new course_exporter($requestedcontext->get_course_context(), $user, $archive);
         foreach ($contextlist as $context) {
             if ($context->contextlevel === CONTEXT_MODULE) {
                 $cm = $modinfo->cms[$context->instanceid];
@@ -135,15 +136,13 @@ class content {
                     $exportables = $controller->get_exportables();
                 }
 
-                // Export any shared content for this activity.
-                $activitycontroller = new mod_exporter($context, $component, $user, $archive);
-                $activitycontroller->export_exportables($exportables, true);
+                // Pass the exportable content to the  course controller for export.
+                $coursecontroller->export_mod_content($context, $exportables);
 
                 $exportedcontexts[$context->id] = $context;
             } else if ($context->contextlevel === CONTEXT_COURSE) {
                 // Export the course content.
-                $controller = new course_exporter($context, $user, $archive);
-                $controller->export_course($exportedcontexts);
+                $coursecontroller->export_course($exportedcontexts);
             }
         }
 
