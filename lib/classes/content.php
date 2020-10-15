@@ -27,8 +27,7 @@ use coding_exception;
 use context;
 use core\content\export\exporters\course_exporter;
 use core\content\export\exporters\component_exporter;
-use core\content\export\exporters\mod_exporter;
-use core\content\export\exporters\mod_instance_exporter;
+use core\content\export\exporters\abstract_mod_exporter;
 use core\content\export\zipwriter;
 use core_component;
 use moodle_url;
@@ -131,7 +130,7 @@ class content {
                 // For example, in mod_folder it will export the list of folders.
                 $classname = component_exporter::get_classname_for_component($component);
                 $exportables = [];
-                if (class_exists($classname) && is_a($classname, mod_instance_exporter::class, true)) {
+                if (class_exists($classname) && is_a($classname, abstract_mod_exporter::class, true)) {
                     $controller = new $classname($context, $component, $user, $archive);
                     $exportables = $controller->get_exportables();
                 }

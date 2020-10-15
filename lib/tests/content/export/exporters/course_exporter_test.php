@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for core\content\export\exporters\mod_exporter.
+ * Unit tests for core\content\export\exporters\course_exporter.
  *
  * @package     core
  * @category    test
@@ -36,36 +36,12 @@ use core\content\export\zipwriter;
 /**
  * Unit tests for activity exporter.
  *
- * @coversDefaultClass \core\content\export\exporters\mod_exporter
+ * @coversDefaultClass \core\content\export\exporters\course_exporter
  */
-class mod_exporter_test extends advanced_testcase {
+class course_exporter_test extends advanced_testcase {
 
     /**
-     * The mod_exporter should not include any exportables.
-     */
-    public function test_no_exportables(): void {
-        $this->resetAfterTest(true);
-
-        $generator = $this->getDataGenerator();
-
-        $course = $generator->create_course();
-        $modname = 'page';
-        $module = $generator->create_module($modname, ['course' => $course->id]);
-        $context = context_module::instance($module->cmid);
-        $user = $generator->create_user();
-        $generator->enrol_user($user->id, $course->id);
-        $this->setUser($user);
-
-        $archive = $this->get_mocked_zipwriter(['add_file_from_string', 'add_file_from_stored_file']);
-        $archive->expects($this->never())->method('add_file_from_string');
-        $archive->expects($this->never())->method('add_file_from_stored_file');
-
-        $activitycontroller = new mod_exporter($context, "mod_{$modname}", $user, $archive);
-        $this->assertEmpty($activitycontroller->get_exportables());
-    }
-
-    /**
-     * The mod_exporter should still export a module intro when no exportables are passed.
+     * The course_exporter should still export a module intro when no exportables are passed.
      */
     public function test_no_exportables_exported(): void {
         $this->resetAfterTest(true);
@@ -109,12 +85,12 @@ class mod_exporter_test extends advanced_testcase {
             );
         $archive->set_root_context($coursecontext);
 
-        $activitycontroller = new mod_exporter($modcontext, "mod_page", $user, $archive);
-        $activitycontroller->export_exportables([]);
+        $coursecontroller = new course_exporter($modcontext->get_course_context(), $user, $archive);
+        $coursecontroller->export_mod_content($modcontext, []);
     }
 
     /**
-     * The mod_exporter should still export exportables as well as module intro.
+     * The course_exporter should still export exportables as well as module intro.
      */
     public function test_exportables_exported(): void {
         $this->resetAfterTest(true);
@@ -160,8 +136,8 @@ class mod_exporter_test extends advanced_testcase {
 
         $pagecontroller = new \mod_page\content\exporter($modcontext, "mod_page", $user, $archive);
 
-        $activitycontroller = new mod_exporter($modcontext, "mod_page", $user, $archive);
-        $activitycontroller->export_exportables($pagecontroller->get_exportables());
+        $coursecontroller = new course_exporter($modcontext->get_course_context(), $user, $archive);
+        $coursecontroller->export_mod_content($modcontext, $pagecontroller->get_exportables());
     }
 
     /**

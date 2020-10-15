@@ -79,8 +79,7 @@ class course_exporter extends component_exporter {
         ];
 
         // Add all sections.
-        $modinfo = get_fast_modinfo($this->course);
-        foreach ($modinfo->get_section_info_all() as $number => $section) {
+        foreach ($this->modinfo->get_section_info_all() as $number => $section) {
             $templatedata->sections[] = $this->get_course_section($exportedcontexts, $section);
         }
 
@@ -177,13 +176,12 @@ class course_exporter extends component_exporter {
             $section->id
         )->get_template_data()->content;
 
-        $modinfo = get_fast_modinfo($this->course);
-        if (empty($modinfo->sections[$section->section])) {
+        if (empty($this->modinfo->sections[$section->section])) {
             return $sectiondata;
         }
 
-        foreach ($modinfo->sections[$section->section] as $cmid) {
-            $cm = $modinfo->cms[$cmid];
+        foreach ($this->modinfo->sections[$section->section] as $cmid) {
+            $cm = $this->modinfo->cms[$cmid];
             if (!$cm->uservisible) {
                 continue;
             }
