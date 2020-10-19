@@ -873,18 +873,6 @@ class moodle_content_writer_test extends advanced_testcase {
                 'value',
                 'description',
             ],
-            'encodedvalue' => [
-                'core_privacy',
-                'donkey',
-                base64_encode('value'),
-                'description',
-            ],
-            'long description' => [
-                'core_privacy',
-                'twokey',
-                'value',
-                'This is a much longer description which actually states what this is used for. Blah blah blah.',
-            ],
         ];
     }
 

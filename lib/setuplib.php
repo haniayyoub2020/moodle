@@ -1641,6 +1641,9 @@ function get_request_storage_directory($exceptiononerror = true, bool $forcecrea
 
         if ($dir = make_unique_writable_directory($basedir, $exceptiononerror)) {
             // Register a shutdown handler to remove the directory.
+            \core_shutdown_manager::register_function(function() use ($dir) {
+                error_log("Called shutdown function to remove {$dir}");
+            });
             \core_shutdown_manager::register_function('remove_dir', [$dir]);
         }
 

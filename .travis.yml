@@ -91,4 +91,4 @@ before_script:
   - php admin/tool/phpunit/cli/init.php
 
 script:
-    - vendor/bin/phpunit --verbose privacy/tests/moodle_content_writer_test.php
+    - vendor/bin/phpunit --verbose privacy/tests/moodle_content_writer_test.php --filter test_export_user_preference_context_course
