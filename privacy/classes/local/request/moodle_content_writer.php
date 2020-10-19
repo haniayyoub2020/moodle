@@ -690,8 +690,10 @@ class moodle_content_writer implements content_writer {
         $this->write_html_data();
 
         $exportfile = make_request_directory() . '/export.zip';
+        $exportfile = make_temp_directory('exports') . '/export.zip';
 
         $fp = get_file_packer();
+        error_log("Trying to archive all files to {$exportfile}");
         $fp->archive_to_pathname($this->files, $exportfile);
 
         // Reset the writer to prevent any further writes.
