@@ -191,6 +191,10 @@ class zip_archive extends file_archive {
             return false;
         }
 
+        error_log("ZipArchive status message:");
+        error_log($this->za->getStatusString());
+        error_log("============================================================================");
+
         if ($this->emptyziphack) {
             @$this->za->close();
             $this->za = null;
@@ -378,15 +382,18 @@ class zip_archive extends file_archive {
         }
 
         if (!isset($this->za)) {
+            error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
             return false;
         }
 
         if ($this->archivepathname === realpath($pathname)) {
+            error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
             // Do not add self into archive.
             return false;
         }
 
         if (!is_readable($pathname) or is_dir($pathname)) {
+            error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
             return false;
         }
 
@@ -397,13 +404,17 @@ class zip_archive extends file_archive {
         $localname = $this->mangle_pathname($localname);
 
         if ($localname === '') {
+            error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
             // Sorry - conversion failed badly.
             return false;
         }
 
         if (!$this->za->addFile($pathname, $localname)) {
+            error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
             return false;
         }
+
+        error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
         $this->modified = true;
         return true;
     }
