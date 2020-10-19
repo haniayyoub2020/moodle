@@ -409,7 +409,7 @@ class zip_archive extends file_archive {
             return false;
         }
 
-        if (!$this->za->addFile($pathname, $localname)) {
+        if (!$this->za->addFile(str_replace('\\', '/', $pathname), str_replace('\\', '/', $localname))) {
             error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
             return false;
         }
