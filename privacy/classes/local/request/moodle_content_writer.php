@@ -71,9 +71,9 @@ class moodle_content_writer implements content_writer {
      */
     public function __construct(writer $writer) {
         $this->path = make_request_directory();
-        $this->path = make_temp_directory(rand(0, 32));
-        $this->path = sys_get_temp_dir() . '/' . rand(0, 32) . '/';
         $this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com\d401a993-c34a-4956-914f-6c7d35ede7c7\c8c7269d-0252-4623-880e-2e20f75880df/';
+        //$this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com/';
+        //$this->path = sys_get_temp_dir() . '/requestdir/';
         $result = make_writable_directory($this->path);
         error_log("Using a moodle_content_writer directory of {$this->path}");
         error_log(var_export($result, true));
@@ -420,6 +420,8 @@ class moodle_content_writer implements content_writer {
         $fulldestination .= $filename;
         $currentpath = $CFG->dirroot . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $path);
         copy($currentpath, $fulldestination);
+        error_log("Checking whether the file was copied to {$fulldestination}");
+        error_log(var_export(file_exists($fulldestination, true)));
         $this->files[$destdirectory . DIRECTORY_SEPARATOR . $filename] = $fulldestination;
     }
 
