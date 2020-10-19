@@ -99,6 +99,20 @@ class zip_packer extends file_packer {
             $ignoreinvalidfiles=true, file_progress $progress = null) {
         $ziparch = new zip_archive();
         error_log("Archiving to {$archivefile}");
+
+
+        $filepath = str_replace('\\', '/', $archivefile);
+        while (strlen($filepath) > 4) {
+            if (file_exists($filepath)) {
+                error_log("  => GOOD => {$filepath}");
+            } else {
+                error_log("  => BAD  => {$filepath}");
+            }
+            $filepath = substr($filepath, 0, strrpos($filepath, '/'));
+        }
+
+
+
         $result = $ziparch->open($archivefile, file_archive::OVERWRITE);
         if ($result !== true) {
             error_log("Failed to open the zip file. The error returned was {$result}");
