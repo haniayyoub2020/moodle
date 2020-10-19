@@ -606,16 +606,23 @@ class moodle_content_writer_test extends advanced_testcase {
     public function test_export_user_preference_context_course($component, $key, $value, $desc) {
         global $DB;
 
+        error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
         $this->resetAfterTest();
 
+        error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
         $course = $this->getDataGenerator()->create_course();
 
+        error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
         $context = \context_course::instance($course->id);
+        error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
+
         $writer = $this->get_writer_instance()
             ->set_context($context)
             ->export_user_preference($component, $key, $value, $desc);
 
+        error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
         $fileroot = $this->fetch_exported_content($writer);
+        error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
 
         $contextpath = $this->get_context_path($context, [get_string('userpreferences')], "{$component}.json");
         $this->assertTrue($fileroot->hasChild($contextpath));

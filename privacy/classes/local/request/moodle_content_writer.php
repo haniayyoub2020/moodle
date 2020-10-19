@@ -71,6 +71,7 @@ class moodle_content_writer implements content_writer {
      */
     public function __construct(writer $writer) {
         $this->path = make_request_directory();
+        error_log("Using a moodle_content_writer directory of {$this->path}");
     }
 
     /**

@@ -13,28 +13,7 @@ git:
   autocrlf: input # Travis windows goes to "true" meaning all files become CRLF ended. We don't want that.
 
 env:
-  - PHP_VERSION=7.2.26 DB=pgsql   FILTER='/::test_[a-d]/'
-  - PHP_VERSION=7.2.26 DB=pgsql   FILTER='/::test_[e-l]/'
-  - PHP_VERSION=7.2.26 DB=pgsql   FILTER='/::test_([m-z]|[^a-z])/'
-
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[a-b]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_c[a-o]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_c[^a-o]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[d-e]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[f]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[g]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[h-j]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[k-m]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_[n-t]/'
-  - PHP_VERSION=7.2.26 DB=mariadb FILTER='/::test_([u-z]|[^a-z])/'
-
-  - PHP_VERSION=7.3.13 DB=pgsql   FILTER='/::test_[a-d]/'
-  - PHP_VERSION=7.3.13 DB=pgsql   FILTER='/::test_[e-l]/'
-  - PHP_VERSION=7.3.13 DB=pgsql   FILTER='/::test_([m-z]|[^a-z])/'
-
-  - PHP_VERSION=7.4.5 DB=pgsql   FILTER='/::test_[a-d]/'
-  - PHP_VERSION=7.4.5 DB=pgsql   FILTER='/::test_[e-l]/'
-  - PHP_VERSION=7.4.5 DB=pgsql   FILTER='/::test_([m-z]|[^a-z])/'
+  - PHP_VERSION=7.4.5 DB=pgsql
 
 cache:
   directories:
@@ -108,34 +87,8 @@ before_script:
       PGPASSWORD=$PPWWDD winpty -Xallow-non-tty -Xplain psql -c 'CREATE DATABASE travis_ci_test;' -U postgres
     fi
 
-  # mysql setup
-  - >
-    if [ "$DB" = 'mysqli' ]; then
-      sed -i -e "s%= 'pgsql'%= 'mysqli'%" config.php
-      sed -i -e "s%= 'username'%= 'root'%" config.php
-      sed -i -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" config.php
-
-      MYSQL_PWD=$PPWWDD mysql -u root -e 'SET GLOBAL innodb_file_per_table=ON;'
-      # Little bit of tunning (we don't care power failures, this is disposable
-      MYSQL_PWD=$PPWWDD mysql -u root -e 'SET GLOBAL innodb_flush_log_at_trx_commit=0;'
-      MYSQL_PWD=$PPWWDD mysql -u root -e 'CREATE DATABASE travis_ci_test DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'
-    fi
-
-  # mariadb setup
-  - >
-    if [ "$DB" = 'mariadb' ]; then
-      sed -i -e "s%= 'pgsql'%= 'mariadb'%" config.php
-      sed -i -e "s%= 'username'%= 'root'%" config.php
-      sed -i -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" config.php
-
-      MYSQL_PWD=$PPWWDD mysql -u root -e 'SET GLOBAL innodb_file_per_table=ON;'
-      # Little bit of tunning (we don't care power failures, this is disposable
-      MYSQL_PWD=$PPWWDD mysql -u root -e 'SET GLOBAL innodb_flush_log_at_trx_commit=0;'
-      MYSQL_PWD=$PPWWDD mysql -u root -e 'CREATE DATABASE travis_ci_test DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;'
-    fi
-
   # init phpunit
   - php admin/tool/phpunit/cli/init.php
 
 script:
-    - vendor/bin/phpunit --verbose --filter $FILTER
+    - vendor/bin/phpunit --verbose privacy/tests/moodle_content_writer_test.php
