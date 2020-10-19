@@ -605,6 +605,7 @@ class moodle_content_writer_test extends advanced_testcase {
      */
     public function test_export_user_preference_context_course($component, $key, $value, $desc) {
         global $DB;
+        error_log("Here we go!");
 
         error_log(sprintf("%s:%s = %s", __FILE__, __LINE__, make_request_directory()));
         $this->resetAfterTest();
