@@ -105,6 +105,17 @@ class zip_packer extends file_packer {
         error_log("Does the file exist?");
         error_log(var_export(file_exists($archivefile), true));
 
+        $filepath = str_replace('\\', '/', $archivefile);
+        while (strlen($filepath) > 4) {
+            if (file_exists($filepath)) {
+                error_log("  => GOOD => {$filepath}");
+            } else {
+                error_log("  => BAD  => {$filepath}");
+            }
+            $filepath = substr($filepath, 0, strrpos($filepath, '/'));
+        }
+        error_log("Done looking at the tree");
+
         $abort = false;
         foreach ($files as $archivepath => $file) {
             $archivepath = trim($archivepath, '/');
