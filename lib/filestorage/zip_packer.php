@@ -100,7 +100,6 @@ class zip_packer extends file_packer {
         $ziparch = new zip_archive();
         error_log("Archiving to {$archivefile}");
 
-
         $filepath = str_replace('\\', '/', $archivefile);
         while (strlen($filepath) > 4) {
             if (file_exists($filepath)) {
@@ -135,8 +134,15 @@ class zip_packer extends file_packer {
         }
         error_log("Done looking at the tree");
 
+        error_log('');
+        error_log('');
+        error_log('');
+
+        error_log("Looking at the list of files to archive (" . count($files) . ")");
+
         $abort = false;
         foreach ($files as $archivepath => $file) {
+            error_log("Archiving {$file} to {$archivepath}");
             $archivepath = trim($archivepath, '/');
 
             // Record progress each time around this loop.
