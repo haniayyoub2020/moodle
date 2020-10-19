@@ -98,12 +98,12 @@ class zip_packer extends file_packer {
     public function archive_to_pathname(array $files, $archivefile,
             $ignoreinvalidfiles=true, file_progress $progress = null) {
         $ziparch = new zip_archive();
-        error_log("Archiving to {$ziparch}");
+        error_log("Archiving to {$archivefile}");
         if (!$ziparch->open($archivefile, file_archive::OVERWRITE)) {
             return false;
         }
         error_log("Does the file exist?");
-        error_log(var_export(file_exists($ziparch), true));
+        error_log(var_export(file_exists($archivefile), true));
 
         $abort = false;
         foreach ($files as $archivepath => $file) {
@@ -155,11 +155,11 @@ class zip_packer extends file_packer {
         }
 
         error_log("Added all of the files");
-        error_log(var_export(file_exists($ziparch), true));
+        error_log(var_export(file_exists($archivefile), true));
         error_log("Closing");
 
         if (!$ziparch->close()) {
-            error_log(var_export(file_exists($ziparch), true));
+            error_log(var_export(file_exists($archivefile), true));
             @unlink($archivefile);
             return false;
         }
