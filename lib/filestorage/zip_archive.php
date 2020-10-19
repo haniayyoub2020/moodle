@@ -97,6 +97,7 @@ class zip_archive extends file_archive {
         }
 
         $result = $this->za->open($archivepathname, $flags);
+        error_log(var_export($result, true));
 
         if ($flags == 0 and $result === ZIPARCHIVE::ER_NOZIP and filesize($archivepathname) === 22) {
             // Legacy PHP versions < 5.3.10 can not deal with empty zip archives.
@@ -415,6 +416,7 @@ class zip_archive extends file_archive {
         }
 
         error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
+        error_log($this->za->getStatusString());
         $this->modified = true;
         return true;
     }
