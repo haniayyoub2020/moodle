@@ -72,6 +72,7 @@ class moodle_content_writer implements content_writer {
     public function __construct(writer $writer) {
         $this->path = make_request_directory();
         $this->path = make_temp_directory(rand(0, 32));
+        $this->path = sys_get_temp_dir() . '/' . rand(0, 32) . '/';
         error_log("Using a moodle_content_writer directory of {$this->path}");
     }
 
