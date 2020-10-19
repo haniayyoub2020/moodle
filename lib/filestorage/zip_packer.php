@@ -99,9 +99,14 @@ class zip_packer extends file_packer {
             $ignoreinvalidfiles=true, file_progress $progress = null) {
         $ziparch = new zip_archive();
         error_log("Archiving to {$archivefile}");
-        if (!$ziparch->open($archivefile, file_archive::OVERWRITE)) {
+        $result = $ziparch->open($archivefile, file_archive::OVERWRITE);
+        if ($result !== true) {
+            error_log("Failed to open the zip file. The error returned was {$result}");
+            error_log(var_export($result, true));
             return false;
         }
+
+
         error_log("Does the file exist?");
         error_log(var_export(file_exists($archivefile), true));
 
