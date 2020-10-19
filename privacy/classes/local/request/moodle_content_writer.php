@@ -73,7 +73,11 @@ class moodle_content_writer implements content_writer {
         $this->path = make_request_directory();
         $this->path = make_temp_directory(rand(0, 32));
         $this->path = sys_get_temp_dir() . '/' . rand(0, 32) . '/';
+        $this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com\d401a993-c34a-4956-914f-6c7d35ede7c7\c8c7269d-0252-4623-880e-2e20f75880df/';
+        $result = make_writable_directory($this->path);
         error_log("Using a moodle_content_writer directory of {$this->path}");
+        error_log(var_export($result, true));
+        error_log("Made dir ^^^");
     }
 
     /**
