@@ -421,7 +421,7 @@ class moodle_content_writer implements content_writer {
         $currentpath = $CFG->dirroot . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $path);
         copy($currentpath, $fulldestination);
         error_log("Checking whether the file was copied to {$fulldestination}");
-        error_log(var_export(file_exists($fulldestination, true)));
+        error_log(var_export(file_exists($fulldestination), true));
         $this->files[$destdirectory . DIRECTORY_SEPARATOR . $filename] = $fulldestination;
     }
 
