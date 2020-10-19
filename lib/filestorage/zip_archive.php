@@ -377,6 +377,7 @@ class zip_archive extends file_archive {
      * @return bool success
      */
     public function add_file_from_pathname($localname, $pathname) {
+        error_log("Empty zip hack is: " . var_export($this->emptyziphack, true));
         if ($this->emptyziphack) {
             $this->close();
             $this->open($this->archivepathname, file_archive::OVERWRITE, $this->encoding);
@@ -409,6 +410,11 @@ class zip_archive extends file_archive {
             // Sorry - conversion failed badly.
             return false;
         }
+
+        error_log("Checking file names");
+        error_log(var_export($pathname, true));
+        error_log(var_export(file_exists($pathname), true));
+        error_log(var_export($localname, true));
 
         if (!$this->za->addFile(str_replace('\\', '/', $pathname), str_replace('\\', '/', $localname))) {
             error_log(sprintf("%s:%s %s()", __FILE__, __LINE__, __FUNCTION__));
