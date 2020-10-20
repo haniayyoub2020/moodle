@@ -72,7 +72,7 @@ class moodle_content_writer implements content_writer {
     public function __construct(writer $writer) {
         $this->path = make_request_directory();
         $this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com\d401a993-c34a-4956-914f-6c7d35ede7c7\c8c7269d-0252-4623-880e-2e20f75880df/';
-        $this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com\d401a993-c34a-4956-914f-6c7d35ede7c7\c8c7269d-0252-4623-880e-2e20f/';
+        $this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com\d401a993-c34a-4956-914f-6c7d35ede7c7\c8c7269d-0252-4623-880e-2e20f7/';
         //$this->path = sys_get_temp_dir() . '/requestdir/kvewOEfNJn9Ik6C9NxFZvWH20PewkhElwww.example.com/';
         //$this->path = sys_get_temp_dir() . '/requestdir/';
         $result = make_writable_directory($this->path);
