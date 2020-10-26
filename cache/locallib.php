@@ -68,6 +68,16 @@ class cache_config_writer extends cache_config {
      */
     protected function config_save() {
         global $CFG;
+
+        // If caching is disabled which can happen early in the bootstrap then
+        // never attempt to write to the caching config file.
+        $factory = cache_factory::instance();
+        if ($factory instanceof cache_factory_disabled) {
+            if (cache_config::config_file_exists()) {
+                return;
+            }
+        }
+
         $cachefile = static::get_config_file_path();
         $directory = dirname($cachefile);
         if ($directory !== $CFG->dataroot && !file_exists($directory)) {
