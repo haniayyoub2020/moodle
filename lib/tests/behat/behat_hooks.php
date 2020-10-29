@@ -77,16 +77,6 @@ class behat_hooks extends behat_base {
     protected $scenariorunning = false;
 
     /**
-     * Some exceptions can only be caught in a before or after step hook,
-     * they can not be thrown there as they will provoke a framework level
-     * failure, but we can store them here to fail the step in i_look_for_exceptions()
-     * which result will be parsed by the framework as the last step result.
-     *
-     * @var Null or the exception last step throw in the before or after hook.
-     */
-    protected static $currentstepexception = null;
-
-    /**
      * If an Exception is thrown in the BeforeScenario hook it will cause the Scenario to be skipped, and the exit code
      * to be non-zero triggering a potential rerun.
      *
@@ -96,6 +86,22 @@ class behat_hooks extends behat_base {
      * @var null|Exception
      */
     protected static $currentscenarioexception = null;
+
+    /**
+     * A list of exceptions which were thrown during the AfterStep hook handling.
+     *
+     * When a Step fails, it is possible to detect that failure in the AfterStep hook, however if an AfterStep hook
+     * throws an exception, while the test itself fails, the subsequent AfterStep hooks are not aware of that failure.
+     *
+     * This becomes problematic when we use an AfterStep hook to look for exceptions within the page.
+     *
+     * In order to perform actions such as closing DB transactions, capturing screenshots, and pausing when we find an
+     * exception within the page content, we, must keep track of any exceptions which were found and thrown during the
+     * AfterStep hooks.
+     *
+     * @var array A list of exceptions thrown during AfterStep hook handling
+     */
+    protected $stephookexceptions = [];
 
     /**
      * If we are saving any kind of dump on failure we should use the same parent dir during a run.
@@ -547,23 +553,68 @@ EOF;
      * @param BeforeStepScope $scope scope passed by event fired before step.
      * @BeforeStep
      */
-    public function before_step_javascript(BeforeStepScope $scope) {
+    public function before_step_reset(BeforeStepScope $scope) {
         if (self::$currentscenarioexception) {
             // A BeforeScenario hook triggered an exception and marked this test as failed.
             // Skip this hook as it will likely fail.
             return;
         }
+    }
 
-        self::$currentstepexception = null;
+    /**
+     * Reset the list of exceptions identified in the core hooks defiend for the current step.
+     *
+     * @param BeforeStepScope $scope scope passed by event fired before step.
+     * @BeforeStep
+     */
+    public function reset_step_hook_exceptions(BeforeStepScope $scope): void {
+        $this->stephookexceptions = [];
+    }
 
-        // Only run if JS.
-        if ($this->running_javascript()) {
-            try {
-                $this->wait_for_pending_js();
-            } catch (Exception $e) {
-                self::$currentstepexception = $e;
-            }
+    /**
+     * Ensure that the step was defined.
+     *
+     * @param AfterStepScope $scope scope passed by event fired after step
+     * @AfterStep
+     */
+    public function check_step_defined_after_step(AfterStepScope $scope): void {
+        // If step is undefined then throw exception, to get failed exit code.
+        if ($scope->getTestResult()->getResultCode() === Behat\Behat\Tester\Result\StepResult::UNDEFINED) {
+            $undefinedstepexception = new coding_exception("Step '" . $scope->getStep()->getText() . "'' is undefined.");
+            $this->stephookexceptions[] = $undefinedstepexception;
+
+            throw $undefinedstepexception;
         }
+    }
+
+    /**
+     * Close any open transactions.
+     *
+     * @param AfterStepScope $scope scope passed by event fired after step
+     * @AfterStep
+     */
+    public function close_transations_after_step(AfterStepScope $scope): void {
+        global $DB;
+
+        if (!$this->is_step_failed($scope)) {
+            // The Step passed so no need to roll transactions back.
+            return;
+        }
+
+        if (!$DB) {
+            // No DB = No transactions.
+            return;
+        }
+
+        if (!$DB->is_transaction_started()) {
+            // Nothing to close.
+            return;
+        }
+
+        // Abort any open transactions to prevent subsequent tests hanging.
+        // This does the same as abort_all_db_transactions(), but doesn't call error_log() as we don't
+        // want to see a message in the behat output.
+        $DB->force_transaction_rollback();
     }
 
     /**
@@ -581,56 +632,15 @@ EOF;
      * @param AfterStepScope $scope scope passed by event fired after step..
      * @AfterStep
      */
-    public function after_step_javascript(AfterStepScope $scope) {
-        global $CFG, $DB;
-
-        // If step is undefined then throw exception, to get failed exit code.
-        if ($scope->getTestResult()->getResultCode() === Behat\Behat\Tester\Result\StepResult::UNDEFINED) {
-            throw new coding_exception("Step '" . $scope->getStep()->getText() . "'' is undefined.");
-        }
-
-        $isfailed = $scope->getTestResult()->getResultCode() === Behat\Testwork\Tester\Result\TestResult::FAILED;
-
-        // Abort any open transactions to prevent subsequent tests hanging.
-        // This does the same as abort_all_db_transactions(), but doesn't call error_log() as we don't
-        // want to see a message in the behat output.
-        if (($scope->getTestResult() instanceof \Behat\Behat\Tester\Result\ExecutedStepResult) &&
-            $scope->getTestResult()->hasException()) {
-            if ($DB && $DB->is_transaction_started()) {
-                $DB->force_transaction_rollback();
-            }
-        }
-
-        if ($isfailed && !empty($CFG->behat_faildump_path)) {
-            // Save the page content (html).
-            $this->take_contentdump($scope);
-
-            if ($this->running_javascript()) {
-                // Save a screenshot.
-                $this->take_screenshot($scope);
-            }
-        }
-
-        if ($isfailed && !empty($CFG->behat_pause_on_fail)) {
-            $exception = $scope->getTestResult()->getException();
-            $message = "<colour:lightRed>Scenario failed. ";
-            $message .= "<colour:lightYellow>Paused for inspection. Press <colour:lightRed>Enter/Return<colour:lightYellow> to continue.<newline>";
-            $message .= "<colour:lightRed>Exception follows:<newline>";
-            $message .= trim($exception->getMessage());
-            behat_util::pause($this->getSession(), $message);
-        }
-
-        // Only run if JS.
+    public function after_step_javascript(AfterStepScope $scope): void {
         if (!$this->running_javascript()) {
+            // Javascript not running so the page has already finished loading.
             return;
         }
 
         try {
             $this->wait_for_pending_js();
-            self::$currentstepexception = null;
         } catch (UnexpectedAlertOpen $e) {
-            self::$currentstepexception = $e;
-
             // Accepting the alert so the framework can continue properly running
             // the following scenarios. Some browsers already closes the alert, so
             // wrapping in a try & catch.
@@ -640,8 +650,127 @@ EOF;
                 // Catching the generic one as we never know how drivers reacts here.
             }
         } catch (Exception $e) {
-            self::$currentstepexception = $e;
         }
+    }
+
+    /**
+     * Check for exceptions in the page after the step has completed.
+     *
+     * @param AfterStepScope $scope scope passed by event fired after step..
+     * @AfterStep
+     */
+    public function check_for_exceptions_after_step(AfterStepScope $scope): void {
+        if (!$this->is_step_failed($scope)) {
+            // This test is already failed.
+            // There is no point in looking for further exceptions.
+            return;
+        }
+
+        try {
+            $this->i_look_for_exceptions();
+        } catch (Throwable $throwable) {
+            $this->stephookexceptions[] = $throwable;
+            throw $throwable;
+        }
+    }
+
+    /**
+     * Take a screenshot and dump the page content.
+     *
+     * @param AfterStepScope $scope scope passed by event fired after step
+     * @AfterStep
+     */
+    public function dump_content_after_fail(AfterStepScope $scope): void {
+        global $CFG;
+
+        if (!$this->is_step_failed($scope)) {
+            // The test is passed. There is nothing to dump.
+            return;
+        }
+
+        if (empty($CFG->behat_faildump_path)) {
+            // Nowhere to dump to.
+            return;
+        }
+
+        // Save the page content (html).
+        $this->take_contentdump($scope);
+
+        if ($this->running_javascript()) {
+            // Save a screenshot.
+            $this->take_screenshot($scope);
+        }
+    }
+
+    /**
+     * Pause after fail.
+     *
+     * @param AfterStepScope $scope scope passed by event fired after step
+     * @AfterStep
+     */
+    public function pause_after_fail(AfterStepScope $scope): void {
+        global $CFG;
+
+        if (!$this->is_step_failed($scope)) {
+            // The test is passed. There is nothing to dump.
+            return;
+        }
+
+        if (empty($CFG->behat_pause_on_fail)) {
+            // Not configured to pause after fail.
+            return;
+        }
+
+        $exceptions = [];
+        $result = $scope->getTestResult();
+        if ($result instanceof \Behat\Testwork\Tester\Result\ExceptionResult) {
+            if ($scope->getTestResult()->hasException()) {
+                $exceptions[]= $scope->getTestResult()->getException();
+            }
+        }
+        $exceptions = array_merge($exceptions, $this->stephookexceptions);
+
+        $exception = $scope->getTestResult()->getException();
+        $message = "<colour:lightRed>Scenario failed. ";
+        $message .= "<colour:lightYellow>Paused for inspection. Press <colour:lightRed>Enter/Return<colour:lightYellow> to continue.<newline>";
+        $message .= "<colour:lightRed>Exception details follow:<newline>";
+        foreach ($exceptions as $exception) {
+            $message .= trim($exception->getMessage());
+        }
+        behat_util::pause($this->getSession(), $message);
+    }
+
+    /**
+     * Check whether the step, and all AfterStep hooks were passed.
+     *
+     * @param   AfterStepScope $scope
+     * @return  bool
+     */
+    protected function is_step_failed(AfterStepScope $scope): bool {
+        if (!$scope->getTestResult()->isPassed()) {
+            // The test was failed, but there are some circumstances where it is not marked as a fail for the purposes
+            // of the hooks.
+            if ($scope->getTestResult()->getResultCode() === Behat\Behat\Tester\Result\StepResult::UNDEFINED) {
+                // There's no benefit to marking an undefined step as a fail for the purposes of test hooks.
+                return false;
+            }
+
+            $exception = $scope->getTestResult()->getException();
+            if (is_a($exception, \Moodle\BehatExtension\Exception\SkippedException)) {
+                // This is a skipped test, not a fail.
+                return false;
+            }
+
+            // The test was marked as failed.
+            return true;
+        }
+
+        if (!empty($this->stephookexceptions)) {
+            // One of the Step hooks threw an exception.
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -773,11 +902,6 @@ EOF;
         // If the scenario already failed in a hook throw the exception.
         if (!is_null(self::$currentscenarioexception)) {
             throw self::$currentscenarioexception;
-        }
-
-        // If the step already failed in a hook throw the exception.
-        if (!is_null(self::$currentstepexception)) {
-            throw self::$currentstepexception;
         }
 
         $this->look_for_exceptions();
