@@ -22,13 +22,9 @@ Feature: Adding random questions to a quiz based on category and tags
       | Course       | C1        | Questions Category 1 |
       | Course       | C1        | Questions Category 2 |
     And the following "questions" exist:
-      | questioncategory     | qtype | name            | user     | questiontext    |
-      | Questions Category 1 | essay | question 1 name | admin    | Question 1 text |
-      | Questions Category 1 | essay | question 2 name | teacher1 | Question 2 text |
-    And the following "core_question > Tags" exist:
-      | question        | tag |
-      | question 1 name | foo |
-      | question 2 name | bar |
+      | questioncategory     | qtype | name            | user     | questiontext    | tags |
+      | Questions Category 1 | essay | question 1 name | admin    | Question 1 text | foo  |
+      | Questions Category 1 | essay | question 2 name | teacher1 | Question 2 text | bar  |
 
   Scenario: Available tags are shown in the autocomplete tag field
     Given I am on the "Quiz 1" "mod_quiz > Edit" page logged in as "teacher1"

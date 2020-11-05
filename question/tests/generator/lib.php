@@ -141,6 +141,16 @@ class core_question_generator extends component_generator_base {
             $DB->update_record('question', $question);
         }
 
+        if ($overrides && array_key_exists('tags', $overrides)) {
+            $taglist = explode(',', $overrides['tags']);
+            foreach ($taglist as $tag) {
+                $this->create_question_tag([
+                    'questionid' => $question->id,
+                    'tag' => trim($tag),
+                ]);
+            }
+        }
+
         return $question;
     }
 

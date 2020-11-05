@@ -20,23 +20,14 @@ Feature: Adding questions to a quiz from the question bank
     And the following "question categories" exist:
       | contextlevel | reference | name           |
       | Course       | C1        | Test questions |
-    And the following "questions" exist:
-      | questioncategory | qtype     | name             | user     | questiontext     | idnumber |
-      | Test questions   | essay     | question 01 name | admin    | Question 01 text |          |
-      | Test questions   | essay     | question 02 name | teacher1 | Question 02 text | qidnum   |
 
   Scenario: The questions can be filtered by tag
-    Given I log in as "teacher1"
+    Given the following "questions" exist:
+      | questioncategory | qtype     | name             | user     | questiontext     | idnumber | tags |
+      | Test questions   | essay     | question 01 name | admin    | Question 01 text |          | foo  |
+      | Test questions   | essay     | question 02 name | teacher1 | Question 02 text | qidnum   | bar  |
+    And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    When I navigate to "Question bank > Questions" in current page administration
-    And I choose "Edit question" action for "question 01 name" in the question bank
-    And I set the following fields to these values:
-      | Tags | foo |
-    And I press "id_submitbutton"
-    And I choose "Edit question" action for "question 02 name" in the question bank
-    And I set the following fields to these values:
-      | Tags | bar |
-    And I press "id_submitbutton"
     And I am on the "Quiz 1" "mod_quiz > Edit" page
     And I open the "last" add to quiz menu
     And I follow "from question bank"
@@ -50,27 +41,29 @@ Feature: Adding questions to a quiz from the question bank
 
   Scenario: The question modal can be paginated
     Given the following "questions" exist:
-      | questioncategory | qtype     | name             | user     | questiontext     |
-      | Test questions   | essay     | question 03 name | teacher1 | Question 03 text |
-      | Test questions   | essay     | question 04 name | teacher1 | Question 04 text |
-      | Test questions   | essay     | question 05 name | teacher1 | Question 05 text |
-      | Test questions   | essay     | question 06 name | teacher1 | Question 06 text |
-      | Test questions   | essay     | question 07 name | teacher1 | Question 07 text |
-      | Test questions   | essay     | question 08 name | teacher1 | Question 08 text |
-      | Test questions   | essay     | question 09 name | teacher1 | Question 09 text |
-      | Test questions   | essay     | question 10 name | teacher1 | Question 10 text |
-      | Test questions   | essay     | question 11 name | teacher1 | Question 11 text |
-      | Test questions   | essay     | question 12 name | teacher1 | Question 12 text |
-      | Test questions   | essay     | question 13 name | teacher1 | Question 13 text |
-      | Test questions   | essay     | question 14 name | teacher1 | Question 14 text |
-      | Test questions   | essay     | question 15 name | teacher1 | Question 15 text |
-      | Test questions   | essay     | question 16 name | teacher1 | Question 16 text |
-      | Test questions   | essay     | question 17 name | teacher1 | Question 17 text |
-      | Test questions   | essay     | question 18 name | teacher1 | Question 18 text |
-      | Test questions   | essay     | question 19 name | teacher1 | Question 19 text |
-      | Test questions   | essay     | question 20 name | teacher1 | Question 20 text |
-      | Test questions   | essay     | question 21 name | teacher1 | Question 21 text |
-      | Test questions   | essay     | question 22 name | teacher1 | Question 22 text |
+      | questioncategory | qtype     | name             | user     | questiontext     | idnumber |
+      | Test questions   | essay     | question 01 name | admin    | Question 01 text |          |
+      | Test questions   | essay     | question 02 name | teacher1 | Question 02 text | qidnum   |
+      | Test questions   | essay     | question 03 name | teacher1 | Question 03 text |          |
+      | Test questions   | essay     | question 04 name | teacher1 | Question 04 text |          |
+      | Test questions   | essay     | question 05 name | teacher1 | Question 05 text |          |
+      | Test questions   | essay     | question 06 name | teacher1 | Question 06 text |          |
+      | Test questions   | essay     | question 07 name | teacher1 | Question 07 text |          |
+      | Test questions   | essay     | question 08 name | teacher1 | Question 08 text |          |
+      | Test questions   | essay     | question 09 name | teacher1 | Question 09 text |          |
+      | Test questions   | essay     | question 10 name | teacher1 | Question 10 text |          |
+      | Test questions   | essay     | question 11 name | teacher1 | Question 11 text |          |
+      | Test questions   | essay     | question 12 name | teacher1 | Question 12 text |          |
+      | Test questions   | essay     | question 13 name | teacher1 | Question 13 text |          |
+      | Test questions   | essay     | question 14 name | teacher1 | Question 14 text |          |
+      | Test questions   | essay     | question 15 name | teacher1 | Question 15 text |          |
+      | Test questions   | essay     | question 16 name | teacher1 | Question 16 text |          |
+      | Test questions   | essay     | question 17 name | teacher1 | Question 17 text |          |
+      | Test questions   | essay     | question 18 name | teacher1 | Question 18 text |          |
+      | Test questions   | essay     | question 19 name | teacher1 | Question 19 text |          |
+      | Test questions   | essay     | question 20 name | teacher1 | Question 20 text |          |
+      | Test questions   | essay     | question 21 name | teacher1 | Question 21 text |          |
+      | Test questions   | essay     | question 22 name | teacher1 | Question 22 text |          |
     And I log in as "teacher1"
     And I am on the "Quiz 1" "mod_quiz > Edit" page
     And I open the "last" add to quiz menu
@@ -82,8 +75,10 @@ Feature: Adding questions to a quiz from the question bank
 
   Scenario: Questions are added in the right place with multiple sections
     Given the following "questions" exist:
-      | questioncategory | qtype | name             | questiontext     |
-      | Test questions   | essay | question 03 name | question 03 text |
+      | questioncategory | qtype     | name             | user     | questiontext     | idnumber |
+      | Test questions   | essay     | question 01 name | admin    | Question 01 text |          |
+      | Test questions   | essay     | question 02 name | teacher1 | Question 02 text | qidnum   |
+      | Test questions   | essay     | question 03 name | teacher1 | question 03 text |          |
     And quiz "Quiz 1" contains the following questions:
       | question         | page |
       | question 01 name | 1    |
