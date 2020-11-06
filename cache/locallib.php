@@ -100,7 +100,7 @@ class cache_config_writer extends cache_config {
         // it doesn't exist and thus we can't use the normal API for this (it'll just try to use config).
         $lockconf = reset($this->configlocks);
         if ($lockconf === false) {
-            debugging('Your cache configuration file is out of date and needs to be refreshed.', DEBUG_DEVELOPER);
+            debugging(get_string('cacheconfigcorruptandreset', 'cache'), DEBUG_DEVELOPER);
             unlink($cachefile);
             cache_config_writer::create_default_configuration(true);
             return;
