@@ -36,6 +36,7 @@ $string['area'] = 'Area';
 $string['caching'] = 'Caching';
 $string['cacheadmin'] = 'Cache administration';
 $string['cacheconfig'] = 'Configuration';
+$string['cacheconfigcorruptandreset'] = 'Corruption was detected in the cache configuration. The existing cache configuration has been removed and a new configuration was created.';
 $string['cachedef_calculablesinfo'] = 'Analytics calculables info';
 $string['cachedef_calendar_subscriptions'] = 'Calendar subscriptions';
 $string['cachedef_calendar_categories'] = 'Calendar course categories that a user can access';
