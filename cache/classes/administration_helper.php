@@ -62,6 +62,7 @@ abstract class administration_helper extends cache_helper {
             // Reset the factory and fetch a new config instance.
             $factory = cache_factory::instance(true);
             $instance = \cache_config::instance();
+            \core\notification::add(get_string('cacheconfigcorruptandreset', 'cache'), \core\notification::WARNING);
         }
 
         return $instance;
