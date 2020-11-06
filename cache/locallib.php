@@ -101,13 +101,9 @@ class cache_config_writer extends cache_config {
         $lockconf = reset($this->configlocks);
         if ($lockconf === false) {
             debugging('Your cache configuration file is out of date and needs to be refreshed.', DEBUG_DEVELOPER);
-            // Use the default
-            $lockconf = array(
-                'name' => 'cachelock_file_default',
-                'type' => 'cachelock_file',
-                'dir' => 'filelocks',
-                'default' => true
-            );
+            unlink($cachefile);
+            cache_config_writer::create_default_configuration(true);
+            return;
         }
         $factory = cache_factory::instance();
         $locking = $factory->create_lock_instance($lockconf);
