@@ -683,13 +683,33 @@ class cache_config_writer extends cache_config {
 abstract class cache_administration_helper extends cache_helper {
 
     /**
+     * Fetch the cache_config instance, checking that it is valid.
+     *
+     * @return  cache_config
+     */
+    protected static function get_config_instance(): \cache_config {
+        $instance = \cache_config::instance();
+        if (empty($instance->get_all_stores()) || empty($instance->get_locks())) {
+            // The cache configuration is corrupt somehow.
+            // Regenerate the configuration
+            \cache_config_writer::create_default_configuration(true);
+
+            // Reset the factory and fetch a new config instance.
+            $factory = cache_factory::instance(true);
+            $instance = \cache_config::instance();
+        }
+
+        return $instance;
+    }
+
+    /**
      * Returns an array containing all of the information about stores a renderer needs.
      * @return array
      */
     public static function get_store_instance_summaries() {
         $return = array();
         $default = array();
-        $instance = cache_config::instance();
+        $instance = self::get_config_instance();
         $stores = $instance->get_all_stores();
         $locks = $instance->get_locks();
         foreach ($stores as $name => $details) {
@@ -777,7 +797,7 @@ abstract class cache_administration_helper extends cache_helper {
             );
         }
 
-        $instance = cache_config::instance();
+        $instance = self::get_config_instance();
         $stores = $instance->get_all_stores();
         foreach ($stores as $store) {
             $plugin = $store['plugin'];
@@ -1043,7 +1063,7 @@ abstract class cache_administration_helper extends cache_helper {
         }
 
         if (!$supportsnativelocking) {
-            $config = cache_config::instance();
+            $config = self::get_config_instance();
             $locks = array();
             foreach ($config->get_locks() as $lock => $conf) {
                 if (!empty($conf['default'])) {
@@ -1096,9 +1116,9 @@ abstract class cache_administration_helper extends cache_helper {
      *      3. An array of default stores
      */
     public static function get_definition_store_options($component, $area) {
+        $config = self::get_config_instance();
         $factory = cache_factory::instance();
         $definition = $factory->create_definition($component, $area);
-        $config = cache_config::instance();
         $currentstores = $config->get_stores_for_definition($definition);
         $possiblestores = $config->get_stores($definition->get_mode(), $definition->get_requirements_bin());
 
@@ -1125,7 +1145,7 @@ abstract class cache_administration_helper extends cache_helper {
      */
     public static function get_default_mode_stores() {
         global $OUTPUT;
-        $instance = cache_config::instance();
+        $instance = self::get_config_instance();
         $adequatestores = cache_helper::get_stores_suitable_for_mode_default();
         $icon = new pix_icon('i/warning', new lang_string('inadequatestoreformapping', 'cache'));
         $storenames = array();
@@ -1162,7 +1182,7 @@ abstract class cache_administration_helper extends cache_helper {
      */
     public static function get_lock_summaries() {
         $locks = array();
-        $instance = cache_config::instance();
+        $instance = self::get_config_instance();
         $stores = $instance->get_all_stores();
         foreach ($instance->get_locks() as $lock) {
             $default = !empty($lock['default']);
