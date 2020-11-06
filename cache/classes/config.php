@@ -87,6 +87,7 @@ class cache_config {
     /**
      * Gets an instance of the cache_configuration class.
      *
+     * @param bool $forcereload If set to true reset the cache_factory
      * @return cache_config
      */
     public static function instance() {
