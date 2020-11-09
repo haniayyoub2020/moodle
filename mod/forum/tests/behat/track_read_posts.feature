@@ -16,19 +16,16 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | user | course | role |
       | student1 | C1 | student |
       | student2 | C1 | student |
-    And I log in as "admin"
-    And I am on "Course 1" course homepage with editing mode on
 
   Scenario: Tracking forum posts off
-    Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
-      | Read tracking | Off |
-    And I add a new discussion to "Test forum name" forum with:
+    Given the following "forum" "activity" exists:
+      | Forum name    | Test forum name                |
+      | Forum type    | Standard forum for general use |
+      | Description   | Test forum description         |
+      | Read tracking | Off                            |
+    And the following "mod_forum > discussion" exists:
       | Subject | Test post subject |
       | Message | Test post message |
-    And I log out
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should not see "1 unread post"
@@ -36,15 +33,20 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
     And I should not see "Track unread posts"
 
   Scenario: Tracking forum posts optional with user tracking on
-    Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
-      | Read tracking | Optional |
-    And I add a new discussion to "Test forum name" forum with:
-      | Subject | Test post subject |
-      | Message | Test post message |
-    And I log out
+    Given the following "activity" exists:
+      | activity     | forum                  |
+      | course       | C1                     |
+      | idnumber     | forum1                 |
+      | name         | Test forum name        |
+      | type         | general                |
+      | description  | Test forum description |
+      | trackingtype | 1                      |
+    And the following "mod_forum > discussion" exists:
+      | forum   | forum1            |
+      | course  | C1                |
+      | user    | admin             |
+      | subject | Test post subject |
+      | message | Test post message |
     When I log in as "student1"
     And I am on "Course 1" course homepage
     Then I should see "1 unread post"
