@@ -55,7 +55,6 @@ Feature: Users can search wikis
     And I press "Search wikis"
     And I should not see "New page created by student1"
     And I should see "Collaborative teacher1 page"
-    And I log out
 
   @javascript
   Scenario: Searching individual wiki
@@ -113,7 +112,6 @@ Feature: Users can search wikis
     And I should not see "Individual teacher1 page"
     And I should not see "Individual student1 page"
     And I should see "Individual student2 page"
-    And I log out
 
   @javascript
   Scenario: Searching group wiki

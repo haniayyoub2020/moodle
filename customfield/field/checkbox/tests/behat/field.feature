@@ -19,7 +19,6 @@ Feature: Managers can manage course custom fields checkbox
       | Short name | testfield  |
     And I press "Save changes"
     Then I should see "Test field"
-    And I log out
 
   Scenario: Edit a custom course checkbox field
     When I click on "Add a new custom field" "link"
@@ -34,7 +33,6 @@ Feature: Managers can manage course custom fields checkbox
     And I press "Save changes"
     Then I should see "Edited field"
     And I should not see "Test field"
-    And I log out
 
   @javascript
   Scenario: Delete a custom course checkbox field
@@ -47,7 +45,6 @@ Feature: Managers can manage course custom fields checkbox
     And I click on "Delete" "link" in the "Test field" "table_row"
     And I click on "Yes" "button" in the "Confirm" "dialogue"
     Then I should not see "Test field"
-    And I log out
 
   @javascript
   Scenario: A checkbox checked by default must be shown on listing but allow uncheck that will keep showing
@@ -78,4 +75,3 @@ Feature: Managers can manage course custom fields checkbox
     And I press "Save and display"
     And I am on site homepage
     Then I should see "Test field: No"
-    And I log out

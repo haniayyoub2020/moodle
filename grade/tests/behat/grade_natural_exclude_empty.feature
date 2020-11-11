@@ -51,7 +51,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 5.71 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 2.86 %                       |
       | Test assignment five (extra) | 2.86 %( Extra credit ) | 8.00   | 0–10  | 80.00 %    | 2.29 %                       |
       | Course total                 | -                      | 278.00 | 0–350 | 79.43 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: No weights are overridden, student has some grades present
@@ -72,7 +71,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 13.33 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 6.67 %                       |
       | Test assignment five (extra) | 6.67 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 5.33 %                       |
       | Course total                 | -                       | 128.00 | 0–150 | 85.33 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: No weights are overridden, student has none grades present except for extra credit
@@ -91,7 +89,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.00  | 0–0   |            | -                            |
-    And I log out
 
   @javascript
   Scenario: Make sure there are no errors when all items are marked as extra credit
@@ -118,7 +115,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.0   | 0–0   |            | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden and student has all grades present
@@ -143,7 +139,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 5.71 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 2.86 %                       |
       | Test assignment five (extra) | 2.86 %( Extra credit ) | 8.00   | 0–10  | 80.00 %    | 2.29 %                       |
       | Course total                 | -                      | 284.00 | 0–350 | 81.14 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden and student has some grades present
@@ -167,7 +162,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 13.33 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 6.67 %                       |
       | Test assignment five (extra) | 6.67 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 5.33 %                       |
       | Course total                 | -                       | 133.00 | 0–150 | 88.67 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, student has none grades present except for extra credit
@@ -189,7 +183,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.00  | 0–0   |            | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, including extra credit, and student has all grades present
@@ -216,7 +209,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 10.00 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 5.00 %                       |
       | Test assignment five (extra) | 2.86 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 2.29 %                       |
       | Course total                 | -                       | 291.50 | 0–350 | 83.29 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, including extra credit, and student has some grades present
@@ -242,7 +234,6 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 16.67 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 8.33 %                       |
       | Test assignment five (extra) | 6.67 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 5.33 %                       |
       | Course total                 | -                       | 135.50 | 0–150 | 90.33 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, including extra credit, student has none grades present except for extra credit
@@ -266,4 +257,3 @@ Feature: Weights in natural aggregation are adjusted if the items are excluded f
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.00  | 0–0   |            | -                            |
-    And I log out

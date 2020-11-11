@@ -27,7 +27,6 @@ Feature: Manager is able to delete tags
     And I follow "User 1"
     And I should see "Cat"
     And I should not see "Dog"
-    And I log out
 
   Scenario: Deleting multiple tags with javascript disabled
     When I log in as "manager1"
@@ -44,7 +43,6 @@ Feature: Manager is able to delete tags
     And I follow "User 1"
     And I should see "Cat"
     And I should not see "Dog"
-    And I log out
 
   @javascript
   Scenario: Deleting a tag with javascript enabled
@@ -67,7 +65,6 @@ Feature: Manager is able to delete tags
     And I follow "User 1"
     And I should see "Cat"
     And I should not see "Dog"
-    And I log out
 
   @javascript
   Scenario: Deleting multiple tags with javascript enabled
@@ -101,4 +98,3 @@ Feature: Manager is able to delete tags
     And I follow "User 1"
     And I should see "Cat"
     And I should not see "Dog"
-    And I log out

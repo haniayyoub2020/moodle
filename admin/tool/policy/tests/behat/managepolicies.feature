@@ -37,7 +37,6 @@ Feature: Manage policies
     Then the following should exist in the "tool-policy-managedocs-wrapper" table:
       | Name                                        | Policy status | Version | Agreements |
       | Policy1 Site policy, All users, Compulsory  | Draft         | v1      | N/A        |
-    And I log out
 
   Scenario: Create new policy and save as active
     When I log in as "manager"
@@ -53,7 +52,6 @@ Feature: Manage policies
     Then the following should exist in the "tool-policy-managedocs-wrapper" table:
       | Name                                        | Policy status | Version | Agreements  |
       | Policy1 Site policy, All users, Compulsory  | Active        | v1      | 0 of 4 (0%) |
-    And I log out
 
   Scenario: Edit active policy and save as minor change
     Given the following policies exist:
@@ -75,7 +73,6 @@ Feature: Manage policies
     Then the following should exist in the "tool-policy-managedocs-wrapper" table:
       | Name                                        | Policy status | Version    | Agreements   |
       | Policy1 Site policy, All users, Compulsory  | Active        | v1 amended | 1 of 4 (25%) |
-    And I log out
 
   Scenario: Edit active policy and save as draft
     Given the following policies exist:
@@ -93,7 +90,6 @@ Feature: Manage policies
       | Name                                        | Policy status | Version    | Agreements   |
       | Policy1 Site policy, All users, Compulsory  | Active        | v1         | 1 of 4 (25%) |
       | Policy1 Site policy, All users, Compulsory  | Draft         | v2         | N/A          |
-    And I log out
 
   Scenario: Edit active policy and save as new active version
     Given the following policies exist:
@@ -119,7 +115,6 @@ Feature: Manage policies
     Then the following should exist in the "tool-policy-managedocs-wrapper" table:
       | Name                                        | Policy status | Version    | Agreements   |
       | Policy1 Site policy, All users, Compulsory  | Inactive      | v1         | 1 of 4 (25%) |
-    And I log out
 
   Scenario: Edit draft policy and save as draft
     Given the following policies exist:
@@ -140,7 +135,6 @@ Feature: Manage policies
       | Policy1 Site policy, All users, Compulsory  | Draft         | v2         | N/A          |
     And I should not see "v1"
     And "View previous versions" "link" should not exist
-    And I log out
 
   Scenario: Edit draft policy and save as active
     Given the following policies exist:
@@ -157,7 +151,6 @@ Feature: Manage policies
       | Policy1 Site policy, All users, Compulsory  | Active        | v2         | 0 of 4 (0%)  |
     And I should not see "v1"
     And "View previous versions" "link" should not exist
-    And I log out
 
   Scenario: Activate draft policy
     Given the following policies exist:
@@ -172,7 +165,6 @@ Feature: Manage policies
       | Name                                        | Policy status | Version    | Agreements   |
       | Policy1 Site policy, All users, Compulsory  | Active        | v1         | 0 of 4 (0%)  |
     And "View previous versions" "link" should not exist
-    And I log out
 
   Scenario: Edit archived policy and save as draft
     Given the following policies exist:
@@ -210,7 +202,6 @@ Feature: Manage policies
       | Name                                        | Policy status | Version    | Agreements   |
       | Policy1 Site policy, All users, Compulsory  | Inactive      | v1         | 1 of 4 (25%) |
     And I should not see "v2"
-    And I log out
 
   Scenario: Edit archived policy and save as active
     Given the following policies exist:
@@ -239,7 +230,6 @@ Feature: Manage policies
       | Name                                        | Policy status | Version    | Agreements   |
       | Policy1 Site policy, All users, Compulsory  | Inactive      | v1         | 1 of 4 (25%) |
     And I should not see "v2"
-    And I log out
 
   Scenario: Current user can go back to previous page in List of active policies page
     Given the following policies exist:

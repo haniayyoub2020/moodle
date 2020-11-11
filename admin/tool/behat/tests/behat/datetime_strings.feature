@@ -22,4 +22,3 @@ Feature: Transform date time string arguments
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
     And I should see "##yesterday##l, j F Y##"
-    And I log out

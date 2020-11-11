@@ -30,7 +30,6 @@ Feature: Page administration menu
     And I should see the page administration menu
     And I navigate to "Users > Enrolment methods" in current page administration
     And I should see "Enrolment methods"
-    And I log out
 
   Scenario: Student cannot access course and activity administration menus
     And I log in as "student1"
@@ -38,7 +37,6 @@ Feature: Page administration menu
     And I should not see the page administration menu
     And I follow "Choice name"
     And I should not see the page administration menu
-    And I log out
 
   Scenario: Administrator can access site administration menus and sub-menus
     And I log in as "admin"
@@ -47,4 +45,3 @@ Feature: Page administration menu
     And I should see "Enable comments"
     And I navigate to "Users > Accounts > Add a new user" in site administration
     And I should see "New password"
-    And I log out

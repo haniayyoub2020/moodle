@@ -32,6 +32,6 @@ Feature: Test exporting Essay questions
     Then following "click here" should download between "2600" and "2850" bytes
     # If the download step is the last in the scenario then we can sometimes run
     # into the situation where the download page causes a http redirect but behat
-    # has already conducted its reset (generating an error). By putting a logout
+    # has already conducted its reset (generating an error). By putting a step here
     # step we avoid behat doing the reset until we are off that page.
-    And I log out
+    And I am on site homepage

@@ -37,7 +37,6 @@ Feature: Test role visibility for the groups management page
     And "optgroup[label='Student']" "css_element" should exist in the "#members" "css_element"
     And "optgroup[label='Teacher']" "css_element" should exist in the "#members" "css_element"
     And "optgroup[label='Manager']" "css_element" should exist in the "#members" "css_element"
-    And I log out
 
   Scenario: Do not allow managers to view any roles and check they are hidden
     Given I log in as "teacher1"
@@ -49,4 +48,3 @@ Feature: Test role visibility for the groups management page
     And "optgroup[label='Student']" "css_element" should exist in the "#members" "css_element"
     And "optgroup[label='Teacher']" "css_element" should exist in the "#members" "css_element"
     And "optgroup[label='Manager']" "css_element" should not exist in the "#members" "css_element"
-    And I log out

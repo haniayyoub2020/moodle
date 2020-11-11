@@ -154,7 +154,6 @@ Feature: Backpack badges
     And "input[name=includeauthdetails][type=checkbox][value=1]" "css_element" should not exist
     And I click on "includeauthdetails" "checkbox"
     And I should not see "test@test.com"
-    And I log out
 
   @javascript
   Scenario: View backpack form as a student

@@ -34,5 +34,3 @@ Feature: Teachers can enable comments only if comments are enabled at site level
     And I set the field "Name" to "Test Database name 2"
     And "Allow comments on entries" "field" should not exist
     Then I should see "No" in the "//*[@id=\"fitem_id_comments\"]/*[@data-fieldtype=\"selectyesno\"]" "xpath_element"
-    And I press "Save and return to course"
-    And I log out

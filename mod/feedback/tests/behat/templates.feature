@@ -70,7 +70,6 @@ Feature: Saving, using and deleting feedback templates
     And I follow "Templates"
     And I should see "No templates available yet"
     And "Use a template" "field" should not exist
-    And I log out
 
   Scenario: Teacher can append template to existing questions or remove them
     # Save feedback as a course template
@@ -106,7 +105,6 @@ Feature: Saving, using and deleting feedback templates
     And I follow "Edit questions"
     And I should see "this is a multiple choice 1"
     And I should not see "What is your favourite subject"
-    And I log out
 
   Scenario: Manager can save template as public and it will be available in any course
     When I log in as "manager"
@@ -127,7 +125,6 @@ Feature: Saving, using and deleting feedback templates
     And I press "Save changes"
     And I follow "Edit questions"
     And I should see "this is a multiple choice 1"
-    And I log out
 
   Scenario: Teacher can delete course templates but can not delete public templates
     # Save feedback as both public and course template
@@ -157,7 +154,6 @@ Feature: Saving, using and deleting feedback templates
     And I press "Back"
     And the "Use a template" select box should not contain "My course template"
     And the "Use a template" select box should contain "My public template"
-    And I log out
 
   @javascript
   Scenario: Manager can delete both course and public templates
@@ -192,4 +188,3 @@ Feature: Saving, using and deleting feedback templates
     And I press "Back"
     And I should see "No templates available yet"
     And "Use a template" "field" should not exist
-    And I log out

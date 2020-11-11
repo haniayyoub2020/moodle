@@ -92,4 +92,3 @@ Feature: Multiple option choice response
     And I follow "Choice name"
     And I follow "View 1 responses"
     Then I should not see "Limit: 1"
-    And I log out

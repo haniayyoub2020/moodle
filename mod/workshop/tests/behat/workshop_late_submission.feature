@@ -83,4 +83,3 @@ Feature: Workshop 'Late submissions are allowed' task
     Then I should see "Submissions deadline:"
     And I should see "Monday, 1 January 2018"
     And I should see "Late submissions are allowed"
-    And I log out

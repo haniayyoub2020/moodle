@@ -44,7 +44,6 @@ Feature: Manager can add standard tags and change the tag type of existing tags
     # Tag4 and Tag5 were added as standard
     And "Remove from standard tags" "link" should exist in the "Tag4" "table_row"
     And "Remove from standard tags" "link" should exist in the "Tag5" "table_row"
-    And I log out
 
   @javascript
   Scenario: Changing tag isstandard
@@ -68,7 +67,6 @@ Feature: Manager can add standard tags and change the tag type of existing tags
     And "Remove from standard tags" "link" should exist in the "Tag1" "table_row"
     And "Make standard" "link" should exist in the "Tag2" "table_row"
     And "Make standard" "link" should exist in the "Tag3" "table_row"
-    And I log out
 
   Scenario: Changing tag isstandard in edit form
     When I log in as "manager1"
@@ -84,7 +82,6 @@ Feature: Manager can add standard tags and change the tag type of existing tags
       | Standard | 0 |
     And I press "Update"
     And "Make standard" "link" should exist in the "Tag1" "table_row"
-    And I log out
 
   @javascript
   Scenario: Changing standard tags property of tag area
@@ -116,4 +113,3 @@ Feature: Manager can add standard tags and change the tag type of existing tags
     # Non-standard tags were automatically removed on form save.
     And I should see "Tag3"
     And I should not see "Tag2"
-    And I log out

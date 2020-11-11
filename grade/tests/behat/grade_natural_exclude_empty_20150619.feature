@@ -52,7 +52,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment four (extra) | 5.71 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 2.86 %                       |
       | Test assignment five (extra) | 2.86 %( Extra credit ) | 8.00   | 0–10  | 80.00 %    | 2.29 %                       |
       | Course total                 | -                      | 278.00 | 0–350 | 79.43 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: No weights are overridden, student has some grades present (before the fix 20150619)
@@ -73,7 +72,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment four (extra) | 13.33 %( Extra credit ) | 10.00  | 0–20  | 50.00 %    | 6.67 %                       |
       | Test assignment five (extra) | 6.67 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 5.33 %                       |
       | Course total                 | -                       | 128.00 | 0–150 | 85.33 %    | -                            |
-    And I log out
 
   @javascript
   Scenario: No weights are overridden, student has none grades present except for extra credit (before the fix 20150619)
@@ -92,7 +90,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.00  | 0–0   |            | -                            |
-    And I log out
 
   @javascript
   Scenario: Make sure there are no errors when all items are marked as extra credit (before the fix 20150619)
@@ -119,7 +116,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.0   | 0–0   |            | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden and student has all grades present (before the fix 20150619)
@@ -145,7 +141,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment five (extra) | 2.00 %( Extra credit ) | 8.00   | 0–10  | 80.00 %    | 1.60 %                       |
       | Course total                 | -                      | 278.60 | 0–350 | 79.60 %    | -                            |
     # Contributions of extra credit "four" should be 20/350=5.71% and "five" 10/350=2.86% (350 is max grade for the course, 20 and 10 are max grades of "four" and "five")
-    And I log out
 
   @javascript
   Scenario: Weights are overridden and student has some grades present (before the fix 20150619)
@@ -170,7 +165,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment five (extra) | 3.33 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 2.67 %                       |
       | Course total                 | -                       | 124.00 | 0–150 | 82.67 %    | -                            |
     # Contributions of extra credit "four" should be 20/150=13.33% and "five" 10/150=6.67% (150 is max grade for the course, 20 and 10 are max grades of "four" and "five")
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, student has none grades present except for extra credit (before the fix 20150619)
@@ -192,7 +186,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.00  | 0–0   |            | -                            |
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, including extra credit, and student has all grades present (before the fix 20150619)
@@ -220,7 +213,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment five (extra) | 1.74 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 1.39 %                       |
       | Course total                 | -                       | 271.93 | 0–350 | 77.70 %    | -                            |
     # Which is absolutely terrible because weights of normal items do not add up to 100%
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, including extra credit, and student has some grades present (before the fix 20150619)
@@ -247,7 +239,6 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment five (extra) | 0.00 %( Extra credit )  | 8.00   | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                       | 112.50 | 0–150 | 75.00 %    | -                            |
     # This is just ridiculous, the grades for "two" and "five" are 0 without any reason, and sum weight of normal items is not 100% again.
-    And I log out
 
   @javascript
   Scenario: Weights are overridden, including extra credit, student has none grades present except for extra credit (before the fix 20150619)
@@ -271,4 +262,3 @@ Feature: Gradebook calculations for extra credit items before the fix 20150619
       | Test assignment four (extra) | 0.00 %( Extra credit ) | 10.00 | 0–20  | 50.00 %    | 0.00 %                       |
       | Test assignment five (extra) | 0.00 %( Extra credit ) | 8.00  | 0–10  | 80.00 %    | 0.00 %                       |
       | Course total                 | -                      | 0.00  | 0–0   |            | -                            |
-    And I log out

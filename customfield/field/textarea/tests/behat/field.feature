@@ -19,7 +19,6 @@ Feature: Managers can manage course custom fields textarea
       | Short name | testfield  |
     And I press "Save changes"
     Then I should see "Test field"
-    And I log out
 
   Scenario: Edit a custom course textarea field
     When I click on "Add a new custom field" "link"
@@ -34,7 +33,6 @@ Feature: Managers can manage course custom fields textarea
     And I press "Save changes"
     Then I should see "Edited field"
     And I should not see "Test field"
-    And I log out
 
   @javascript
   Scenario: Delete a custom course textarea field
@@ -47,4 +45,3 @@ Feature: Managers can manage course custom fields textarea
     And I click on "Delete" "link" in the "Test field" "table_row"
     And I click on "Yes" "button" in the "Confirm" "dialogue"
     Then I should not see "Test field"
-    And I log out

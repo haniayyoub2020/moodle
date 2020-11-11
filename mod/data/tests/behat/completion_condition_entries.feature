@@ -59,4 +59,3 @@ Feature: Set entries required as a completion condition for a data item
     And I press "Save and display"
     And I am on "Course 1" course homepage
     Then "Student 1" user has completed "Test database name" activity
-    And I log out

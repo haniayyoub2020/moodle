@@ -50,7 +50,6 @@ Feature: Users can request and approve courses
     And I follow "My new course"
     And I navigate to course participants
     And I should see "Teacher" in the "User 1" "table_row"
-    And I log out
 
   Scenario: Course request with category selection
     Given the following "categories" exist:
@@ -103,4 +102,3 @@ Feature: Users can request and approve courses
     And I am on course index
     And I follow "English category"
     And I should see "My new course"
-    And I log out

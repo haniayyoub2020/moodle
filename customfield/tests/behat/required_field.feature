@@ -37,7 +37,6 @@ Feature: Requiredness The course custom fields can be mandatory or not
     And I set the field "Test field" to "some value"
     And I press "Save and display"
     And I should not see "This field is required"
-    And I log out
 
   Scenario: A course custom field that is not required may not be filled
     When I log in as "admin"
