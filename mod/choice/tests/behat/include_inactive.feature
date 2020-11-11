@@ -79,7 +79,6 @@ Feature: Include responses from inactive users
     And I should see "Student 1"
     And I should see "Student 2"
     And I should see "Student 3"
-    And I log out
 
   Scenario: Disable the choice include inactive option and check that responses from inactive students are not visible
     Given I add a "Choice" to section "1" and I fill the form with:
@@ -137,4 +136,3 @@ Feature: Include responses from inactive users
     And I should not see "Student 1"
     And I should not see "Student 2"
     And I should not see "Student 3"
-    And I log out

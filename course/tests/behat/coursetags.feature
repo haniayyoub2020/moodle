@@ -63,7 +63,6 @@ Feature: Tagging courses
     And I follow "Geometry"
     And I should not see "Course 1"
     And I should see "Course 2"
-    And I log out
 
   Scenario: User can set course tags using separate form
     Given I log in as "admin"
@@ -100,4 +99,3 @@ Feature: Tagging courses
     And I follow "Geometry"
     And I should not see "Course 1"
     And I should see "Course 2"
-    And I log out

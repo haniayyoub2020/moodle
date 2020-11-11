@@ -40,7 +40,6 @@ Feature: Basic use of the Responses report
     Then I should see "Attempts: 0"
     And I should see "Nothing to display"
     And I set the field "Attempts from" to "enrolled users who have not attempted the quiz"
-    And I log out
 
   @javascript
   Scenario: Report works when there are attempts

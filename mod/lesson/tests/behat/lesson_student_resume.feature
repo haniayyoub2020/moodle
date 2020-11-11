@@ -178,7 +178,6 @@ Feature: In a lesson activity a student should
     And I am on "Course 1" course homepage
     And I follow "Test lesson name"
     And I should see "First page contents"
-    And I log out
 
   Scenario: resume a lesson with both question then content pages
     Given I follow "Add a question page"

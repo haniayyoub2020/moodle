@@ -64,7 +64,6 @@ Feature: Browsing tagged items
     And I should see "Course 3"
     And I should not see "Course2"
     And I should not see "Course1"
-    And I log out
 
   @javascript
   Scenario: Browse tag index with javascript enabled
@@ -109,4 +108,3 @@ Feature: Browsing tagged items
     And I should see "Course 3"
     And I should not see "Course2"
     And I should not see "Course1"
-    And I log out

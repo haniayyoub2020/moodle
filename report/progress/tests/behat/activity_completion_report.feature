@@ -104,4 +104,3 @@ Feature: Teacher can view and override users' activity completion data via the p
     And "Completed: my assignment (set by Teacher One). Select to mark as not complete." "icon" should exist in the "my assignment" "list_item"
     And I click on "Completed: my assignment (set by Teacher One). Select to mark as not complete." "icon"
     And "Not completed: my assignment. Select to mark as complete." "icon" should exist in the "my assignment" "list_item"
-    And I log out

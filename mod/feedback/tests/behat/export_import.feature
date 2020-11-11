@@ -69,7 +69,6 @@ Feature: Exporting and importing feedbacks
       | Maximum characters accepted | 200                    |
     And I follow "Templates"
     Then following "Export questions" should export feedback identical to "mod/feedback/tests/fixtures/testexport.xml"
-    And I log out
 
   @javascript @_file_upload
   Scenario: Import feedback deleting old items
@@ -96,7 +95,6 @@ Feature: Exporting and importing feedbacks
     And I should see "this is a multiple choice rated"
     And I should see "this is a numeric answer"
     And I should see "this is a short text answer"
-    And I log out
 
   @javascript @_file_upload
   Scenario: Import feedback appending new items
@@ -125,4 +123,3 @@ Feature: Exporting and importing feedbacks
     And I should see "this is a multiple choice rated"
     And I should see "this is a numeric answer"
     And I should see "this is a short text answer"
-    And I log out

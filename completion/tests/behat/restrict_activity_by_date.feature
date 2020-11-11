@@ -41,7 +41,6 @@ Feature: Restrict activity availability through date conditions
     Then I should see "Available from 31 December 2037"
     And "Test assignment 1" activity should be dimmed
     And "Test assignment 1" "link" should not exist
-    And I log out
 
   @javascript
   Scenario: Show activity hidden to students when available until date is in past

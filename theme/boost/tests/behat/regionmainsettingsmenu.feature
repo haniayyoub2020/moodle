@@ -30,7 +30,6 @@ Feature: Region main settings menu
     And I click on "#region-main-settings-menu [role=button]" "css_element"
     And I choose "Enrolment methods" in the open action menu
     And I should see "Enrolment methods"
-    And I log out
 
   Scenario: Student cannot use all options in the region main settings menu
     And I log in as "student1"
@@ -38,4 +37,3 @@ Feature: Region main settings menu
     And "#region-main-settings-menu [role=button]" "css_element" should not exist
     And I follow "Choice name"
     And "#region-main-settings-menu [role=button]" "css_element" should not exist
-    And I log out

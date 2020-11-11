@@ -128,7 +128,6 @@ Feature: Mapping courses in a feedback
     And I should see "0" in the "option a" "table_row"
     And I should see "1 (50.00 %)" in the "option b" "table_row"
     And I should see "1 (50.00 %)" in the "option c" "table_row"
-    And I log out
 
   @javascript
   Scenario: Site feedback is mapped to courses
@@ -224,7 +223,6 @@ Feature: Mapping courses in a feedback
     And I should see "1 (33.33 %)" in the "option d" "table_row"
     And I should see "2 (66.67 %)" in the "option e" "table_row"
     And I should see "0" in the "option f" "table_row"
-    And I log out
 
   Scenario: Site feedback deletion hides feedback block completely
     When I log in as "manager"
@@ -239,4 +237,3 @@ Feature: Mapping courses in a feedback
     Then "Feedback" "block" should not exist
     And I am on "Course 1" course homepage
     And "Feedback" "block" should not exist
-    And I log out

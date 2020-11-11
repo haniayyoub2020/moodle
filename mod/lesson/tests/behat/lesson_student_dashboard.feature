@@ -113,7 +113,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
     And I press "Submit"
     And I press "Continue"
     And I should see "Congratulations - end of lesson reached"
-    And I log out
 
   Scenario: A completed lesson with only content pages that allows multiple attempts
     Given I follow "Test lesson name"
@@ -141,7 +140,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
     And I press "Next page"
     And I should see "Second page contents"
     And I press "End of lesson"
-    And I log out
 
   Scenario: A completed lesson with only content pages that does not allow multiple attempts
     Given I follow "Test lesson name"
@@ -173,7 +171,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
     And I press "Next page"
     And I should see "Second page contents"
     And I press "End of lesson"
-    And I log out
 
   Scenario: An incomplete lesson with only questions.
     Given I follow "Test lesson name"
@@ -212,7 +209,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
       | False | 1 |
     And I press "Submit"
     And I press "Continue"
-    And I log out
 
   Scenario: An incomplete lesson with only content pages.
     Given I follow "Test lesson name"
@@ -239,7 +235,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
     And I should see "First page contents"
     And I press "Next page"
     And I should see "Second page contents"
-    And I log out
 
   Scenario: A lesson with only questions that has not been started.
     Given I follow "Test lesson name"
@@ -269,7 +264,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
       | id_response_editor_1 | Wrong |
       | id_jumpto_1 | This page |
     And I press "Save page"
-    And I log out
 
   Scenario: A lesson with only content pages that has not been started.
     Given I follow "Test lesson name"
@@ -289,7 +283,6 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
       | id_answer_editor_1 | End of lesson |
       | id_jumpto_1 | End of lesson |
     And I press "Save page"
-    And I log out
 
   Scenario: Viewing the status for multiple lessons in multiple courses
     Given the following "courses" exist:
@@ -359,4 +352,3 @@ Feature: In Dashboard, a student can see their current status on all lessons wit
     And I set the following fields to these values:
       | True | 1 |
     And I press "Submit"
-    And I log out

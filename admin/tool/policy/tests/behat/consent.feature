@@ -114,7 +114,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     # User can see his own agreements in the profile.
     And I follow "Policies and agreements"
     And "Accepted" "text" should exist in the "This site policy" "table_row"
-    And I log out
 
   Scenario: Accept policy on sign up, multiple policies
     Given the following config values are set as admin:
@@ -175,7 +174,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     And "Accepted" "text" should exist in the "This site policy" "table_row"
     And "Accepted" "text" should exist in the "This privacy policy" "table_row"
     And I should not see "This guests policy"
-    And I log out
 
   Scenario: Accept policy on sign up and age verification
     Given the following config values are set as admin:
@@ -226,7 +224,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     # User can see his own agreements in the profile.
     And I follow "Policies and agreements"
     And "Accepted" "text" should exist in the "This site policy" "table_row"
-    And I log out
 
   Scenario: Accept policy on sign up, do not accept all policies
     Given the following config values are set as admin:
@@ -662,7 +659,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     # User can see his own agreements in the profile.
     And I follow "Policies and agreements"
     And "Accepted" "text" should exist in the "This site policy" "table_row"
-    And I log out
 
   Scenario: Accepting policies on sign up, multiple policies with different style of giving ageement.
     Given the following config values are set as admin:
@@ -734,7 +730,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     And "Accepted" "text" should exist in the "Cookies policy" "table_row"
     And "Accepted" "text" should exist in the "Terms of Service" "table_row"
     And "Accepted" "text" should exist in the "Digital maturity declaration" "table_row"
-    And I log out
 
   Scenario: Accepting policies on login, multiple policies with different style of giving ageement.
     Given the following config values are set as admin:
@@ -792,7 +787,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     And "Accepted" "text" should exist in the "Cookies policy" "table_row"
     And "Accepted" "text" should exist in the "Terms of Service" "table_row"
     And "Accepted" "text" should exist in the "Digital maturity declaration" "table_row"
-    And I log out
 
   Scenario: Accepting policies on login, all and loggedin policies to be accepted on their own page.
     Given the following config values are set as admin:
@@ -826,7 +820,6 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     And "Accepted" "text" should exist in the "Terms of Service" "table_row"
     And "Accepted" "text" should exist in the "Digital maturity declaration" "table_row"
     And "Cookies policy" "table_row" should not exist
-    And I log out
 
   Scenario: Accepting policies on sign up, policies to be accepted on their own page.
     Given the following config values are set as admin:
@@ -876,4 +869,3 @@ Feature: User must accept policy managed by this plugin when logging in and sign
     And "Accepted" "text" should exist in the "Cookies policy" "table_row"
     And "Privacy policy" "table_row" should not exist
     And "Terms of Service" "table_row" should not exist
-    And I log out

@@ -50,7 +50,6 @@ Feature: Restricting access to course lists
     And I am on site homepage
     Then I should not see "Available courses"
     And "Courses" "link" should not exist in the "Navigation" "block"
-    And I log out
 
   Scenario: Browse own courses as a user without any browse capability
     Given the following "course enrolments" exist:
@@ -61,7 +60,6 @@ Feature: Restricting access to course lists
     And I should see "Available courses"
     And I should see "Biology Y1"
     And "Courses" "link" should not exist in the "Navigation" "block"
-    And I log out
 
   Scenario: Browse courses as a user who has access to only one category
     When I log in as "usere"
@@ -80,7 +78,6 @@ Feature: Restricting access to course lists
     And I should not see "Other category"
     And I follow "English Y2"
     And I should see "You can not enrol yourself in this course."
-    And I log out
 
   Scenario: Browse courses as a user who has access to several but not all categories
     When I log in as "userb"
@@ -103,4 +100,3 @@ Feature: Restricting access to course lists
     And the "Course categories" select box should not contain "Other category"
     And I follow "Biology Y1"
     And I should see "You can not enrol yourself in this course."
-    And I log out

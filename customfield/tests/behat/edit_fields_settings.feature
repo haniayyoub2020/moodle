@@ -36,7 +36,6 @@ Feature: Teachers can edit course custom fields
     And I should see "Field 3"
     And I should see "Field 4"
     And I should see "Field 5"
-    And I log out
 
   Scenario: Create a course with custom fields from the management interface
     When I log in as "admin"
@@ -69,7 +68,6 @@ Feature: Teachers can edit course custom fields
       | customfield_f4[month] | January      |
       | customfield_f4[year]  | 2019         |
       | Field 5               | b            |
-    And I log out
 
   @javascript @_file_upload
   Scenario: Use images in the custom field description
@@ -94,7 +92,6 @@ Feature: Teachers can edit course custom fields
     And I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
     Then the image at "//div[contains(@class, 'fitem')][contains(., 'Field 1')]/following-sibling::div[1]//img[contains(@src, 'pluginfile.php') and contains(@src, '/core_customfield/description/') and @alt='Example']" "xpath_element" should be identical to "lib/tests/fixtures/gd-logo.png"
-    And I log out
 
   @javascript
   Scenario: Custom field short name must be present and unique
@@ -112,4 +109,3 @@ Feature: Teachers can edit course custom fields
     And I set the field "Short name" to "f1"
     And I press "Save changes"
     And I should see "Short name already exists" in the "Short name" "form_row"
-    And I log out

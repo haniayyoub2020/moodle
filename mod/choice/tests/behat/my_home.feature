@@ -43,7 +43,6 @@ Feature: Test the display of the choice module on my home
     And I should see "Your selection: Option 1"
     And I should see "Your choice has been saved"
     And "Save my choice" "button" should not exist
-    And I log out
 
   Scenario: View my home as a teacher
     Given I log in as "student1"
@@ -52,4 +51,3 @@ Feature: Test the display of the choice module on my home
     And I should see "Your selection: Option 1"
     And I should see "Your choice has been saved"
     And "Save my choice" "button" should not exist
-    And I log out

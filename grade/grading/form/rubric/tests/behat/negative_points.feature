@@ -62,4 +62,3 @@ Feature: Rubrics can have levels with negative scores
     And I should see "15.00" in the "student2@example.com" "table_row"
     And I should see "0.00" in the "student3@example.com" "table_row"
     And I should not see "-" in the "student3@example.com" "table_row"
-    And I log out

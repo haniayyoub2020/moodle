@@ -44,7 +44,6 @@ Feature: Converting rubric score to grades
     And I save the advanced grading form
     # Checking that the user grade is correct.
     And I should see "<studentgrade>" in the "student1@example.com" "table_row"
-    And I log out
 
     Examples:
       | grade        | lockzeropoints | studentgrade   |

@@ -18,7 +18,6 @@ Feature: Manage language packs
     And the "Installed language packs" select box should contain "en_ar"
     And I navigate to "Reports > Live logs" in site administration
     And I should see "The language pack 'en_ar' was installed."
-    And I log out
 
   Scenario: Update language pack
     Given outdated langpack 'en_ar' is installed
@@ -29,7 +28,6 @@ Feature: Manage language packs
     And I should see "Language pack update completed"
     And I navigate to "Reports > Live logs" in site administration
     And I should see "The language pack 'en_ar' was updated."
-    And I log out
 
   Scenario: Try to uninstall language pack
     Given I log in as "admin"
@@ -45,7 +43,6 @@ Feature: Manage language packs
     And I navigate to "Reports > Live logs" in site administration
     And I should see "The language pack 'en_ar' was removed."
     And I should see "Language pack uninstalled"
-    And I log out
 
   Scenario: Try to uninstall English language pack
     Given I log in as "admin"
@@ -55,4 +52,3 @@ Feature: Manage language packs
     Then I should see "The English language pack cannot be uninstalled."
     And I navigate to "Reports > Live logs" in site administration
     And I should not see "Language pack uninstalled"
-    And I log out

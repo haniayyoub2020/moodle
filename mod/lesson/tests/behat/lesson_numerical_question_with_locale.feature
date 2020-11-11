@@ -48,7 +48,6 @@ Feature: In a lesson activity, I need to edit pages in the lesson taking into ac
     And I follow "Hardest question ever"
     Then I should see "2#87"
     And I should see "2#1:2#8"
-    And I log out
 
   Scenario: View the detailed page of lesson
     Given I log in as "teacher1"
@@ -58,7 +57,6 @@ Feature: In a lesson activity, I need to edit pages in the lesson taking into ac
     And I click on "Expanded" "link" in the "region-main" "region"
     Then I should see "2#87"
     And I should see "2#1:2#8"
-    And I log out
 
   Scenario: Attempt the lesson successfully as a student
     Given I log in as "student1"
@@ -73,7 +71,6 @@ Feature: In a lesson activity, I need to edit pages in the lesson taking into ac
     And I press "Continue"
     And I should see "Congratulations - end of lesson reached"
     And I should see "Your score is 1 (out of 1)."
-    And I log out
 
   Scenario: Attempt the lesson unsuccessfully as a student
     Given I log in as "student1"
@@ -88,7 +85,6 @@ Feature: In a lesson activity, I need to edit pages in the lesson taking into ac
     And I press "Continue"
     And I should see "Congratulations - end of lesson reached"
     And I should see "Your score is 0 (out of 1)."
-    And I log out
 
   Scenario: Attempt the lesson successfully as a student and review
     Given I log in as "student1"
@@ -107,7 +103,6 @@ Feature: In a lesson activity, I need to edit pages in the lesson taking into ac
     Then I should see "1 + 1?"
     And the following fields match these values:
       | Your answer | 2#87 |
-    And I log out
 
   Scenario: Edit lesson question page with updated locale setting and wrong answer
     Given I log in as "teacher1"

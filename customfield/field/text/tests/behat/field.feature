@@ -19,7 +19,6 @@ Feature: Managers can manage course custom fields text
       | Short name | testfield  |
     And I press "Save changes"
     Then I should see "Test field"
-    And I log out
 
   Scenario: Edit a custom course text field
     When I click on "Add a new custom field" "link"
@@ -35,7 +34,6 @@ Feature: Managers can manage course custom fields text
     Then I should see "Edited field"
     And I navigate to "Reports > Logs" in site administration
     And I press "Get these logs"
-    And I log out
 
   @javascript
   Scenario: Delete a custom course text field
@@ -50,7 +48,6 @@ Feature: Managers can manage course custom fields text
     And I wait until the page is ready
     And I wait until "Test field" "text" does not exist
     Then I should not see "Test field"
-    And I log out
 
   Scenario: A text field with a link setting must show link on course listing
     Given the following "users" exist:

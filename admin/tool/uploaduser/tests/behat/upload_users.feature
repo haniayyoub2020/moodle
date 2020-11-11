@@ -85,7 +85,6 @@ Feature: Upload users
     And I follow "Tom Jones"
     And I should see "Super field"
     And I should see "The big guy"
-    And I log out
 
   @javascript
   Scenario: Upload users setting their email stop value
@@ -100,7 +99,6 @@ Feature: Upload users
       | 3        | fbloggs  | 0         |
     And I press "Upload users"
     And I should see "Users created: 2"
-    And I log out
 
   @javascript
   Scenario: Upload users setting their user theme
@@ -160,8 +158,6 @@ Feature: Upload users
     And I press "Upload users"
     And I should see "User themes are not enabled, so any included in the upload users file will be ignored."
     And I should see "Users created: 4"
-    And I press "Continue"
-    And I log out
 
   @javascript
   Scenario: Upload users setting their enrol date and period
@@ -186,5 +182,3 @@ Feature: Upload users
     And I click on "Manual enrolments" "link" in the "Student Two" "table_row"
     Then I should see "2 January 2020" in the "Enrolment starts" "table_row"
     And I should see "12 January 2020" in the "Enrolment ends" "table_row"
-    And I click on "Close" "button"
-    And I log out

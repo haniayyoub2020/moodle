@@ -37,7 +37,6 @@ Feature: View cohort list
     And I should see "Cohort in category 1"
     And I should see "Cohort in category 2"
     And I should see "Cohort in category 3"
-    And I log out
 
   Scenario: Manager can see system cohorts and all cohorts
     When I log in as "user1"
@@ -49,7 +48,6 @@ Feature: View cohort list
     And I should see "Cohort in category 1"
     And I should see "Cohort in category 2"
     And I should see "Cohort in category 3"
-    And I log out
 
   Scenario: Manager in category can see cohorts in the category
     When I log in as "user2"
@@ -61,4 +59,3 @@ Feature: View cohort list
     And I should see "Cohort in category 1"
     And I should not see "Cohort in category 2"
     And I should not see "Cohort in category 3"
-    And I log out

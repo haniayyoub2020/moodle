@@ -27,7 +27,6 @@ Feature: In a report, admin can see loglive data
     And I set the field "reader" to "Legacy log"
     And I wait to be redirected
     And I should see "course_add mod"
-    And I log out
 
   @javascript @_switch_window
   Scenario: Check loglive report entries and make sure the pause/resume button works for standard reader along with ajax calls
@@ -49,7 +48,6 @@ Feature: In a report, admin can see loglive data
     And I press "Resume live updates"
     And I wait "8" seconds
     And I should see "Test name2"
-    And I log out
 
   @javascript @_switch_window
   Scenario: Check loglive report entries and make sure the pause/resume button works for legacy reader along with ajax calls
@@ -71,4 +69,3 @@ Feature: In a report, admin can see loglive data
     And I press "Resume live updates"
     And I wait "8" seconds
     And I should see "Test name2"
-    And I log out

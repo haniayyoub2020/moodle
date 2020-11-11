@@ -52,4 +52,3 @@ Feature: Adding blog tag block
     And I click on "Cats" "link" in the "Blog tags" "block"
     And I should see "Blog post from teacher"
     And I should see "Teacher blog post content"
-    And I log out

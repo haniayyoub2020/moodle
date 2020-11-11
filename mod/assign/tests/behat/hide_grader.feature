@@ -60,7 +60,6 @@ Feature: Hide grader identities identity from students
     And I should see "Graded" in the "Grading status" "table_row"
     And I should see "Catch for us the foxes."
     And I should see "Teacher" in the "Graded by" "table_row"
-    And I log out
 
   @javascript
   Scenario: Hidden grading is enabled.
@@ -80,7 +79,6 @@ Feature: Hide grader identities identity from students
     And I should see "Graded" in the "Grading status" "table_row"
     And I should see "Catch for us the foxes."
     And I should not see "Graded by"
-    And I log out
 
   @javascript
   Scenario: Hidden grading is enabled, but students have the 'view' capability.
@@ -93,4 +91,3 @@ Feature: Hide grader identities identity from students
     And I should see "Graded" in the "Grading status" "table_row"
     And I should see "Catch for us the foxes."
     And I should see "Teacher" in the "Graded by" "table_row"
-    And I log out
