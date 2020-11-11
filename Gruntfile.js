@@ -525,6 +525,7 @@ module.exports = function(grunt) {
     };
 
     tasks.gherkinlint = function() {
+        const path = require('path');
         const done = this.async();
         const options = grunt.config('gherkinlint.options');
 
@@ -533,11 +534,13 @@ module.exports = function(grunt) {
         const featureFinder = require('gherkin-lint/dist/feature-finder.js');
         const configParser = require('gherkin-lint/dist/config-parser.js');
         const formatter = require('gherkin-lint/dist/formatters/stylish.js');
+        const additionalRulesDir = [path.join(__dirname, '.gherkin-lintrules')];
 
         // Run the linter.
         return linter.lint(
             featureFinder.getFeatureFiles(grunt.file.expand(options.files)),
-            configParser.getConfiguration(configParser.defaultConfigFileName)
+            configParser.getConfiguration(configParser.defaultConfigFileName, additionalRulesDir),
+            additionalRulesDir
         )
         .then(results => {
             // Print the results out uncondtionally.
