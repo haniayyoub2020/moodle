@@ -20,5 +20,13 @@
   "no-unnamed-scenarios": "on",
   "no-scenario-outlines-without-examples": "on",
   "no-examples-in-scenarios": "on",
+  "no-banned-final-steps": ["on", {
+    "Scenario": [
+      "I log out"
+    ],
+    "ScenarioOutline": [
+      "I log out"
+    ]
+  }],
   "new-line-at-eof": ["on", "yes"]
 }
