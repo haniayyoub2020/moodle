@@ -139,7 +139,6 @@ Feature: View structural changes in recent activity block
     And I should see "ForumSeparateGroupsG1" in the "Recent activity" "block"
     And I should see "ForumVisibleGroupsG2" in the "Recent activity" "block"
     And I should see "ForumSeparateGroupsG2" in the "Recent activity" "block"
-    And I log out
 
   Scenario: Updates and deletes in recent activity block
     When I log in as "teacher1"
@@ -212,4 +211,3 @@ Feature: View structural changes in recent activity block
     And I should not see "Updated Forum" in the "Recent activity" "block"
     And I should not see "ForumUpdated" in the "Recent activity" "block"
     And I should not see "Deleted Forum" in the "Recent activity" "block"
-    And I log out

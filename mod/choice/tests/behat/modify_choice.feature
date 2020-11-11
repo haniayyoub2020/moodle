@@ -49,7 +49,6 @@ Feature: Teacher can modify choices of the students
     And I select "Delete" from the "With selected" singleselect
     And "Student 1 Option 1" "checkbox" should not exist
     And "Student 1 Not answered yet" "checkbox" should exist
-    And I log out
 
   @javascript
   Scenario: Teacher set answers of students who did not respond or change existing answers
@@ -82,7 +81,6 @@ Feature: Teacher can modify choices of the students
     And "Student 1 Option 2" "checkbox" should exist
     And "Student 2 Option 2" "checkbox" should exist
     And "Student 3 Option 2" "checkbox" should exist
-    And I log out
 
   @javascript
   Scenario: Teacher can delete answers in the multiple answer choice
@@ -113,7 +111,6 @@ Feature: Teacher can modify choices of the students
     And I am on "Course 1" course homepage
     And I follow "Choice name"
     And I should see "Your selection: Option 1; Option 3"
-    And I log out
 
   @javascript
   Scenario: Teacher can manage answers on view page if the names are displayed
@@ -144,4 +141,3 @@ Feature: Teacher can modify choices of the students
     And I select "Delete" from the "With selected" singleselect
     And "Student 1 Option 3" "checkbox" should not exist
     And "Student 1 Not answered yet" "checkbox" should exist
-    And I log out

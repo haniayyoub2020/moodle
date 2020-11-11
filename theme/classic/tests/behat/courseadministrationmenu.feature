@@ -24,4 +24,3 @@ Feature: Course administration menu
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I should not see the page administration menu
-    And I log out

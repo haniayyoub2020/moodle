@@ -18,7 +18,6 @@ Feature: Manage payment accounts
     And I press "Save changes"
     And I should see "PayPal" in the "NewName" "table_row"
     And I should not see "TestAccount"
-    And I log out
 
   @javascript
   Scenario: Configuring gateways on payment accounts
@@ -39,7 +38,6 @@ Feature: Manage payment accounts
     And I press "Save changes"
     And I should see "PayPal" in the "Account1" "table_row"
     And I should not see "Not available" in the "Account1" "table_row"
-    And I log out
 
   @javascript
   Scenario: Deleting payment accounts
@@ -54,7 +52,6 @@ Feature: Manage payment accounts
     And I click on "Yes" "button" in the "Confirmation" "dialogue"
     Then I should not see "Account1"
     And I should see "Account2"
-    And I log out
 
   @javascript
   Scenario: Archiving and restoring accounts
@@ -81,4 +78,3 @@ Feature: Manage payment accounts
     And I open the action menu in "Account1" "table_row"
     And I choose "Restore" in the open action menu
     And I should not see "Archived" in the "Account1" "table_row"
-    And I log out

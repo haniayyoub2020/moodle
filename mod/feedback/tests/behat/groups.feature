@@ -163,7 +163,6 @@ Feature: Feedbacks in courses with groups
     And I select "All participants" from the "Separate groups" singleselect
     And I should see "Username 1"
     And I should see "Username 3"
-    And I log out
 
   @javascript
   Scenario: Anonymous feedback with groups in a course
@@ -274,4 +273,3 @@ Feature: Feedbacks in courses with groups
     And I select "All participants" from the "Separate groups" singleselect
     And "//tr[contains(@id,'_r6') and contains(.,'Response number')]" "xpath_element" should exist
     And "//tr[contains(@id,'_r7') and contains(@class,'emptyrow')]" "xpath_element" should exist
-    And I log out

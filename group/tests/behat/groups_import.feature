@@ -151,4 +151,3 @@ Feature: Importing of groups and groupings
     And I should not see "group7"
     And I should not see "group8"
     And I should not see "group10"
-    And I log out

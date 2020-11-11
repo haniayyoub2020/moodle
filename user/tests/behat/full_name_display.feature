@@ -29,7 +29,6 @@ Feature: Users' names are displayed across the site according to the user policy
     When I navigate to course participants
     And I click on "Gronya,Beecham" "link" in the "Gronya,Beecham" "table_row"
     Then I should see "Gronya,Beecham" in the "region-main" "region"
-    And I log out
 
   Scenario: As a student, 'fullnamedisplay' should be used in the participants list and when viewing another user's course profile
     Given I log in as "user2"
@@ -37,7 +36,6 @@ Feature: Users' names are displayed across the site according to the user policy
     When I navigate to course participants
     And I click on "Gronya,Beecham" "link" in the "Gronya,Beecham" "table_row"
     Then I should see "Gronya,Beecham" in the "region-main" "region"
-    And I log out
 
   Scenario: As a teacher, 'alternativefullnameformat' should be used in the participants list but 'fullnamedisplay' used on the course profile
     Given I log in as "teacher1"
@@ -46,7 +44,6 @@ Feature: Users' names are displayed across the site according to the user policy
     Then I should see "Ann, Jill, Grainne, Beauchamp" in the "Ann, Jill, Grainne, Beauchamp" "table_row"
     And I click on "Ann, Jill, Grainne, Beauchamp" "link" in the "Ann, Jill, Grainne, Beauchamp" "table_row"
     And I should see "Gronya,Beecham" in the "region-main" "region"
-    And I log out
 
   Scenario: As an authenticated user, 'fullnamedisplay' should be used in the navigation and when viewing my profile
     Given I log in as "user1"
@@ -54,7 +51,6 @@ Feature: Users' names are displayed across the site according to the user policy
     Then I should see "Gronya,Beecham" in the ".usermenu" "css_element"
     And I should see "Gronya,Beecham" in the ".page-context-header" "css_element"
     And I should see "You are logged in as Gronya,Beecham" in the "page-footer" "region"
-    And I log out
 
   Scenario: As an admin, 'fullnamedisplay' should be used when using the 'log in as' function
     Given I log in as "admin"
@@ -64,14 +60,12 @@ Feature: Users' names are displayed across the site according to the user policy
     Then I should see "You are logged in as Nee,Chumlee" in the ".usermenu" "css_element"
     And I should see "You are logged in as Jane, Nina, Niamh, Cholmondely" in the "region-main" "region"
     And I should see "You are logged in as Nee,Chumlee" in the "page-footer" "region"
-    And I log out
 
   Scenario: As an admin, 'fullnamedisplay' should be used when viewing another user's site profile
     Given I log in as "admin"
     When I navigate to "Users > Accounts > Browse list of users" in site administration
     And I follow "Ann, Jill, Grainne, Beauchamp"
     Then I should see "Gronya,Beecham" in the ".page-header-headings" "css_element"
-    And I log out
 
   @javascript
   Scenario: As a teacher, the 'alternativefullnameformat' should be used when searching for and enrolling a user

@@ -32,7 +32,6 @@ Feature: Users can view the list of data activities and their formatted descript
     And I should see "This is an intro with an image: "
     And "//img[contains(@src, 'some_image.jpg')]" "xpath_element" should exist
     And "//img[contains(@src, '@@PLUGINFILE@@/some_image.jpg')]" "xpath_element" should not exist
-    And I log out
 
   Scenario: Students can view the list of data activities and their formatted descriptions
     Given I log in as "student1"
@@ -44,4 +43,3 @@ Feature: Users can view the list of data activities and their formatted descript
     And I should see "This is an intro with an image: "
     And "//img[contains(@src, 'some_image.jpg')]" "xpath_element" should exist
     And "//img[contains(@src, '@@PLUGINFILE@@/some_image.jpg')]" "xpath_element" should not exist
-    And I log out

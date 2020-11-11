@@ -107,7 +107,6 @@ Feature: Anonymous feedback
     And I follow "Response number: 1"
     And I should not see "Username"
     And I should see "Response number: 1 (Anonymous)"
-    And I log out
 
   Scenario: Complete fully anonymous feedback on the front page as a guest
     And I log in as "admin"
@@ -124,7 +123,6 @@ Feature: Anonymous feedback
       | Yes | 1 |
     And I press "Submit your answers"
     And I should not see "Submitted answers"
-    And I press "Continue"
 
   @javascript
   Scenario: Complete fully anonymous feedback and view analyze on the front page as a guest
@@ -170,7 +168,6 @@ Feature: Anonymous feedback
     And I should see "Anonymous entries (2)"
     And I follow "Response number: 1"
     And I should see "Response number: 1 (Anonymous)"
-    And I log out
 
   @javascript
   Scenario: Anonymous feedback in a course
@@ -243,7 +240,6 @@ Feature: Anonymous feedback
     And I should see "Anonymous entries (1)"
     And I should not see "Response number: 1"
     And I should see "Response number: 2"
-    And I log out
 
   Scenario: Collecting new non-anonymous feedback from a previously anonymous feedback activity
     When I log in as "teacher"

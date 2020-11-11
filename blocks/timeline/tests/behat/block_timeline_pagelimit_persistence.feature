@@ -44,7 +44,6 @@ Feature: The timeline block allows user persistence of their page limits
     Then I should see "Test feedback 2" in the "Timeline" "block"
     And I reload the page
     Then I should see "Test feedback 2" in the "Timeline" "block"
-    And I log out
 
   Scenario: Toggle the page limit 25 - 5
     Given I log in as "student1"
@@ -60,4 +59,3 @@ Feature: The timeline block allows user persistence of their page limits
     Then I should not see "Test feedback 2" in the "Timeline" "block"
     And I reload the page
     And I should not see "Test feedback 2" in the "Timeline" "block"
-    And I log out

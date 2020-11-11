@@ -83,7 +83,6 @@ Feature: Exporting workshop submissions and assessments to a portfolio
     And I should see "Summary of your export"
     And I click on "Continue" "button"
     And I should see "Return to where you were"
-    And I log out
 
   Scenario: Students can export submission they have peer-assessed.
     Given I log in as "student1"
@@ -98,7 +97,6 @@ Feature: Exporting workshop submissions and assessments to a portfolio
     And I should see "Summary of your export"
     And I click on "Continue" "button"
     And I should see "Return to where you were"
-    And I log out
 
   Scenario: If the portfolio API is disabled, the portfolio export button is not displayed.
     Given the following config values are set as admin:

@@ -78,7 +78,6 @@ Feature: Award badges with separate groups
     And I follow "Profile" in the user menu
     And I click on "Course 1" "link" in the "region-main" "region"
     And I should see "Course Badge"
-    And I log out
 
   @javascript
   Scenario: Award course badge as non-editing teacher with more than one group
@@ -105,7 +104,6 @@ Feature: Award badges with separate groups
     And I set the field "Separate groups" to "Class B"
     And I should see "Student 1"
     And I should not see "Student 2"
-    And I log out
 
   @javascript
   Scenario: Award course badge as non-editing teacher without any group

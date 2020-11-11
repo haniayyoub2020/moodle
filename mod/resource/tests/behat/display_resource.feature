@@ -32,7 +32,6 @@ Feature: Teacher can specify different display options for the resource
     Then ".resourcedetails" "css_element" should not exist
     And I am on "Course 1" course homepage
     And ".activity.resource .resourcelinkdetails" "css_element" should not exist
-    And I log out
 
   @javascript
   Scenario Outline: Specifying different display options for a file resource
@@ -52,7 +51,6 @@ Feature: Teacher can specify different display options for the resource
     And I <seesize> see "6 bytes" in the ".activity.resource .resourcelinkdetails" "css_element"
     And I <seetype> see "Text file" in the ".activity.resource .resourcelinkdetails" "css_element"
     And I <seedate> see "Uploaded" in the ".activity.resource .resourcelinkdetails" "css_element"
-    And I log out
 
     Examples:
       | showsize | showtype | showdate | seesize    | seetype    | seedate    |

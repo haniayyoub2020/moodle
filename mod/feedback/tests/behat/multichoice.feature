@@ -167,7 +167,6 @@ Feature: Testing multichoice questions in feedback
     And I should see "1 (100.00 %)" in the "option a" "table_row"
     And I should not see "%" in the "option b" "table_row"
     And I should not see "%" in the "option c" "table_row"
-    And I log out
 
   @javascript
   Scenario: Non-rated multiple-answers multiple choice questions in feedback
@@ -311,7 +310,6 @@ Feature: Testing multichoice questions in feedback
     And I should see "1 (100.00 %)" in the "option a" "table_row"
     And I should see "1 (100.00 %)" in the "option b" "table_row"
     And I should not see "%" in the "option c" "table_row"
-    And I log out
 
   @javascript
   Scenario: Non-rated single-answer dropdown multiple choice questions in feedback
@@ -434,4 +432,3 @@ Feature: Testing multichoice questions in feedback
     And I should see "1 (100.00 %)" in the "option a" "table_row"
     And I should not see "%" in the "option b" "table_row"
     And I should not see "%" in the "option c" "table_row"
-    And I log out

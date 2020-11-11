@@ -26,7 +26,6 @@ Feature: Random glossary entry block is used in a course
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And "block_glossary_random" "block" should not exist
-    And I log out
 
   Scenario: View random (last) entry in the glossary with auto approval
     Given the following "activities" exist:
@@ -69,7 +68,6 @@ Feature: Random glossary entry block is used in a course
     And I should see "GlossaryAuto" in the "#page-navbar" "css_element"
     And I should see "Concept1" in the "#page-content" "css_element"
     And I should see "Concept2" in the "#page-content" "css_element"
-    And I log out
 
   Scenario: View random (last) entry in the glossary with manual approval
     Given the following "activities" exist:
@@ -105,4 +103,3 @@ Feature: Random glossary entry block is used in a course
     And I click on "Course 1" "link" in the "#page-navbar" "css_element"
     And I should see "Concept1" in the "ManualGlossaryblock" "block"
     And I should see "Definition1" in the "ManualGlossaryblock" "block"
-    And I log out

@@ -60,7 +60,6 @@ Feature: Toggle activities visibility from the course page
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I should not see "Test forum name"
-    And I log out
 
   @javascript
   Scenario: Activities can be made available and unavailable inside a hidden section
@@ -116,7 +115,6 @@ Feature: Toggle activities visibility from the course page
     And I click on "Test forum name" "link" in the "Recent activity" "block"
     And I should see "Test forum name"
     And I should see "(There are no discussion topics yet in this forum)"
-    And I log out
 
   @javascript
   Scenario: Activities can be made available but not visible on a course page
@@ -174,4 +172,3 @@ Feature: Toggle activities visibility from the course page
     And I click on "Test assignment name" "link" in the "Recent activity" "block"
     And I should see "Test assignment name"
     And I should see "Submission status"
-    And I log out

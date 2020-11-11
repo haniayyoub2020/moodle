@@ -24,7 +24,6 @@ Feature: Managers can manage course custom fields select
     """
     And I press "Save changes"
     Then I should see "Test field"
-    And I log out
 
   Scenario: Edit a custom course select field
     When I click on "Add a new custom field" "link"
@@ -44,7 +43,6 @@ Feature: Managers can manage course custom fields select
     And I press "Save changes"
     Then I should see "Edited field"
     And I should not see "Test field"
-    And I log out
 
   @javascript
   Scenario: Delete a custom course select field
@@ -62,7 +60,6 @@ Feature: Managers can manage course custom fields select
     And I click on "Delete" "link" in the "Test field" "table_row"
     And I click on "Yes" "button" in the "Confirm" "dialogue"
     Then I should not see "Test field"
-    And I log out
 
   Scenario: Validation of custom course select field configuration
     When I click on "Add a new custom field" "link"
@@ -83,4 +80,3 @@ Feature: Managers can manage course custom fields select
     And I set the field "Default value" to "b"
     And I press "Save changes"
     And "testfield" "text" should exist in the "Test field" "table_row"
-    And I log out

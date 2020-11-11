@@ -62,4 +62,3 @@ Feature: Average grades are displayed in the gradebook
     And I navigate to "User report" in the course gradebook
     Then I should see "50.00" in the ".level2.column-grade" "css_element"
     Then I should see "50.00" in the ".level2.column-average" "css_element"
-    And I log out

@@ -19,7 +19,6 @@ Feature: Managers can manage course custom fields date
       | Short name | testfield  |
     And I press "Save changes"
     Then I should see "Test field"
-    And I log out
 
   Scenario: Edit a custom course date field
     When I click on "Add a new custom field" "link"
@@ -33,7 +32,6 @@ Feature: Managers can manage course custom fields date
       | Name | Edited field |
     And I press "Save changes"
     Then I should see "Edited field"
-    And I log out
 
   @javascript
   Scenario: Delete a custom course date field
@@ -46,7 +44,6 @@ Feature: Managers can manage course custom fields date
     And I click on "[data-role='deletefield']" "css_element"
     And I click on "Yes" "button" in the "Confirm" "dialogue"
     Then I should not see "Test field"
-    And I log out
 
   @javascript
   Scenario: A date field makerd to include time must show those fields on course form
@@ -74,7 +71,6 @@ Feature: Managers can manage course custom fields date
     And I expand all fieldsets
     Then "#id_customfield_testfield_hour" "css_element" should be visible
     Then "#id_customfield_testfield_minute" "css_element" should be visible
-    And I log out
 
   @javascript
   Scenario: A date field makerd to not include time must not show those fields on course form
@@ -102,4 +98,3 @@ Feature: Managers can manage course custom fields date
     And I expand all fieldsets
     Then "#id_customfield_testfield_hour" "css_element" should not be visible
     Then "#id_customfield_testfield_minute" "css_element" should not be visible
-    And I log out

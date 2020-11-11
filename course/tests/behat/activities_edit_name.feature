@@ -40,4 +40,3 @@ Feature: Edit activity name in-place
     And I am on "Course 1" course homepage
     And I should see "Good news"
     And I should not see "Terrible news"
-    And I log out
