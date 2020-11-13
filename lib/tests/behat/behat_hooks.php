@@ -328,7 +328,6 @@ EOF;
             // The `before_subsequent_scenario_start_session` function will restart the session instead.
             return;
         }
-        self::$firstjavascriptscenarioseen = true;
 
         $docsurl = behat_command::DOCS_URL;
         $driverexceptionmsg = <<<EOF
@@ -473,6 +472,18 @@ EOF;
 
         // Run all test with medium (1024x768) screen size, to avoid responsive problems.
         $this->resize_window('medium');
+    }
+
+    /**
+     * Start the session before the first javascript scenario.
+     *
+     * This is treated slightly differently to try to capture when Selenium is not running at all.
+     *
+     * @BeforeScenario
+     * @param BeforeScenarioScope $scope scope passed by event fired before scenario.
+     */
+    public function mark_first_scenario_seen(BeforeScenarioScope $scope) {
+        self::$firstjavascriptscenarioseen = true;
     }
 
     /**
