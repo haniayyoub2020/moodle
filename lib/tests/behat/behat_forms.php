@@ -696,7 +696,7 @@ class behat_forms extends behat_base {
 
         $this->execute('behat_general::i_click_on', [$xpathtarget, 'xpath_element']);
 
-        $this->execute('behat_general::i_press_key_in_element', ['13', 'body', 'xpath_element']);
+        $this->execute('behat_general::i_press_named_key', ['', 'enter']);
     }
 
     /**
