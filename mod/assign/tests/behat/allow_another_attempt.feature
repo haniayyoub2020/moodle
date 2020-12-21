@@ -9,6 +9,17 @@ Feature: In an assignment, students start a new attempt based on their previous 
     Given the following "courses" exist:
       | fullname | shortname | category | groupmode |
       | Course 1 | C1 | 0 | 1 |
+    And the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
+      | attemptreopenmethod                 | manual                  |
+      | hidegrader                          | 1                       |
+      | submissiondrafts                    | 0                       |
     And the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -17,16 +28,6 @@ Feature: In an assignment, students start a new attempt based on their previous 
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | Attempts reopened | Manually |
-      | Hide grader identity from students | Yes |
-    And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"

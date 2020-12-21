@@ -26,13 +26,16 @@ Feature: Group assignment submissions
     And the following "groups" exist:
       | name | course | idnumber |
       | Group 1 | C1 | G1 |
+    And the following "activity" exists:
+      | activity         | assign                      |
+      | idnumber         | ass1                        |
+      | course           | C1                          |
+      | name             | Test assignment name        |
+      | intro            | Test assignment description |
+      | submissiondrafts | 0                           |
+      | teamsubmission   | 1                           |
     And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | Students submit in groups | Yes |
-      | Group mode | No groups |
+    And I am on "Course 1" course homepage
     And I follow "Test assignment name"
     When I navigate to "View all submissions" in current page administration
     Then "//tr[contains(., 'Student 0')][contains(., 'Default group')]" "xpath_element" should exist
@@ -48,12 +51,14 @@ Feature: Group assignment submissions
     And I set the following fields to these values:
       | Group mode | Separate groups |
     And I press "Save and display"
-    And I navigate to "Users > Groups" in current page administration
-    And I add "Student 0 (student0@example.com)" user to "Group 1" group members
-    And I add "Student 1 (student1@example.com)" user to "Group 1" group members
+    And the following "group members" exist:
+      | user | group |
+      | student0 | G1 |
+      | student1 | G1 |
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
     And I navigate to "View all submissions" in current page administration
+    And I set the field "Separate groups" to "Group 1"
     And "//tr[contains(., 'Student 0')][contains(., 'Group 1')]" "xpath_element" should exist
     And "//tr[contains(., 'Student 1')][contains(., 'Group 1')]" "xpath_element" should exist
     And I should not see "Student 2"
@@ -89,17 +94,17 @@ Feature: Group assignment submissions
       | user | group |
       | student1 | G1 |
       | student2 | G1 |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | Students submit in groups | Yes |
-      | Group mode | No groups |
-      | Require group to make submission | No |
-    And I log out
+    And the following "activity" exists:
+      | activity                            | assign                      |
+      | idnumber                            | ass1                        |
+      | course                              | C1                          |
+      | name                                | Test assignment name        |
+      | intro                               | Test assignment description |
+      | submissiondrafts                    | 0                           |
+      | assignsubmission_onlinetext_enabled | 1                           |
+      | assignsubmission_file_enabled       | 0                           |
+      | teamsubmission                      | 1                           |
+      | preventsubmissionnotingroup         | 0                           |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -160,18 +165,18 @@ Feature: Group assignment submissions
       | user | group |
       | student1 | G1 |
       | student2 | G1 |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | Students submit in groups | Yes |
-      | Attempts reopened | Manually |
-      | Group mode | No groups |
-      | Require group to make submission | No |
-    And I log out
+    And the following "activity" exists:
+      | activity                            | assign                      |
+      | idnumber                            | ass1                        |
+      | course                              | C1                          |
+      | name                                | Test assignment name        |
+      | intro                               | Test assignment description |
+      | submissiondrafts                    | 0                           |
+      | assignsubmission_onlinetext_enabled | 1                           |
+      | assignsubmission_file_enabled       | 0                           |
+      | teamsubmission                      | 1                           |
+      | attemptreopenmethod                 | manual                      |
+      | requireallteammemberssubmit         | 0                           |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -238,18 +243,21 @@ Feature: Group assignment submissions
       | grouping | group |
       | GG1      | G1    |
       | GG1      | G2    |
-    And I log in as "admin"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | Students submit in groups | Yes |
-      | Grouping for student groups | Grouping 1 |
-      | Group mode | Separate groups |
-      | Require group to make submission | No |
-    And I log out
+      # Groupmode 1 = Separate Groups
+    And the following "activity" exists:
+      | activity                            | assign                      |
+      | idnumber                            | ass1                        |
+      | course                              | C1                          |
+      | name                                | Test assignment name        |
+      | intro                               | Test assignment description |
+      | submissiondrafts                    | 0                           |
+      | assignsubmission_onlinetext_enabled | 1                           |
+      | assignsubmission_file_enabled       | 0                           |
+      | teamsubmission                      | 1                           |
+      | attemptreopenmethod                 | manual                      |
+      | requireallteammemberssubmit         | 0                           |
+      | groupmode                           | 1                           |
+      | teamsubmissiongroupingid            | GG1                         |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -279,16 +287,13 @@ Feature: Group assignment submissions
     And I follow "Test assignment name"
     And I should see "3" in the "Groups" "table_row"
     And I should see "3" in the "Submitted" "table_row"
-    When I set the field "Separate groups" to "Group 1"
-    And I press "Go"
+    When I select "Group 1" from the "Separate groups" singleselect
     Then I should see "1" in the "Groups" "table_row"
     And I should see "1" in the "Submitted" "table_row"
-    And I set the field "Separate groups" to "Group 2"
-    And I press "Go"
+    When I select "Group 2" from the "Separate groups" singleselect
     And I should see "1" in the "Groups" "table_row"
     And I should see "1" in the "Submitted" "table_row"
-    And I set the field "Separate groups" to "Group 3"
-    And I press "Go"
+    When I select "Group 3" from the "Separate groups" singleselect
     And I should see "1" in the "Groups" "table_row"
     And I should see "1" in the "Submitted" "table_row"
 
@@ -313,19 +318,23 @@ Feature: Group assignment submissions
       | user | group |
       | student1 | G1 |
       | student2 | G1 |
+    And the following "activity" exists:
+      | activity                            | assign                      |
+      | idnumber                            | ass1                        |
+      | course                              | C1                          |
+      | name                                | Test assignment name        |
+      | intro                               | Test assignment description |
+      | submissiondrafts                    | 1                           |
+      | assignsubmission_onlinetext_enabled | 1                           |
+      | assignsubmission_file_enabled       | 0                           |
+      | teamsubmission                      | 1                           |
+      | attemptreopenmethod                 | manual                      |
+      | requireallteammemberssubmit         | 0                           |
+      # Groupmode 0 = No Groups
+      | groupmode                           | 0                           |
+      | preventsubmissionnotingroup         | 0                           |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | Require students to click the submit button | Yes |
-      | Students submit in groups | Yes |
-      | Group mode | No groups |
-      | Require group to make submission | No |
-      | Require all group members submit | No |
-    And I am on "Course 1" course homepage
     And I add the "Activities" block
     And I log out
     And I log in as "student1"

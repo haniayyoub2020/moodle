@@ -23,28 +23,28 @@ Feature: Assignment with no calendar capabilites
     And I log out
 
   Scenario: Editing an assignment
-    Given I log in as "admin"
-    And I am on "Course 1" course homepage with editing mode on
-    When I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | id_allowsubmissionsfromdate_enabled | 1 |
-      | id_allowsubmissionsfromdate_day | 1 |
-      | id_allowsubmissionsfromdate_month | 1 |
-      | id_allowsubmissionsfromdate_year | 2017 |
-      | id_duedate_enabled | 1 |
-      | id_duedate_day | 1 |
-      | id_duedate_month | 2 |
-      | id_duedate_year | 2017 |
-      | id_cutoffdate_enabled | 1 |
-      | id_cutoffdate_day | 2 |
-      | id_cutoffdate_month | 2 |
-      | id_cutoffdate_year | 2017 |
-      | id_gradingduedate_enabled | 1 |
-      | id_gradingduedate_day | 1 |
-      | id_gradingduedate_month | 3 |
-      | id_gradingduedate_year | 2017 |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                      |
+      | idnumber                            | ass1                        |
+      | course                              | C1                          |
+      | name                                | Test assignment name        |
+      | intro                               | Test assignment description |
+      | id_allowsubmissionsfromdate_enabled | 1                           |
+      | id_allowsubmissionsfromdate_day     | 1                           |
+      | id_allowsubmissionsfromdate_month   | 1                           |
+      | id_allowsubmissionsfromdate_year    | 2017                        |
+      | id_duedate_enabled                  | 1                           |
+      | id_duedate_day                      | 1                           |
+      | id_duedate_month                    | 2                           |
+      | id_duedate_year                     | 2017                        |
+      | id_cutoffdate_enabled               | 1                           |
+      | id_cutoffdate_day                   | 2                           |
+      | id_cutoffdate_month                 | 2                           |
+      | id_cutoffdate_year                  | 2017                        |
+      | id_gradingduedate_enabled           | 1                           |
+      | id_gradingduedate_day               | 1                           |
+      | id_gradingduedate_month             | 3                           |
+      | id_gradingduedate_year              | 2017                        |
     When I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
     And I follow "Test assignment name"

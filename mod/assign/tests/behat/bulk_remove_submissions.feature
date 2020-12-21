@@ -24,18 +24,19 @@ Feature: Bulk remove submissions
 
   @javascript
   Scenario: Bulk remove submissions should remove the data that was submitted
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
+      | submissiondrafts                    | 0                       |
     Given I log in as "admin"
     And I set the following system permissions of "Teacher" role:
       | capability                     | permission |
       | mod/assign:editothersubmission | Allow      |
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
@@ -77,14 +78,15 @@ Feature: Bulk remove submissions
 
   @javascript
   Scenario: Bulk remove submissions should be unavailable if the user is missing the editing submission capability
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
+      | submissiondrafts                    | 0                       |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -113,19 +115,20 @@ Feature: Bulk remove submissions
   @javascript
   Scenario: Notification should be displayed when non-group users are selected for submission bulk removal
             in separate group mode
-    Given I log in as "admin"
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
+      | groupmode                           | 1                       |
+      | submissiondrafts                    | 0                       |
+    And I log in as "admin"
     And I set the following system permissions of "Teacher" role:
       | capability                     | permission |
       | mod/assign:editothersubmission | Allow      |
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | groupmode | 1 |
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
@@ -160,7 +163,17 @@ Feature: Bulk remove submissions
   @javascript
   Scenario: Bulk remove submission when group users are added to the bulk
             removing submissions process in separate group mode
-    Given the following "group members" exist:
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
+      | groupmode                           | 1                       |
+      | submissiondrafts                    | 0                       |
+    And the following "group members" exist:
       | user     | group   |
       | student1 | G1 |
       | student2 | G1 |
@@ -168,15 +181,6 @@ Feature: Bulk remove submissions
     And I set the following system permissions of "Teacher" role:
       | capability                     | permission |
       | mod/assign:editothersubmission | Allow      |
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | groupmode | 1 |
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage

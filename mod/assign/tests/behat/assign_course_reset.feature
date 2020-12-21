@@ -22,19 +22,20 @@ Feature: Assign reset
       | name    | course | idnumber |
       | Group 1 | C1     | G1       |
       | Group 2 | C1     | G2       |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_onlinetext_wordlimit_enabled | 1 |
-      | assignsubmission_onlinetext_wordlimit | 10 |
-      | assignsubmission_file_enabled | 0 |
+    And the following "activity" exists:
+      | activity                                      | assign                  |
+      | idnumber                                      | ass1                    |
+      | course                                        | C1                      |
+      | name                                          | Test assignment name    |
+      | intro                                         | Submit your online text |
+      | assignsubmission_onlinetext_enabled           | 1                       |
+      | assignsubmission_onlinetext_wordlimit_enabled | 1                       |
+      | assignsubmission_onlinetext_wordlimit         | 10                      |
+      | assignsubmission_file_enabled                 | 0                       |
+      | submissiondrafts                              | 0                       |
 
   Scenario: Use course reset to clear all attempt data
-    When I log out
-    And I log in as "student1"
+    Given I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
     When I press "Add submission"
@@ -63,6 +64,8 @@ Feature: Assign reset
 
   @javascript
   Scenario: Use course reset to remove user overrides.
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
     When I follow "Test assignment name"
     And I navigate to "User overrides" in current page administration
     And I press "Add user override"
@@ -88,6 +91,8 @@ Feature: Assign reset
     Then I should not see "Sam1 Student1"
 
   Scenario: Use course reset to remove group overrides.
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
     When I follow "Test assignment name"
     And I navigate to "Group overrides" in current page administration
     And I press "Add group override"
@@ -113,6 +118,8 @@ Feature: Assign reset
     Then I should not see "Group 1"
 
   Scenario: Use course reset to reset blind marking assignment.
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
     Given I follow "Test assignment name"
     And I navigate to "Edit settings" in current page administration
     And I set the following fields to these values:

@@ -17,17 +17,20 @@ Feature: Hide grader identities identity from students
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     # Set up the test assignment
-    And I log in as "teacher1"
-    And I follow "Course 1"
-    And I turn editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 0 |
-      | assignsubmission_file_enabled | 1 |
-      | Maximum number of uploaded files | 2 |
-      | Hide grader identity from students | 0 |
-    And I log out
+    And the following "activity" exists:
+      | activity                           | assign                  |
+      | idnumber                           | ass1                    |
+      | course                             | C1                      |
+      | name                               | Test assignment name    |
+      | intro                              | Submit your online text |
+      | submissiondrafts                   | 0                       |
+      | teamsubmission                     | 1                       |
+      | asignsubmission_onlinetext_enabled | 0                       |
+      | assignsubmission_file_enabled      | 1                       |
+      | assignsubmission_file_maxfiles     | 2                       |
+      | assignsubmission_file_maxsizebytes | 1000000                 |
+      | assignfeedback_comments_enabled    | 1                       |
+      | hidegrader                         | 0                       |
     # Upload to the test assignment
     And I log in as "student1"
     And I follow "Course 1"

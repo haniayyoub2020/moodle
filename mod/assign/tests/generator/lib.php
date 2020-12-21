@@ -51,6 +51,10 @@ class mod_assign_generator extends testing_module_generator {
             'markingallocation'                 => 0,
         );
 
+        if (property_exists($record, 'teamsubmissiongroupingid')) {
+            $record->teamsubmissiongroupingid = $this->get_grouping_id($record->teamsubmissiongroupingid);
+        }
+
         foreach ($defaultsettings as $name => $value) {
             if (!isset($record->{$name})) {
                 $record->{$name} = $value;
@@ -58,5 +62,29 @@ class mod_assign_generator extends testing_module_generator {
         }
 
         return parent::create_instance($record, (array)$options);
+    }
+
+    /**
+     * Gets the grouping id from it's idnumber.
+     * @throws Exception
+     * @param string $idnumber
+     * @return int
+     */
+    private function get_grouping_id($idnumber) {
+        global $DB;
+
+        // Do not fetch grouping ID for empty grouping idnumber.
+        if (empty($idnumber)) {
+            return null;
+        }
+
+        if (!$id = $DB->get_field('groupings', 'id', ['idnumber' => $idnumber])) {
+            if (is_int($idnumber)) {
+                return $idnumber;
+            }
+            throw new Exception('The specified grouping with idnumber "' . $idnumber . '" does not exist');
+        }
+
+        return $id;
     }
 }

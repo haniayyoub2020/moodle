@@ -1,4 +1,4 @@
-@mod @mod_assign @javascript
+@mod @mod_assign
 Feature: When a Teacher hides an assignment from view for students it should consistently indicate it is hidden.
 
   Scenario: Grade multiple students on one page
@@ -13,20 +13,23 @@ Feature: When a Teacher hides an assignment from view for students it should con
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
+    And the following "activity" exists:
+      | activity | assign                 |
+      | idnumber | ass1                   |
+      | course   | C1                     |
+      | name     | Test hidden assignment |
+      | visible  | 0                      |
+    And the following "activity" exists:
+      | activity | assign                  |
+      | idnumber | ass1                    |
+      | course   | C1                      |
+      | name     | Test visible assignment |
     When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test hidden assignment |
-    And I open "Test hidden assignment" actions menu
-    And I choose "Hide" in the open action menu
+    And I am on "Course 1" course homepage
     And I follow "Test hidden assignment"
-    And I should see "Test hidden assignment"
+    Then I should see "Test hidden assignment"
     And I should see "Yes" in the "Hidden from students" "table_row"
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "2" and I fill the form with:
-      | Assignment name | Test visible assignment |
+    And I am on "Course 1" course homepage
     And I follow "Test visible assignment"
     And I should see "Test visible assignment"
     And I should see "No" in the "Hidden from students" "table_row"

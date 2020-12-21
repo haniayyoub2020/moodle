@@ -17,16 +17,17 @@ Feature: In an assignment, students can add and edit text online
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_onlinetext_wordlimit_enabled | 1 |
-      | assignsubmission_onlinetext_wordlimit | 10 |
-      | assignsubmission_file_enabled | 0 |
-    And I log out
+    And the following "activity" exists:
+      | activity                                      | assign                  |
+      | idnumber                                      | ass1                    |
+      | course                                        | C1                      |
+      | name                                          | Test assignment name    |
+      | intro                                         | Submit your online text |
+      | submissiondrafts                              | 0                       |
+      | assignsubmission_onlinetext_enabled           | 1                       |
+      | assignsubmission_onlinetext_wordlimit_enabled | 1                       |
+      | assignsubmission_onlinetext_wordlimit         | 10                      |
+      | assignsubmission_file_enabled                 | 0                       |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -64,14 +65,15 @@ Feature: In an assignment, students can add and edit text online
       | student1 | C1 | student |
     And the following config values are set as admin:
       | autosavefrequency | 1 | editor_atto |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-    And I log out
+    And the following "activity" exists:
+      | activity                                      | assign                  |
+      | idnumber                                      | ass1                    |
+      | course                                        | C1                      |
+      | name                                          | Test assignment name    |
+      | intro                                         | Submit your online text |
+      | submissiondrafts                              | 0                       |
+      | assignsubmission_onlinetext_enabled           | 1                       |
+      | assignsubmission_file_enabled                 | 0                       |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"

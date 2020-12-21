@@ -20,12 +20,16 @@ Feature: Check that the assignment grade can be updated correctly
     And the following "groups" exist:
       | name | course | idnumber |
       | Group 1 | C1 | G1 |
+    And the following "activity" exists:
+      | activity         | assign                      |
+      | idnumber         | ass1                        |
+      | course           | C1                          |
+      | name             | Test assignment name        |
+      | intro            | Test assignment description |
+      | markingworkflow  | 1                           |
+      | submissiondrafts | 0                           |
     And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | Use marking workflow | Yes |
+    And I am on "Course 1" course homepage
     When I follow "Test assignment name"
     Then I navigate to "View all submissions" in current page administration
     And I click on "Grade" "link" in the "Student 1" "table_row"
@@ -53,14 +57,18 @@ Feature: Check that the assignment grade can be updated correctly
     And the following "groups" exist:
       | name | course | idnumber |
       | Group 1 | C1 | G1 |
+    And the following "activity" exists:
+      | activity         | assign                      |
+      | idnumber         | ass1                        |
+      | course           | C1                          |
+      | name             | Test assignment name        |
+      | intro            | Test assignment description |
+      | markingworkflow  | 1                           |
+      | submissiondrafts | 0                           |
+      | teamsubmission   | 1                           |
+      | groupmode        | 0                           |
     And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Test assignment description |
-      | Use marking workflow | Yes |
-      | Students submit in groups | Yes |
-      | Group mode | No groups |
+    And I am on "Course 1" course homepage
     When I follow "Test assignment name"
     Then I navigate to "View all submissions" in current page administration
     And I click on "Grade" "link" in the "Student 1" "table_row"
