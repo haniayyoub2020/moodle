@@ -33,14 +33,15 @@ Feature: Remove a submission
 
   @javascript
   Scenario: Remove a submission should remove the data that was submitted
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | submissiondrafts                    | 0                       |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -54,7 +55,7 @@ Feature: Remove a submission
     And I follow "Test assignment name"
     And I navigate to "View all submissions" in current page administration
     And I open the action menu in "Student 1" "table_row"
-    And I follow "Remove submission"
+    When I follow "Remove submission"
     And I click on "Continue" "button"
     Then I should not see "I'm the student submission"
     And I log out
@@ -65,15 +66,16 @@ Feature: Remove a submission
 
   @javascript
   Scenario: Remove a group submission should remove the data from all group members
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-      | Students submit in groups | Yes |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | submissiondrafts                    | 0                       |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
+      | teamsubmission                      | 1                       |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -87,7 +89,7 @@ Feature: Remove a submission
     And I follow "Test assignment name"
     And I navigate to "View all submissions" in current page administration
     And I open the action menu in "Student 1" "table_row"
-    And I follow "Remove submission"
+    When I follow "Remove submission"
     And I click on "Continue" "button"
     Then I should not see "I'm the student submission"
     And I log out
@@ -98,14 +100,15 @@ Feature: Remove a submission
 
   @javascript
   Scenario: A student can remove their own submission
-    When I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | assignsubmission_file_enabled | 0 |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | submissiondrafts                    | 0                       |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | assignsubmission_file_enabled       | 0                       |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -115,7 +118,7 @@ Feature: Remove a submission
     And I press "Save changes"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
-    And I click on "Remove submission" "button"
+    When I click on "Remove submission" "button"
     And I click on "Continue" "button"
     And I log out
     And I log in as "teacher1"

@@ -19,15 +19,16 @@ Feature: Submissions are unlocked when a new attempt is given
 
   @javascript
   Scenario: A locked submission should unlock when a new attempt is automatically given.
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | Attempts reopened | Automatically until pass |
-      | Grade to pass | 50 |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | submissiondrafts                    | 0                       |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | attemptreopenmethod                 | untilpass               |
+      | gradepass                           | 50                      |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
@@ -53,14 +54,15 @@ Feature: Submissions are unlocked when a new attempt is given
 
   @javascript
   Scenario: A locked submission should unlock when a new attempt is manually given.
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Assignment" to section "1" and I fill the form with:
-      | Assignment name | Test assignment name |
-      | Description | Submit your online text |
-      | assignsubmission_onlinetext_enabled | 1 |
-      | Attempts reopened | Manually |
-    And I log out
+    Given the following "activity" exists:
+      | activity                            | assign                  |
+      | idnumber                            | ass1                    |
+      | course                              | C1                      |
+      | name                                | Test assignment name    |
+      | intro                               | Submit your online text |
+      | submissiondrafts                    | 0                       |
+      | assignsubmission_onlinetext_enabled | 1                       |
+      | attemptreopenmethod                 | manual                  |
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test assignment name"
