@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f5803ceed72bb1e9e83c82a8603b782b",
+    "content-hash": "efc41c1cb447d66f793680005b697008",
     "packages": [],
     "packages-dev": [
         {
@@ -812,16 +812,16 @@
         },
         {
             "name": "moodlehq/behat-extension",
-            "version": "v3.400.1",
+            "version": "dev-MDL-66979-master-bump",
             "source": {
                 "type": "git",
-                "url": "https://github.com/moodlehq/moodle-behat-extension.git",
-                "reference": "72971be7478049e55d2b70e049cfa913bff8700b"
+                "url": "https://github.com/andrewnicols/moodle-behat-extension.git",
+                "reference": "a29dfcf3d22793bc3903a35cfbfc7197c9f3ee44"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/moodlehq/moodle-behat-extension/zipball/72971be7478049e55d2b70e049cfa913bff8700b",
-                "reference": "72971be7478049e55d2b70e049cfa913bff8700b",
+                "url": "https://api.github.com/repos/andrewnicols/moodle-behat-extension/zipball/a29dfcf3d22793bc3903a35cfbfc7197c9f3ee44",
+                "reference": "a29dfcf3d22793bc3903a35cfbfc7197c9f3ee44",
                 "shasum": ""
             },
             "require": {
@@ -829,7 +829,7 @@
                 "behat/mink": "~1.8",
                 "behat/mink-extension": "~2.3",
                 "behat/mink-goutte-driver": "~1.2",
-                "oleg-andreyev/mink-facebook-web-driver": "dev-w3c",
+                "oleg-andreyev/mink-facebook-web-driver": "dev-master as 1.0.x-dev",
                 "php": ">=7.2.0",
                 "symfony/process": "^4.0 || ^5.0"
             },
@@ -839,7 +839,6 @@
                     "Moodle\\BehatExtension": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-3.0-or-later"
             ],
@@ -861,9 +860,12 @@
             "keywords": [
                 "BDD",
                 "Behat",
-                "moodle"
+                "Moodle"
             ],
-            "time": "2021-01-04T16:19:21+00:00"
+            "support": {
+                "source": "https://github.com/andrewnicols/moodle-behat-extension/tree/MDL-66979-master-bump"
+            },
+            "time": "2021-01-12T01:12:56+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -921,27 +923,28 @@
         },
         {
             "name": "oleg-andreyev/mink-facebook-web-driver",
-            "version": "dev-w3c",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/andrewnicols/MinkPhpWebDriver.git",
-                "reference": "cc659c35e91241271b498d0bb1e1de97472f0e38"
+                "url": "https://github.com/oleg-andreyev/MinkPhpWebDriver.git",
+                "reference": "8bac9c51f935d3c965c9a163260e509a7b93900e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/andrewnicols/MinkPhpWebDriver/zipball/cc659c35e91241271b498d0bb1e1de97472f0e38",
-                "reference": "cc659c35e91241271b498d0bb1e1de97472f0e38",
+                "url": "https://api.github.com/repos/oleg-andreyev/MinkPhpWebDriver/zipball/8bac9c51f935d3c965c9a163260e509a7b93900e",
+                "reference": "8bac9c51f935d3c965c9a163260e509a7b93900e",
                 "shasum": ""
             },
             "require": {
                 "behat/mink": "^1.8",
-                "php": ">=7.0",
+                "php": ">=7.2",
                 "php-webdriver/webdriver": "^1.8"
             },
             "require-dev": {
                 "behat/mink-extension": "^2.3",
                 "ext-json": "*",
-                "mink/driver-testsuite": "dev-integration-branch"
+                "mink/driver-testsuite": "dev-integration-branch",
+                "symfony/phpunit-bridge": "^5.2"
             },
             "type": "mink-driver",
             "extra": {
@@ -979,9 +982,10 @@
                 "webdriver"
             ],
             "support": {
-                "source": "https://github.com/andrewnicols/MinkPhpWebDriver/tree/w3c"
+                "source": "https://github.com/oleg-andreyev/MinkPhpWebDriver/tree/master",
+                "issues": "https://github.com/oleg-andreyev/MinkPhpWebDriver/issues"
             },
-            "time": "2020-12-07T11:57:57+00:00"
+            "time": "2021-01-12T00:02:16+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -4496,9 +4500,18 @@
             "time": "2020-07-08T17:02:28+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "3.400.2",
+            "alias_normalized": "3.400.2.0",
+            "version": "dev-MDL-66979-master-bump",
+            "package": "moodlehq/behat-extension"
+        }
+    ],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "moodlehq/behat-extension": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],

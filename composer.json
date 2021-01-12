@@ -7,12 +7,16 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/andrewnicols/MinkPhpWebDriver.git"
+            "url": "https://github.com/andrewnicols/moodle-behat-extension.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/oleg-andreyev/MinkPhpWebDriver.git"
         }
     ],
     "require-dev": {
         "phpunit/phpunit": "8.5.*",
-        "moodlehq/behat-extension": "3.400.1",
+        "moodlehq/behat-extension": "dev-MDL-66979-master-bump as 3.400.2",
         "mikey179/vfsstream": "^1.6"
     },
     "minimum-stability": "dev",
