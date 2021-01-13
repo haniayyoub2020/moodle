@@ -38,6 +38,7 @@ Feature: I can grade a students interaction across a forum
 
     # Fields should be hidden when grading is not set.
     When I set the field "Whole forum grading > Type" to "None"
+    Then "Whole forum grading > Grade to pass" "field" should be visible
     Then "Whole forum grading > Grade to pass" "field" should not be visible
     And "Whole forum grading > Grade category" "field" should not be visible
     And "Whole forum grading > Maximum grade" "field" should not be visible
