@@ -989,12 +989,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/andrewnicols/MinkPhpWebDriver.git",
-                "reference": "73793511cf78a02519d3a0359edb55e8b3bad122"
+                "reference": "3bce380326d19d05eb02c1215068a18a9c8419b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/andrewnicols/MinkPhpWebDriver/zipball/73793511cf78a02519d3a0359edb55e8b3bad122",
-                "reference": "73793511cf78a02519d3a0359edb55e8b3bad122",
+                "url": "https://api.github.com/repos/andrewnicols/MinkPhpWebDriver/zipball/3bce380326d19d05eb02c1215068a18a9c8419b8",
+                "reference": "3bce380326d19d05eb02c1215068a18a9c8419b8",
                 "shasum": ""
             },
             "require": {
@@ -1048,7 +1048,7 @@
             "support": {
                 "source": "https://github.com/andrewnicols/MinkPhpWebDriver/tree/switchWindowTests"
             },
-            "time": "2021-01-29T06:22:18+00:00"
+            "time": "2021-01-29T06:42:26+00:00"
         },
         {
             "name": "oleg-andreyev/mink-phpwebdriver",
