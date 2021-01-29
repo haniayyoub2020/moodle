@@ -66,7 +66,6 @@ Feature: Preview a Matching question
     And I set the following fields to these values:
       | Shuffle    | 0   |
     And I press "id_submitbutton"
-    And I pause
     When I choose "Preview" action for "matching-001" in the question bank
     And I switch to "questionpreview" window
     And I set the field "How questions behave" to "Immediate feedback"
