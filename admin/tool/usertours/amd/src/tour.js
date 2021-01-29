@@ -1228,6 +1228,9 @@ export default class Tour {
                 arrow: {
                     element: '[data-role="arrow"]',
                 },
+                preventOverflow: {
+                    boundariesElement: 'viewport',
+                },
             },
             onCreate: function(data) {
                 recalculateArrowPosition(data);
@@ -1235,6 +1238,7 @@ export default class Tour {
             onUpdate: function(data) {
                 recalculateArrowPosition(data);
             },
+            boundariesElement: 'viewport',
         };
 
         let recalculateArrowPosition = function(data) {
