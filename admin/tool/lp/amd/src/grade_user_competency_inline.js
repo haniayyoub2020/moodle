@@ -28,7 +28,8 @@ define(['jquery',
         'tool_lp/grade_dialogue',
         'tool_lp/event_base',
         'tool_lp/scalevalues',
-    ], function($, notification, ajax, log, GradeDialogue, EventBase, ScaleValues) {
+        'core/pending',
+    ], function($, notification, ajax, log, GradeDialogue, EventBase, ScaleValues, Pending) {
 
     /**
      * InlineEditor
@@ -117,6 +118,7 @@ define(['jquery',
         })
         .then(function(dialogue) {
             dialogue.on('rated', function(e, data) {
+                var pendingPromise = new Pending('tool_lp/grade_user_competency_inline:rated');
                 var args = self._args;
                 args.grade = data.rating;
                 args.note = data.note;
@@ -125,6 +127,7 @@ define(['jquery',
                     args: args,
                     done: function(evidence) {
                         self._trigger('competencyupdated', {args: args, evidence: evidence});
+                        pendingPromise.resolve();
                     },
                     fail: notification.exception
                 }]);

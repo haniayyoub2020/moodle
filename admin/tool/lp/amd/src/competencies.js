@@ -85,6 +85,7 @@ define(['jquery',
         var toid = $(drop).data('id');
         var localthis = this;
         var requests = [];
+        var pendingPromise = new Pending('tool_lp/competencies:handleDrop');
 
         if (localthis.itemtype == 'course') {
             requests = ajax.call([
@@ -108,10 +109,13 @@ define(['jquery',
                 }
             ]);
         } else {
+            pendingPromise.resolve();
             return;
         }
 
-        requests[0].fail(notification.exception);
+        requests[0]
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -208,9 +212,10 @@ define(['jquery',
      */
     competencies.prototype.doDelete = function(deleteid) {
         var localthis = this;
-        var requests = [],
-            pagerender = '',
-            pageregion = '';
+        var requests = [];
+        var pagerender = '';
+        var pageregion = '';
+        var pendingPromise = new Pending('tool_lp/competencies:doDelete');
 
         // Delete the link and reload the page template.
         if (localthis.itemtype == 'course') {
@@ -242,12 +247,15 @@ define(['jquery',
             pageregion = 'plan-page';
         }
 
-        requests[1].done(function(context) {
-            templates.render(pagerender, context).done(function(html, js) {
-                $('[data-region="' + pageregion + '"]').replaceWith(html);
-                templates.runTemplateJS(js);
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+        requests[1]
+        .then(function(context) {
+            return templates.render(pagerender, context);
+        })
+        .then(function(html, js) {
+            return templates.replaceNode($('[data-region="' + pageregion + '"]'), html, js);
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
 
     };
 
@@ -259,7 +267,6 @@ define(['jquery',
      */
     competencies.prototype.deleteHandler = function(deleteid) {
         var localthis = this;
-        var requests = [];
         var message;
 
         if (localthis.itemtype == 'course') {
@@ -272,29 +279,32 @@ define(['jquery',
             return;
         }
 
-        requests = ajax.call([{
+        var pendingPromise = new Pending('tool_lp/competencies:deleteHandler');
+        ajax.call([{
             methodname: 'core_competency_read_competency',
             args: {id: deleteid}
-        }]);
-
-        requests[0].done(function(competency) {
-            str.get_strings([
+        }])[0]
+        .then(function(competency) {
+            return str.get_strings([
                 {key: 'confirm', component: 'moodle'},
                 {key: message, component: 'tool_lp', param: competency.shortname},
                 {key: 'confirm', component: 'moodle'},
-                {key: 'cancel', component: 'moodle'}
-            ]).done(function(strings) {
-                notification.confirm(
-                    strings[0], // Confirm.
-                    strings[1], // Unlink the competency X from the course?
-                    strings[2], // Confirm.
-                    strings[3], // Cancel.
-                    function() {
-                        localthis.doDelete(deleteid);
-                    }
-                );
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+                {key: 'cancel', component: 'moodle'},
+            ]);
+        })
+        .then(function(strings) {
+            return notification.confirm(
+                strings[0], // Confirm.
+                strings[1], // Unlink the competency X from the course?
+                strings[2], // Confirm.
+                strings[3], // Cancel.
+                function() {
+                    localthis.doDelete(deleteid);
+                }
+            );
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**

@@ -229,14 +229,14 @@ define(['jquery',
      * @return {Promise}
      */
     Picker.prototype._fetchCompetencies = function(frameworkId, searchText) {
-        var self = this;
-
-        return Ajax.call([
-            {methodname: 'core_competency_search_competencies', args: {
+        return Ajax.call([{
+            methodname: 'core_competency_search_competencies',
+            args: {
                 searchtext: searchText,
                 competencyframeworkid: frameworkId
-            }}
-        ])[0].done(function(competencies) {
+            },
+        }])[0]
+        .then(function(competencies) {
           /**
            * @param {Object} parent
            * @param {Array} competencies
@@ -254,7 +254,8 @@ define(['jquery',
             }
 
             // Expand the list of competencies into a tree.
-            var i, comp;
+            var i;
+            var comp;
             var tree = [];
             for (i = 0; i < competencies.length; i++) {
                 comp = competencies[i];
@@ -266,9 +267,9 @@ define(['jquery',
                 }
             }
 
-            self._competencies = tree;
-
-        }).fail(Notification.exception);
+            this._competencies = tree;
+        }.bind(this))
+        .catch(Notification.exception);
     };
 
     /**
@@ -317,36 +318,41 @@ define(['jquery',
      * @return {Promise}
      */
     Picker.prototype._loadFrameworks = function() {
-        var promise,
-            self = this;
+        var promise;
 
         // Quit early because we already have the data.
-        if (self._frameworks.length > 0) {
+        if (this._frameworks.length > 0) {
             return $.when();
         }
 
-        if (self._singleFramework) {
-            promise = Ajax.call([
-                {methodname: 'core_competency_read_competency_framework', args: {
-                    id: this._frameworkId
-                }}
-            ])[0].then(function(framework) {
+        if (this._singleFramework) {
+            promise = Ajax.call([{
+                methodname: 'core_competency_read_competency_framework',
+                args: {
+                    id: this._frameworkId,
+                }
+            }])[0]
+            .then(function(framework) {
                 return [framework];
             });
         } else {
-            promise = Ajax.call([
-                {methodname: 'core_competency_list_competency_frameworks', args: {
+            promise = Ajax.call([{
+                methodname: 'core_competency_list_competency_frameworks',
+                args: {
                     sort: 'shortname',
-                    context: {contextid: self._pageContextId},
-                    includes: self._pageContextIncludes,
-                    onlyvisible: self._onlyVisible
-                }}
-            ])[0];
+                    context: {contextid: this._pageContextId},
+                    includes: this._pageContextIncludes,
+                    onlyvisible: this._onlyVisible,
+                },
+            }])[0];
         }
 
-        return promise.done(function(frameworks) {
-            self._frameworks = frameworks;
-        }).fail(Notification.exception);
+        return promise
+        .then(function(frameworks) {
+            this._frameworks = frameworks;
+            return frameworks;
+        }.bind(this))
+        .fail(Notification.exception);
     };
 
     /**
@@ -367,20 +373,20 @@ define(['jquery',
      * @return {Promise}
      */
     Picker.prototype._preRender = function() {
-        var self = this;
-        return self._loadFrameworks().then(function() {
-            if (!self._frameworkId && self._frameworks.length > 0) {
-                self._frameworkId = self._frameworks[0].id;
+        return this._loadFrameworks()
+        .then(function(frameworks) {
+            if (!this._frameworkId && frameworks.length > 0) {
+                this._frameworkId = frameworks[0].id;
             }
 
             // We could not set a framework ID, that probably means there are no frameworks accessible.
-            if (!self._frameworkId) {
-                self._frameworks = [];
+            if (!this._frameworkId) {
+                this._frameworks = [];
                 return $.when();
             }
 
-            return self._loadCompetencies();
-        });
+            return this._loadCompetencies();
+        }.bind(this));
     };
 
     /**
@@ -390,12 +396,12 @@ define(['jquery',
      * @return {Promise}
      */
     Picker.prototype._refresh = function() {
-        var self = this;
-        return self._render().then(function(html) {
-            self._find('[data-region="competencylinktree"]').replaceWith(html);
-            self._afterRender();
+        return this._render()
+        .then(function(html) {
+            this._find('[data-region="competencylinktree"]').replaceWith(html);
+            this._afterRender();
             return;
-        });
+        }.bind(this));
     };
 
     /**
@@ -405,12 +411,12 @@ define(['jquery',
      * @return {Promise}
      */
     Picker.prototype._render = function() {
-        var self = this;
-        return self._preRender().then(function() {
+        return this._preRender()
+        .then(function() {
 
-            if (!self._singleFramework) {
-                $.each(self._frameworks, function(i, framework) {
-                    if (framework.id == self._frameworkId) {
+            if (!this._singleFramework) {
+                $.each(this._frameworks, function(i, framework) {
+                    if (framework.id == this._frameworkId) {
                         framework.selected = true;
                     } else {
                         framework.selected = false;
@@ -419,15 +425,15 @@ define(['jquery',
             }
 
             var context = {
-                competencies: self._competencies,
-                framework: self._getFramework(self._frameworkId),
-                frameworks: self._frameworks,
-                search: self._searchText,
-                singleFramework: self._singleFramework,
+                competencies: this._competencies,
+                framework: this._getFramework(this._frameworkId),
+                frameworks: this._frameworks,
+                search: this._searchText,
+                singleFramework: this._singleFramework,
             };
 
             return Templates.render('tool_lp/competency_picker', context);
-        });
+        }.bind(this));
     };
 
     /**
@@ -469,5 +475,4 @@ define(['jquery',
     };
 
     return /** @alias module:tool_lp/competencypicker */ Picker;
-
 });

@@ -85,20 +85,24 @@ define(['jquery',
         };
 
         if (parent !== null && treeModel.hasRule(parent.id)) {
+            var pendingPromise = new Pending('tool_lp/competencyactions:addHandler');
             str.get_strings([
                 {key: 'confirm', component: 'moodle'},
                 {key: 'addingcompetencywillresetparentrule', component: 'tool_lp', param: parent.shortname},
                 {key: 'yes', component: 'core'},
                 {key: 'no', component: 'core'}
-            ]).done(function(strings) {
-                notification.confirm(
+            ])
+            .then(function(strings) {
+                return notification.confirm(
                     strings[0],
                     strings[1],
                     strings[2],
                     strings[3],
                     relocate
                 );
-            }).fail(notification.exception);
+            })
+            .then(pendingPromise.resolve)
+            .catch(notification.exception);
         } else {
             relocate();
         }
@@ -110,15 +114,26 @@ define(['jquery',
      */
     var doMove = function() {
         var frameworkid = $('[data-region="filtercompetencies"]').data('frameworkid');
-        var requests = ajax.call([{
-            methodname: 'core_competency_set_parent_competency',
-            args: {competencyid: moveSource, parentid: moveTarget}
-        }, {
-            methodname: 'tool_lp_data_for_competencies_manage_page',
-            args: {competencyframeworkid: frameworkid,
-                    search: $('[data-region="filtercompetencies"] input').val()}
-        }]);
-        requests[1].done(reloadPage).fail(notification.exception);
+
+        var pendingPromise = new Pending('tool_lp/competencyactions:doMove');
+        var requests = ajax.call([
+            {
+                methodname: 'core_competency_set_parent_competency',
+                args: {competencyid: moveSource, parentid: moveTarget}
+            },
+            {
+                methodname: 'tool_lp_data_for_competencies_manage_page',
+                args: {
+                    competencyframeworkid: frameworkid,
+                    search: $('[data-region="filtercompetencies"] input').val()
+                }
+            }
+        ]);
+
+        requests[1]
+        .then(reloadPage)
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -156,20 +171,24 @@ define(['jquery',
 
         // Show confirm, and/or do the things.
         if (showConfirm) {
+            var pendingPromise = new Pending('tool_lp/competencyactions:confirmMove');
             str.get_strings([
                 {key: 'confirm', component: 'moodle'},
                 {key: confirmMessage, component: 'tool_lp'},
                 {key: 'yes', component: 'moodle'},
                 {key: 'no', component: 'moodle'}
-            ]).done(function(strings) {
-                notification.confirm(
+            ])
+            .then(function(strings) {
+                return notification.confirm(
                     strings[0], // Confirm.
                     strings[1], // Delete competency X?
                     strings[2], // Delete.
                     strings[3], // Cancel.
                     doMove
                 );
-            }).fail(notification.exception);
+            })
+            .then(pendingPromise.resolve)
+            .catch(notification.exception);
 
         } else {
             doMove();
@@ -233,6 +252,7 @@ define(['jquery',
         moveSource = competency.id;
 
         // Load data for the template.
+        var pendingPromise = new Pending('tool_lp/competencyactions:confirmMove');
         var requests = ajax.call([
             {
                 methodname: 'core_competency_search_competencies',
@@ -249,8 +269,8 @@ define(['jquery',
         ]);
 
         // When all data has arrived, continue.
-        $.when.apply(null, requests).done(function(competencies, framework) {
-
+        $.when.apply(null, requests)
+        .then(function(competencies, framework) {
             // Expand the list of competencies into a tree.
             var i;
             var competenciestree = [];
@@ -264,30 +284,36 @@ define(['jquery',
                 }
             }
 
-            str.get_strings([
-                {key: 'movecompetency', component: 'tool_lp', param: competency.shortname},
-                {key: 'move', component: 'tool_lp'},
-                {key: 'cancel', component: 'moodle'}
-            ]).done(function(strings) {
+            return Promise.all([
+                competenciestree,
+                framework,
+                str.get_strings([
+                    {key: 'movecompetency', component: 'tool_lp', param: competency.shortname},
+                    {key: 'move', component: 'tool_lp'},
+                    {key: 'cancel', component: 'moodle'}
+                ])
+            ]);
+        })
+        .then(function([competenciestree, framework, strings]) {
+            var context = {
+                framework: framework,
+                competencies: competenciestree
+            };
 
-                var context = {
-                    framework: framework,
-                    competencies: competenciestree
-                };
-
-                templates.render('tool_lp/competencies_move_tree', context)
-                   .done(function(tree) {
-                       new Dialogue(
-                           strings[0], // Move competency x.
-                           tree, // The move tree.
-                           initMovePopup
-                       );
-
-                   }).fail(notification.exception);
-
-           }).fail(notification.exception);
-
-        }).fail(notification.exception);
+            return Promise.all([
+                strings,
+                templates.render('tool_lp/competencies_move_tree', context),
+            ]);
+        })
+        .then(function([strings, html]) {
+            return new Dialogue(
+                strings[0], // Move competency x.
+                html, // The move tree.
+                initMovePopup
+            );
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
 
     };
 
@@ -313,14 +339,14 @@ define(['jquery',
      * Re-render the page with the latest data.
      * @param {Object} context
      * @method reloadPage
+     * @returns {Promise}
      */
     var reloadPage = function(context) {
-        templates.render('tool_lp/manage_competencies_page', context)
-            .done(function(newhtml, newjs) {
-                $('[data-region="managecompetencies"]').replaceWith(newhtml);
-                templates.runTemplateJS(newjs);
-            })
-           .fail(notification.exception);
+        return templates.render('tool_lp/manage_competencies_page', context)
+        .then(function(html, js) {
+            return templates.replaceNode($('[data-region="managecompetencies"]'), html, js);
+        })
+        .catch(notification.exception);
     };
 
     /**
@@ -330,15 +356,20 @@ define(['jquery',
      */
     var updateSearchHandler = function(e) {
         e.preventDefault();
+        var pendingPromise = new Pending('tool_lp/competencyactions:updateSearchHandler');
 
         var frameworkid = $('[data-region="filtercompetencies"]').data('frameworkid');
 
-        var requests = ajax.call([{
+        ajax.call([{
             methodname: 'tool_lp_data_for_competencies_manage_page',
-            args: {competencyframeworkid: frameworkid,
-                    search: $('[data-region="filtercompetencies"] input').val()}
-        }]);
-        requests[0].done(reloadPage).fail(notification.exception);
+            args: {
+                competencyframeworkid: frameworkid,
+                search: $('[data-region="filtercompetencies"] input').val()
+            }
+        }])[0]
+        .then(reloadPage)
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -346,17 +377,29 @@ define(['jquery',
      * @method moveUpHandler
      */
     var moveUpHandler = function() {
+        var pendingPromise = new Pending('tool_lp/competencyactions:moveUpHandler');
+
         // We are chaining ajax requests here.
         var competency = $('[data-region="competencyactions"]').data('competency');
-        var requests = ajax.call([{
-            methodname: 'core_competency_move_up_competency',
-            args: {id: competency.id}
-        }, {
-            methodname: 'tool_lp_data_for_competencies_manage_page',
-            args: {competencyframeworkid: competency.competencyframeworkid,
-                    search: $('[data-region="filtercompetencies"] input').val()}
-        }]);
-        requests[1].done(reloadPage).fail(notification.exception);
+
+        var requests = ajax.call([
+            {
+                methodname: 'core_competency_move_up_competency',
+                args: {id: competency.id}
+            },
+            {
+                methodname: 'tool_lp_data_for_competencies_manage_page',
+                args: {
+                    competencyframeworkid: competency.competencyframeworkid,
+                    search: $('[data-region="filtercompetencies"] input').val(),
+                }
+            }
+        ]);
+
+        requests[1]
+        .then(reloadPage)
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -364,17 +407,29 @@ define(['jquery',
      * @method moveDownHandler
      */
     var moveDownHandler = function() {
+        var pendingPromise = new Pending('tool_lp/competencyactions:moveUpHandler');
+
         // We are chaining ajax requests here.
         var competency = $('[data-region="competencyactions"]').data('competency');
-        var requests = ajax.call([{
-            methodname: 'core_competency_move_down_competency',
-            args: {id: competency.id}
-        }, {
-            methodname: 'tool_lp_data_for_competencies_manage_page',
-            args: {competencyframeworkid: competency.competencyframeworkid,
-                    search: $('[data-region="filtercompetencies"] input').val()}
-        }]);
-        requests[1].done(reloadPage).fail(notification.exception);
+
+        var requests = ajax.call([
+            {
+                methodname: 'core_competency_move_down_competency',
+                args: {id: competency.id}
+            },
+            {
+                methodname: 'tool_lp_data_for_competencies_manage_page',
+                args: {
+                    competencyframeworkid: competency.competencyframeworkid,
+                    search: $('[data-region="filtercompetencies"] input').val(),
+                }
+            }
+        ]);
+
+        requests[1]
+        .then(reloadPage)
+        .then(pendingPromise.resolve)
+        .fail(notification.exception);
     };
 
     /**
@@ -382,27 +437,32 @@ define(['jquery',
      * @method seeCoursesHandler
      */
     var seeCoursesHandler = function() {
+        var pendingPromise = new Pending('tool_lp/competencyactions:seeCoursesHandler');
+
         var competency = $('[data-region="competencyactions"]').data('competency');
 
-        var requests = ajax.call([{
+        ajax.call([{
             methodname: 'tool_lp_list_courses_using_competency',
             args: {id: competency.id}
-        }]);
-
-        requests[0].done(function(courses) {
+        }])[0]
+        .then(function(courses) {
             var context = {
                 courses: courses
             };
-            templates.render('tool_lp/linked_courses_summary', context).done(function(html) {
-                str.get_string('linkedcourses', 'tool_lp').done(function(linkedcourses) {
-                    new Dialogue(
-                        linkedcourses, // Title.
-                        html, // The linked courses.
-                        initMovePopup
-                    );
-                }).fail(notification.exception);
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+            return Promise.all([
+                templates.render('tool_lp/linked_courses_summary', context),
+                str.get_string('linkedcourses', 'tool_lp'),
+            ]);
+        })
+        .then(function([html, linkedcourses]) {
+            return new Dialogue(
+                linkedcourses, // Title.
+                html, // The linked courses.
+                initMovePopup
+            );
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -436,12 +496,11 @@ define(['jquery',
 
                 promises[calls.length - 1].then(function(context) {
                     return templates.render('tool_lp/related_competencies', context);
-                }).then(function(html, js) {
-                    $('[data-region="relatedcompetencies"]').replaceWith(html);
-                    templates.runTemplateJS(js);
-                    updatedRelatedCompetencies();
-                    return;
                 })
+                .then(function(html, js) {
+                    return templates.replaceNode($('[data-region="relatedcompetencies"]'), html, js);
+                })
+                .then(updatedRelatedCompetencies)
                 .then(pendingPromise.resolve)
                 .catch(notification.exception);
             });
@@ -469,19 +528,24 @@ define(['jquery',
             ruleoutcome: config.ruleoutcome,
             ruleconfig: config.ruleconfig
         };
-        var promise = ajax.call([{
+
+        var pendingPromise = new Pending('tool_lp/competencyactions:ruleConfigSaveHandler');
+
+        ajax.call([{
             methodname: 'core_competency_update_competency',
             args: {competency: update}
-        }]);
-        promise[0].then(function(result) {
+        }])[0]
+        .then(function(result) {
             if (result) {
                 relatedTarget.ruletype = config.ruletype;
                 relatedTarget.ruleoutcome = config.ruleoutcome;
                 relatedTarget.ruleconfig = config.ruleconfig;
                 renderCompetencySummary(relatedTarget);
             }
-            return;
-        }).catch(notification.exception);
+            return result;
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -489,30 +553,46 @@ define(['jquery',
      * @method doDelete
      */
     var doDelete = function() {
+        var pendingPromise = new Pending('tool_lp/competencyactions:doDelete');
+
         // We are chaining ajax requests here.
         var competency = $('[data-region="competencyactions"]').data('competency');
-        var requests = ajax.call([{
-            methodname: 'core_competency_delete_competency',
-            args: {id: competency.id}
-        }, {
-            methodname: 'tool_lp_data_for_competencies_manage_page',
-            args: {competencyframeworkid: competency.competencyframeworkid,
-                    search: $('[data-region="filtercompetencies"] input').val()}
-        }]);
-        requests[0].done(function(success) {
-            if (success === false) {
-                str.get_strings([
-                {key: 'competencycannotbedeleted', component: 'tool_lp', param: competency.shortname},
-                {key: 'cancel', component: 'moodle'}
-                ]).done(function(strings) {
-                    notification.alert(
-                        null,
-                        strings[0]
-                    );
-                }).fail(notification.exception);
+        var requests = ajax.call([
+            {
+                methodname: 'core_competency_delete_competency',
+                args: {id: competency.id}
+            },
+            {
+                methodname: 'tool_lp_data_for_competencies_manage_page',
+                args: {
+                    competencyframeworkid: competency.competencyframeworkid,
+                    search: $('[data-region="filtercompetencies"] input').val(),
+                }
             }
-        }).fail(notification.exception);
-        requests[1].done(reloadPage).fail(notification.exception);
+        ]);
+
+        requests.push(str.get_strings([
+            {
+                key: 'competencycannotbedeleted',
+                component: 'tool_lp',
+                param: competency.shortname,
+            },
+            {
+                key: 'cancel',
+                component: 'moodle',
+            },
+        ]));
+
+        Promise.all(requests)
+        .then(function([success, managePage, strings]) {
+            if (!success) {
+                notification.alert(null, strings[0]);
+            }
+
+            return reloadPage(managePage);
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -520,8 +600,10 @@ define(['jquery',
      * @method deleteCompetencyHandler
      */
     var deleteCompetencyHandler = function() {
-        var competency = $('[data-region="competencyactions"]').data('competency'),
-            confirmMessage = 'deletecompetency';
+        var pendingPromise = new Pending('tool_lp/competencyactions:deleteCompetencyHandler');
+
+        var competency = $('[data-region="competencyactions"]').data('competency');
+        var confirmMessage = 'deletecompetency';
 
         if (treeModel.hasRule(competency.parentid)) {
             confirmMessage = 'deletecompetencyparenthasrule';
@@ -532,15 +614,18 @@ define(['jquery',
             {key: confirmMessage, component: 'tool_lp', param: competency.shortname},
             {key: 'delete', component: 'moodle'},
             {key: 'cancel', component: 'moodle'}
-        ]).done(function(strings) {
-            notification.confirm(
+        ])
+        .then(function(strings) {
+            return notification.confirm(
                 strings[0], // Confirm.
                 strings[1], // Delete competency X?
                 strings[2], // Delete.
                 strings[3], // Cancel.
                 doDelete
             );
-        }).fail(notification.exception);
+        })
+        .then(pendingPromise.resolve)
+        .fail(notification.exception);
     };
 
     /**
@@ -605,21 +690,35 @@ define(['jquery',
     var deleteRelatedHandler = function(e) {
         e.preventDefault();
 
+        var pendingPromise = new Pending('tool_lp/competencyactions:deleteRelatedHandler');
+
         var relatedid = this.id.substr(11);
         var competency = $('[data-region="competencyactions"]').data('competency');
-        var removeRelated = ajax.call([
-            {methodname: 'core_competency_remove_related_competency',
-              args: {relatedcompetencyid: relatedid, competencyid: competency.id}},
-            {methodname: 'tool_lp_data_for_related_competencies_section',
-              args: {competencyid: competency.id}}
-        ]);
 
-        removeRelated[1].done(function(context) {
-            templates.render('tool_lp/related_competencies', context).done(function(html) {
-                $('[data-region="relatedcompetencies"]').replaceWith(html);
-                updatedRelatedCompetencies();
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+        ajax.call([
+            {
+                methodname: 'core_competency_remove_related_competency',
+                args: {
+                    relatedcompetencyid: relatedid,
+                    competencyid: competency.id,
+                },
+            },
+            {
+                methodname: 'tool_lp_data_for_related_competencies_section',
+                args: {
+                    competencyid: competency.id,
+                },
+            },
+        ])[1]
+        .then(function(context) {
+            return templates.render('tool_lp/related_competencies', context);
+        })
+        .then(function(html, js) {
+            return templates.replaceNode($('[data-region="relatedcompetencies"]'), html, js);
+        })
+        .then(updatedRelatedCompetencies)
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -628,7 +727,6 @@ define(['jquery',
      * @method updatedRelatedCompetencies
      */
     var updatedRelatedCompetencies = function() {
-
         // Listeners to newly loaded related competencies.
         $('[data-action="deleterelation"]').on('click', deleteRelatedHandler);
 
@@ -644,10 +742,14 @@ define(['jquery',
         if (competency.id !== selectedCompetencyId) {
             // Set the selected competency id.
             selectedCompetencyId = competency.id;
+
+            var pendingPromise = new Pending('tool_lp/competencyactions:triggerCompetencyViewedEvent');
             ajax.call([{
-                    methodname: 'core_competency_competency_viewed',
-                    args: {id: competency.id}
-            }]);
+                methodname: 'core_competency_competency_viewed',
+                args: {id: competency.id}
+            }])[0]
+            .then(pendingPromise.resolve)
+            .catch(notification.exception);
         }
     };
 
@@ -672,8 +774,8 @@ define(['jquery',
      * @param  {Object} competency The competency.
      */
     var renderCompetencySummary = function(competency) {
-        var promise = $.Deferred().resolve().promise(),
-            context = {};
+        var promise = $.Deferred().resolve().promise();
+        var context = {};
 
         context.competency = competency;
         context.showdeleterelatedaction = true;
@@ -681,9 +783,12 @@ define(['jquery',
         context.showrule = false;
         context.pluginbaseurl = url.relativeUrl('/admin/tool/lp');
 
+        var pendingPromise = new Pending('tool_lp/competencyactions:renderCompetencySummary');
+
         if (competency.ruleoutcome != Outcomes.NONE) {
             // Get the outcome and rule name.
-            promise = Outcomes.getString(competency.ruleoutcome).then(function(str) {
+            promise = Outcomes.getString(competency.ruleoutcome)
+            .then(function(str) {
                 var name;
                 $.each(rulesModules, function(index, modInfo) {
                     if (modInfo.type == competency.ruletype) {
@@ -703,26 +808,39 @@ define(['jquery',
                 };
             }
             return context;
-        }).then(function(context) {
+        })
+        .then(function(context) {
             return templates.render('tool_lp/competency_summary', context);
-        }).then(function(html) {
-            $('[data-region="competencyinfo"]').html(html);
-            $('[data-action="deleterelation"]').on('click', deleteRelatedHandler);
+        })
+        .then(function(html, js) {
+            return templates.replaceNodeContents($('[data-region="competencyinfo"]'), html, js);
+        })
+        .then(function() {
             return templates.render('tool_lp/loading', {});
-        }).then(function(html, js) {
-            templates.replaceNodeContents('[data-region="relatedcompetencies"]', html, js);
+        })
+        .then(function(spinner, spinnerJs) {
+            return templates.replaceNodeContents('[data-region="relatedcompetencies"]', spinner, spinnerJs);
+        })
+        .then(function() {
+            $('[data-action="deleterelation"]').on('click', deleteRelatedHandler);
+
+            return;
+        })
+        .then(function() {
             return ajax.call([{
                 methodname: 'tool_lp_data_for_related_competencies_section',
                 args: {competencyid: competency.id}
             }])[0];
-        }).then(function(context) {
+        })
+        .then(function(context) {
             return templates.render('tool_lp/related_competencies', context);
-        }).then(function(html, js) {
-            $('[data-region="relatedcompetencies"]').replaceWith(html);
-            templates.runTemplateJS(js);
-            updatedRelatedCompetencies();
-            return;
-        }).catch(notification.exception);
+        })
+        .then(function(html, js) {
+            return templates.replaceNode($('[data-region="relatedcompetencies"]'), html, js);
+        })
+        .then(updatedRelatedCompetencies)
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /**
@@ -785,17 +903,20 @@ define(['jquery',
             // Log Competency viewed event.
             triggerCompetencyViewedEvent(competency);
         }
-        strSelectedTaxonomy(level).then(function(str) {
-            selectedTitle.text(str);
-            return;
-        }).catch(notification.exception);
 
-        strAddTaxonomy(sublevel).then(function(str) {
-            btn.show()
-                .find('[data-region="term"]')
-                .text(str);
+        var pendingPromise = new Pending('tool_lp/competencyactions:selectionChanged');
+
+        Promise.all([
+            strSelectedTaxonomy(level),
+            strAddTaxonomy(sublevel),
+        ])
+        .then(function([selectedTaxonomyString, buttonString]) {
+            selectedTitle.text(selectedTaxonomyString);
+            btn.show().find('[data-region="term"]').text(buttonString);
             return;
-        }).catch(notification.exception);
+        })
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
 
         // We handled this event so consume it.
         evt.preventDefault();

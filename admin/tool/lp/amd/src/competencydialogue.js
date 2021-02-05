@@ -54,8 +54,8 @@ define(['jquery',
      */
     Competencydialogue.prototype.triggerCompetencyViewedEvent = function(competencyId) {
         ajax.call([{
-                methodname: 'core_competency_competency_viewed',
-                args: {id: competencyId}
+            methodname: 'core_competency_competency_viewed',
+            args: {id: competencyId}
         }]);
     };
 
@@ -67,23 +67,27 @@ define(['jquery',
      * @method showDialogue
      */
     Competencydialogue.prototype.showDialogue = function(competencyid, options) {
-
-        var datapromise = this.getCompetencyDataPromise(competencyid, options);
-        var localthis = this;
-        datapromise.done(function(data) {
+        this.getCompetencyDataPromise(competencyid, options)
+        .then(function(data) {
             // Inner Html in the dialogue content.
-            templates.render('tool_lp/competency_summary', data)
-                .done(function(html) {
-                    // Log competency viewed event.
-                    localthis.triggerCompetencyViewedEvent(competencyid);
+            return Promise.all([
+                data,
+                templates.render('tool_lp/competency_summary', data),
+            ]);
+        })
+        .then(function([data, html]) {
+            // Log competency viewed event.
+            this.triggerCompetencyViewedEvent(competencyid);
 
-                    // Show the dialogue.
-                    new Dialogue(
-                        data.competency.shortname,
-                        html
-                    );
-                }).fail(notification.exception);
-        }).fail(notification.exception);
+            // Show the dialogue.
+            new Dialogue(
+                data.competency.shortname,
+                html
+            );
+
+            return;
+        }.bind(this))
+        .catch(notification.exception);
     };
 
     /**
@@ -93,21 +97,22 @@ define(['jquery',
      * @method showDialogueFromData
      */
     Competencydialogue.prototype.showDialogueFromData = function(dataSource) {
-
-        var localthis = this;
         // Inner Html in the dialogue content.
         templates.render('tool_lp/competency_summary', dataSource)
-            .done(function(html) {
-                // Log competency viewed event.
-                localthis.triggerCompetencyViewedEvent(dataSource.id);
+        .then(function(html) {
+            // Log competency viewed event.
+            this.triggerCompetencyViewedEvent(dataSource.id);
 
-                // Show the dialogue.
-                new Dialogue(
-                    dataSource.shortname,
-                    html,
-                    localthis.enhanceDialogue
-                );
-            }).fail(notification.exception);
+            // Show the dialogue.
+            new Dialogue(
+                dataSource.shortname,
+                html,
+                this.enhanceDialogue
+            );
+
+            return;
+        })
+        .catch(notification.exception);
     };
 
     /**
@@ -117,7 +122,6 @@ define(['jquery',
      * @method clickEventHandler
      */
     Competencydialogue.prototype.clickEventHandler = function(e) {
-
         var compdialogue = e.data.compdialogue;
         var currentTarget = $(e.currentTarget);
         var competencyid = currentTarget.data('id');
@@ -137,23 +141,18 @@ define(['jquery',
      *
      * @param {Number} competencyid
      * @param {Object} options
-     * @return {Promise} return promise on data request
+     * @returns {Promise} return promise on data request
      * @method getCompetencyDataPromise
      */
     Competencydialogue.prototype.getCompetencyDataPromise = function(competencyid, options) {
-
-        var requests = ajax.call([
-            {methodname: 'tool_lp_data_for_competency_summary',
-              args: {competencyid: competencyid,
-                      includerelated: options.includerelated || false,
-                      includecourses: options.includecourses || false
-                    }
+        return ajax.call([{
+            methodname: 'tool_lp_data_for_competency_summary',
+            args: {
+                competencyid: competencyid,
+                includerelated: options.includerelated || false,
+                includecourses: options.includecourses || false
             }
-        ]);
-
-        return requests[0].then(function(context) {
-           return context;
-        }).fail(notification.exception);
+        }])[0];
     };
 
     return /** @alias module:tool_lp/competencydialogue */ {

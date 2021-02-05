@@ -21,7 +21,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/notification', 'core/ajax', 'core/templates'], function($, notification, ajax, templates) {
+define([
+    'jquery',
+    'core/notification',
+    'core/ajax',
+    'core/templates',
+    'core/pending',
+], function($, notification, ajax, templates, Pending) {
 
     /**
      * Info
@@ -63,27 +69,30 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/templates'], function(
      * @method reload
      */
     Info.prototype.reload = function() {
-        var self = this,
-            promises = [];
-
         if (!this._valid) {
             return;
         }
 
-        promises = ajax.call([{
+        var pendingPromise = new Pending('tool_lp/user_competency_info:reload');
+        ajax.call([{
             methodname: this._methodName,
             args: this._args
-        }]);
-
-        promises[0].done(function(context) {
+        }])[0]
+        .then(function(context) {
             // Check if we should also the user info.
             if (self._displayuser) {
                 context.displayuser = true;
             }
-            templates.render(self._templateName, context).done(function(html, js) {
-                templates.replaceNode(self._rootElement, html, js);
-            }).fail(notification.exception);
-        }).fail(notification.exception);
+            return context;
+        })
+        .then(function(context) {
+            return templates.render(this._templateName, context);
+        }.bind(this))
+        .then(function(html, js) {
+            return templates.replaceNode(this._rootElement, html, js);
+        }.bind(this))
+        .then(pendingPromise.resolve)
+        .catch(notification.exception);
     };
 
     /** @type {JQuery} The root element to replace in the DOM. */
