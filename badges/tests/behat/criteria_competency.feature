@@ -185,6 +185,7 @@ Feature: Award badges based on competency completion
     And I set the following fields to these values:
       | Rating | C |
     And I wait until the page is ready
+    And I pause
     And I click on "Rate" "button" in the "Rate" "dialogue"
     And I log out
     # See if we got the badge now.
