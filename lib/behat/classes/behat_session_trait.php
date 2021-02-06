@@ -816,52 +816,70 @@ EOF;
             return false;
         }
 
-        // We don't use behat_base::spin() here as we don't want to end up with an exception
-        // if the page & JSs don't finish loading properly.
-        for ($i = 0; $i < self::get_extended_timeout() * 10; $i++) {
-            $pending = '';
-            try {
-                $jscode = trim(preg_replace('/\s+/', ' ', '
-                    return (function() {
-                        if (document.readyState !== "complete") {
-                            return "incomplete";
-                        }
+        $extendedtimeout = self::get_extended_timeout() * 1000;
 
-                        if (typeof M !== "object" || typeof M.util !== "object" || typeof M.util.pending_js === "undefined") {
-                            return "";
-                        }
+        $script = <<<EOF
+(done => {
+    let currentTimeout;
+    let finalTimeout;
 
-                        return M.util.pending_js.join(":");
-                    })()'));
-                $pending = self::evaluate_script_in_session($session, $jscode);
-            } catch (NoSuchWindowException $nsw) {
-                // We catch an exception here, in case we just closed the window we were interacting with.
-                // No javascript is running if there is no window right?
-                $pending = '';
-            } catch (UnknownError $e) {
-                // M is not defined when the window or the frame don't exist anymore.
-                if (strstr($e->getMessage(), 'M is not defined') != false) {
-                    $pending = '';
-                }
-            }
+    const checkResult = () => {
+        if (document.readyState !== 'complete') {
+            return 'incomplete';
+        }
+        if (typeof M !== "object") {
+            return '';
+        }
+        if (typeof M.util !== "object") {
+            return '';
+        }
+        if (typeof M.util.pending_js === "undefined") {
+            return '';
+        }
 
-            // If there are no pending JS we stop waiting.
-            if ($pending === '') {
-                return true;
-            }
+        return M.util.pending_js.join(':');
+    };
 
-            // 0.1 seconds.
-            usleep(100000);
+    const finish = result => {
+        clearTimeout(finalTimeout);
+        clearInterval(currentTimeout);
+        done(result);
+    };
+
+    finalTimeout = setTimeout(() => {
+        finish(checkResult());
+    }, $extendedtimeout);
+
+    currentTimeout = setInterval(() => {
+        if (checkResult() === '') {
+            finish('');
+        }
+    }, 10);
+}).apply(null, arguments)
+EOF;
+
+        try {
+            $pending = $session->getDriver()->getWebDriver()->executeAsyncScript($script);
+        } catch (NoSuchWindowException $e) {
+            return true;
+        } catch (UnknownError $e) {
+            return true;
+        }
+
+        if (empty($pending)) {
+            return true;
         }
 
         // Timeout waiting for JS to complete. It will be caught and forwarded to behat_hooks::i_look_for_exceptions().
         // It is unlikely that Javascript code of a page or an AJAX request needs more than get_extended_timeout() seconds
         // to be loaded, although when pages contains Javascript errors M.util.js_complete() can not be executed, so the
         // number of JS pending code and JS completed code will not match and we will reach this point.
-        throw new \Exception('Javascript code and/or AJAX requests are not ready after ' .
-                self::get_extended_timeout() .
-                ' seconds. There is a Javascript error or the code is extremely slow (' . $pending .
-                '). If you are using a slow machine, consider setting $CFG->behat_increasetimeout.');
+        $message = <<<EOF
+Javascript code and/or AJAX requests are not ready after {$extendedtimeout} seconds.
+There is a Javascript error or the code is extremely slow ({$pending}).
+If you are using a slow machine, consider setting \$CFG->behat_increasetimeout.
+EOF;
+        throw new \Exception($message);
     }
 
     /**
